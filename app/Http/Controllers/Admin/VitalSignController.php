@@ -226,4 +226,15 @@ class VitalSignController extends Controller
         
         return view('admin.vital_signs.trend', compact('patient', 'vitalSigns'));
     }
+    
+    /**
+     * Display a flipbox style trend chart for a specific patient
+     */
+    public function flipboxTrend($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $vitalSigns = $patient->vitalSigns()->orderBy('recorded_at', 'asc')->get();
+        
+        return view('admin.vital_signs.flipbox_trend', compact('patient', 'vitalSigns'));
+    }
 } 

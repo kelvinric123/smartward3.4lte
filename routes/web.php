@@ -45,6 +45,7 @@ Route::prefix('admin')->group(function () {
     // Vital Signs Routes
     Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
     Route::get('vital-signs/patient/{patientId}/trend', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
+    Route::get('vital-signs/patient/{patientId}/flipbox-trend', [VitalSignController::class, 'flipboxTrend'])->name('admin.vital-signs.flipbox-trend');
     
     // Bed Management Routes
     Route::prefix('beds')->name('admin.beds.')->group(function () {

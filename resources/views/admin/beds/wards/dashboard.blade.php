@@ -77,16 +77,16 @@
                                                 
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
                                                     <a href="{{ route('admin.beds.beds.show', $bed) }}" class="btn btn-outline-secondary">
-                                                        <i class="fas fa-heart"></i>
-                                                    </a>
-                                                    <a href="{{ route('admin.beds.beds.show', $bed) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-list"></i>
+                                                    </a>
+                                                    <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
+                                                        <i class="fas fa-heart"></i>
                                                     </a>
                                                     <a href="{{ route('admin.beds.beds.show', $bed) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
                                                     @if($bed->id % 7 == 0)
-                                                        <a href="#" class="btn btn-outline-secondary text-pink">
+                                                        <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-pink">
                                                             <i class="fas fa-heart"></i>
                                                         </a>
                                                         <a href="#" class="btn btn-outline-secondary text-info">
