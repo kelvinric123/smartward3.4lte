@@ -340,19 +340,46 @@ return [
                     'icon' => 'fas fa-fw fa-user-md',
                 ],
                 [
-                    'text' => 'Services',
-                    'url' => 'admin/services', 
-                    'icon' => 'fas fa-fw fa-clipboard-list',
-                ],
-                [
-                    'text' => 'Clinics',
-                    'url' => 'admin/clinics',
-                    'icon' => 'fas fa-fw fa-clinic-medical',
-                ],
-                [
-                    'text' => 'GP',
-                    'url' => 'admin/gp',
+                    'text' => 'Nurses',
+                    'url' => 'admin/nurses',
                     'icon' => 'fas fa-fw fa-user-nurse',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Bed Management',
+            'icon' => 'fas fa-fw fa-bed',
+            'submenu' => [
+                [
+                    'text' => 'Wards',
+                    'url' => 'admin/beds/wards',
+                    'icon' => 'fas fa-fw fa-door-open',
+                ],
+                [
+                    'text' => 'Ward Dashboard',
+                    'url' => 'admin/beds/wards/1/dashboard',
+                    'icon' => 'fas fa-fw fa-th',
+                ],
+                [
+                    'text' => 'Beds',
+                    'url' => 'admin/beds/beds',
+                    'icon' => 'fas fa-fw fa-procedures',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Patient Management',
+            'icon' => 'fas fa-fw fa-user-injured',
+            'submenu' => [
+                [
+                    'text' => 'Patient List',
+                    'url' => 'admin/patients',
+                    'icon' => 'fas fa-fw fa-list',
+                ],
+                [
+                    'text' => 'Vital Signs',
+                    'url' => 'admin/vital-signs',
+                    'icon' => 'fas fa-fw fa-heartbeat',
                 ],
             ],
         ],

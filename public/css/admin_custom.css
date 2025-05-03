@@ -1,0 +1,78 @@
+/* Hide the left arrow that appears on all pages */
+.wrapper::before,
+.content-wrapper::before,
+.main-sidebar::before,
+.navbar::before {
+    display: none !important;
+}
+
+/* Additional CSS to ensure the arrow is hidden */
+[class*="sidebar-"]::before,
+[class*="navbar-"]::before,
+[class*="content-"]::before,
+[class*="wrapper-"]::before {
+    display: none !important;
+}
+
+/* Hide any other potential arrow elements */
+.wrapper > .arrow-left,
+.nav-item > .arrow-left,
+.sidebar-menu > .arrow-left,
+.content-wrapper > .arrow-left,
+#sidebar-overlay + .arrow-left,
+.arrow-left,
+.arrow-icon,
+.sidebar-toggle-icon {
+    display: none !important;
+}
+
+/* General fix for any absolutely positioned arrows */
+.position-absolute.left-0,
+.position-fixed.left-0 {
+    display: none !important;
+}
+
+/* Hide any SVG arrows */
+svg.arrow-left,
+svg[class*="arrow"] {
+    display: none !important;
+}
+
+/* Hide any element that might be the left arrow */
+.wrapper > *:not(.main-sidebar):not(.content-wrapper):not(.navbar):not(.control-sidebar) {
+    display: none !important;
+}
+
+/* Hide any elements with left absolute positioning that are near the edge */
+body > *[style*="position: absolute"][style*="left: 0"],
+body > *[style*="position:absolute"][style*="left:0"],
+body > *[style*="position: fixed"][style*="left: 0"],
+body > *[style*="position:fixed"][style*="left:0"],
+.wrapper > *[style*="position: absolute"][style*="left: 0"],
+.wrapper > *[style*="position:absolute"][style*="left:0"],
+.wrapper > *[style*="position: fixed"][style*="left: 0"],
+.wrapper > *[style*="position:fixed"][style*="left:0"] {
+    display: none !important;
+}
+
+/* Override any potential AdminLTE or theme CSS */
+body::before,
+html::before,
+#app::before,
+.wrapper::before,
+*[class*="wrapper"]::before,
+*[class*="sidebar"]::before,
+*[class*="content"]::before,
+*[class*="navbar"]::before {
+    display: none !important;
+    content: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Add specific targeting for the large left arrow from the image */
+.wrapper > .left-arrow-large,
+.wrapper > div:first-child:not(.main-sidebar):not(.navbar):not(.content-wrapper),
+body > div:not(#app):not(.wrapper):not([class]):first-child {
+    display: none !important;
+} 

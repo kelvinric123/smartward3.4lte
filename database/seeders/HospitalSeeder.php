@@ -14,7 +14,7 @@ class HospitalSeeder extends Seeder
     {
         $hospitals = [
             [
-                'name' => 'Hospital Kuala Lumpur',
+                'name' => 'Qmed hospital 1',
                 'address' => 'Jalan Pahang',
                 'city' => 'Kuala Lumpur',
                 'state' => 'Wilayah Persekutuan',
@@ -25,7 +25,7 @@ class HospitalSeeder extends Seeder
                 'website' => 'www.hkl.gov.my',
             ],
             [
-                'name' => 'Hospital Pulau Pinang',
+                'name' => 'Qmed hospital 2',
                 'address' => 'Jalan Residensi',
                 'city' => 'Georgetown',
                 'state' => 'Pulau Pinang',
@@ -37,7 +37,7 @@ class HospitalSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => 'Gleneagles Hospital Kuala Lumpur',
+                'name' => 'Qmed hospital 3',
                 'address' => '286, Jalan Ampang',
                 'city' => 'Kuala Lumpur',
                 'state' => 'Wilayah Persekutuan',
@@ -48,7 +48,7 @@ class HospitalSeeder extends Seeder
                 'website' => 'www.gleneagles.com.my',
             ],
             [
-                'name' => 'Pantai Hospital Kuala Lumpur',
+                'name' => 'Qmed hospital 4',
                 'address' => '8, Jalan Bukit Pantai',
                 'city' => 'Kuala Lumpur',
                 'state' => 'Wilayah Persekutuan',
@@ -59,7 +59,7 @@ class HospitalSeeder extends Seeder
                 'website' => 'www.pantai.com.my',
             ],
             [
-                'name' => 'Sunway Medical Centre',
+                'name' => 'Qmed hospital 5',
                 'address' => '5, Jalan Lagoon Selatan, Bandar Sunway',
                 'city' => 'Petaling Jaya',
                 'state' => 'Selangor',
@@ -70,7 +70,7 @@ class HospitalSeeder extends Seeder
                 'website' => 'www.sunway.com.my',
             ],
             [
-                'name' => 'Hospital Sultanah Aminah',
+                'name' => 'Qmed hospital 6',
                 'address' => 'Jalan Persiaran Abu Bakar Sultan',
                 'city' => 'Johor Bahru',
                 'state' => 'Johor',
@@ -82,7 +82,7 @@ class HospitalSeeder extends Seeder
                 'is_active' => true,
             ],
             [
-                'name' => 'Prince Court Medical Centre',
+                'name' => 'Qmed hospital 7',
                 'address' => '39, Jalan Kia Peng',
                 'city' => 'Kuala Lumpur',
                 'state' => 'Wilayah Persekutuan',

@@ -115,6 +115,7 @@
                             <option value="consultant" {{ old('role') == 'consultant' ? 'selected' : '' }}>Consultant</option>
                             <option value="gp-doctor" {{ old('role') == 'gp-doctor' ? 'selected' : '' }}>GP Doctor</option>
                             <option value="booking-agent" {{ old('role') == 'booking-agent' ? 'selected' : '' }}>Booking Agent</option>
+                            <option value="nurse" {{ old('role') == 'nurse' ? 'selected' : '' }}>Nurse</option>
                         </select>
                         <div class="input-group-append">
                             <div class="input-group-text">

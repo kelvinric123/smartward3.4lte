@@ -8,6 +8,8 @@ use App\Http\Controllers\Doctor\DashboardController as DoctorDashboardController
 use App\Http\Controllers\Booking\DashboardController as BookingDashboardController;
 use App\Http\Controllers\Admin\SpecialtyController;
 use App\Http\Controllers\Admin\ConsultantController;
+use App\Http\Controllers\Admin\PatientController;
+use App\Http\Controllers\Admin\VitalSignController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +39,31 @@ Route::prefix('admin')->group(function () {
     Route::resource('hospitals', App\Http\Controllers\Admin\HospitalController::class)->names('admin.hospitals');
     Route::resource('specialties', SpecialtyController::class)->names('admin.specialties');
     Route::resource('consultants', ConsultantController::class)->names('admin.consultants');
+    Route::resource('nurses', App\Http\Controllers\Admin\NurseController::class)->names('admin.nurses');
+    Route::resource('patients', PatientController::class)->names('admin.patients');
+    
+    // Vital Signs Routes
+    Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
+    Route::get('vital-signs/patient/{patientId}/trend', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
+    
+    // Bed Management Routes
+    Route::prefix('beds')->name('admin.beds.')->group(function () {
+        // Wards Routes
+        Route::resource('wards', App\Http\Controllers\Admin\WardController::class)->names('wards');
+        
+        // Ward Dashboard
+        Route::get('wards/{ward}/dashboard', [App\Http\Controllers\Admin\WardController::class, 'dashboard'])->name('wards.dashboard');
+        
+        // Ward Dashboard - Admit Patient
+        Route::get('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'admitPatient'])->name('wards.admit');
+        Route::post('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'storeAdmission'])->name('wards.admit.store');
+        
+        // Beds Routes
+        Route::resource('beds', App\Http\Controllers\Admin\BedController::class)->names('beds');
+        
+        // Admit Patient to Bed
+        Route::get('beds/{bed}/admit', [App\Http\Controllers\Admin\BedController::class, 'admitPatient'])->name('beds.admit');
+    });
 });
 
 // Hospital Admin Routes

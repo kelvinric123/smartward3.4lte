@@ -95,6 +95,8 @@ class LoginController extends Controller
                 return redirect()->route('doctor.dashboard');
             case 'booking-agent':
                 return redirect()->route('booking.dashboard');
+            case 'nurse':
+                return redirect()->route('admin.dashboard'); // Redirect to admin dashboard for now
             default:
                 return redirect($this->redirectTo);
         }

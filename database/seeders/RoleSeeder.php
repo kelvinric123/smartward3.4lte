@@ -40,6 +40,11 @@ class RoleSeeder extends Seeder
                 'slug' => 'booking-agent',
                 'description' => 'Agent responsible for managing bookings',
             ],
+            [
+                'name' => 'Nurse',
+                'slug' => 'nurse',
+                'description' => 'Nurse with patient care access',
+            ],
         ];
 
         foreach ($roles as $role) {

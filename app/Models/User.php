@@ -24,6 +24,7 @@ class User extends Authenticatable
         'phone',
         'active',
         'last_login_at',
+        'hospital_id',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'last_login_at' => 'datetime',
         'active' => 'boolean',
+        'hospital_id' => 'integer',
     ];
 
     /**
@@ -101,5 +103,21 @@ class User extends Authenticatable
         }
 
         return true;
+    }
+
+    /**
+     * Get beds assigned to this nurse
+     */
+    public function beds()
+    {
+        return $this->hasMany(Bed::class, 'nurse_id');
+    }
+    
+    /**
+     * Get the hospital this user belongs to
+     */
+    public function hospital()
+    {
+        return $this->belongsTo(Hospital::class);
     }
 }

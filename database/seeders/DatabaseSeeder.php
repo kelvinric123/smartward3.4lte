@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
             HospitalSeeder::class,
             SpecialtySeeder::class,
             ConsultantSeeder::class,
+            PatientSeeder::class,
+            WardSeeder::class,
+            NurseSeeder::class,
+            BedSeeder::class,
         ]);
     }
 }
