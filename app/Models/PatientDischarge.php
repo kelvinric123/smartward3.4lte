@@ -63,6 +63,13 @@ class PatientDischarge extends Model
      */
     public function getFormattedDischargeDateAttribute()
     {
-        return $this->discharge_date ? Carbon::parse($this->discharge_date)->format('d M Y, h:i A') : null;
+        if (!$this->discharge_date) {
+            return null;
+        }
+        
+        // Ensure the date is displayed in KL timezone
+        return Carbon::parse($this->discharge_date)
+            ->setTimezone('Asia/Kuala_Lumpur')
+            ->format('d M Y, h:i A');
     }
 }

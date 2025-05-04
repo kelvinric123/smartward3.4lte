@@ -107,7 +107,9 @@
                                                     @else
                                                         @php
                                                             // Fall back to estimate if no admission record found
-                                                            $admissionDate = \Carbon\Carbon::parse($discharge->discharge_date)->subDays(5);
+                                                            $admissionDate = \Carbon\Carbon::parse($discharge->discharge_date)
+                                                                ->setTimezone('Asia/Kuala_Lumpur')
+                                                                ->subDays(5);
                                                             echo $admissionDate->format('d M Y, h:i A');
                                                         @endphp
                                                     @endif

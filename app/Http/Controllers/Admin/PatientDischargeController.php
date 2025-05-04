@@ -52,7 +52,7 @@ class PatientDischargeController extends Controller
             'patient_id' => $patientId,
             'ward_id' => $bed->ward_id,
             'bed_number' => $bed->bed_number,
-            'discharge_date' => $request->discharge_date,
+            'discharge_date' => \Carbon\Carbon::parse($request->discharge_date)->setTimezone('Asia/Kuala_Lumpur'),
             'discharge_type' => $request->discharge_type,
             'discharged_by' => Auth::id(),
             'discharge_notes' => $request->discharge_notes,

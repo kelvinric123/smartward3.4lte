@@ -9,6 +9,7 @@ use App\Models\Patient;
 use App\Models\User;
 use App\Models\Ward;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class BedController extends Controller
 {
@@ -205,7 +206,9 @@ class BedController extends Controller
                 'ward_id' => $validated['ward_id'],
                 'bed_id' => $bed->id,
                 'bed_number' => $validated['bed_number'],
-                'admission_date' => $request->filled('admission_date') ? $request->admission_date : now(),
+                'admission_date' => $request->filled('admission_date') 
+                    ? Carbon::parse($request->admission_date)->setTimezone('Asia/Kuala_Lumpur')
+                    : now(),
                 'consultant_id' => $validated['consultant_id'],
                 'nurse_id' => $validated['nurse_id'],
                 'admitted_by' => auth()->id(),
@@ -267,7 +270,7 @@ class BedController extends Controller
             'patient_id' => $patientId,
             'ward_id' => $wardId,
             'bed_number' => $bedNumber,
-            'discharge_date' => now(),
+            'discharge_date' => now()->setTimezone('Asia/Kuala_Lumpur'),
             'discharge_type' => 'regular', // Default discharge type
             'discharged_by' => auth()->id(),
             'discharge_notes' => $request->has('notes') ? $request->notes : 'Discharged from bed ' . $bedNumber,

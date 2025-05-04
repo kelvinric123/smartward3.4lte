@@ -193,13 +193,18 @@ class WardController extends Controller
             'notes' => $validated['notes'],
         ]);
         
+        // Get the admission date, ensuring we use KL timezone
+        $admissionDate = $request->filled('admission_date') 
+            ? \Carbon\Carbon::parse($request->admission_date)->setTimezone('Asia/Kuala_Lumpur')
+            : now();
+        
         // Create admission record
         \App\Models\PatientAdmission::create([
             'patient_id' => $validated['patient_id'],
             'ward_id' => $ward->id,
             'bed_id' => $bed->id,
             'bed_number' => $bed->bed_number,
-            'admission_date' => $request->filled('admission_date') ? $request->admission_date : now(),
+            'admission_date' => $admissionDate,
             'consultant_id' => $validated['consultant_id'],
             'nurse_id' => $validated['nurse_id'],
             'admitted_by' => auth()->id(),
