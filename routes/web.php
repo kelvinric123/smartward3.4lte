@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ConsultantController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\VitalSignController;
 use App\Http\Controllers\Admin\PatientDischargeController;
+use App\Http\Controllers\Admin\PatientMovementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,13 @@ Route::prefix('admin')->group(function () {
     Route::get('patients/{patientId}/discharge-history', [PatientDischargeController::class, 'history'])->name('admin.patients.discharge.history');
     Route::get('admission-history', [PatientDischargeController::class, 'admissionHistory'])->name('admin.admission.history');
     
+    // Movement Actions
+    Route::prefix('movements')->name('movements.')->group(function () {
+        Route::put('{movement}/send', [PatientMovementController::class, 'sendPatient'])->name('send');
+        Route::put('{movement}/return', [PatientMovementController::class, 'returnPatient'])->name('return');
+        Route::put('{movement}/cancel', [PatientMovementController::class, 'cancelMovement'])->name('cancel');
+    });
+    
     // Vital Signs Routes
     Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
     Route::get('vital-signs/patient/{patientId}/trend', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
@@ -65,6 +73,13 @@ Route::prefix('admin')->group(function () {
         // Ward Dashboard - Admit Patient
         Route::get('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'admitPatient'])->name('wards.admit');
         Route::post('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'storeAdmission'])->name('wards.admit.store');
+        
+        // Patient Details in Ward
+        Route::get('wards/{ward}/bed/{bedId}/patient', [App\Http\Controllers\Admin\WardController::class, 'patientDetails'])->name('wards.patient.details');
+        Route::post('wards/{ward}/bed/{bedId}/risk-factors', [App\Http\Controllers\Admin\WardController::class, 'updateRiskFactors'])->name('wards.patient.updateRiskFactors');
+        
+        // Patient Movement
+        Route::post('wards/{ward}/bed/{bedId}/movement', [PatientMovementController::class, 'scheduleMovement'])->name('wards.patient.scheduleMovement');
         
         // Beds Routes
         Route::resource('beds', App\Http\Controllers\Admin\BedController::class)->names('beds');

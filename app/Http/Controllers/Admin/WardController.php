@@ -136,13 +136,23 @@ class WardController extends Controller
         // Calculate nurse-patient ratio (if there are nurses)
         $nursePatientRatio = $nursesOnDuty > 0 ? round($occupiedBeds / $nursesOnDuty, 1) : 0;
         
+        // Get patients who are currently sent to service locations
+        $patientIdsInBeds = $ward->beds->pluck('patient_id')->filter()->toArray();
+        
+        // Get active movements where patients are currently out for service
+        $activeMovements = \App\Models\PatientMovement::whereIn('patient_id', $patientIdsInBeds)
+            ->where('status', 'sent')
+            ->get()
+            ->keyBy('patient_id');
+        
         return view('admin.beds.wards.dashboard', compact(
             'ward', 
             'availableBeds', 
             'nursesOnDuty',
             'occupiedBeds',
             'nursePatientRatio',
-            'occupancyRate'
+            'occupancyRate',
+            'activeMovements'
         ));
     }
     
@@ -214,5 +224,91 @@ class WardController extends Controller
         
         return redirect()->route('admin.beds.wards.dashboard', $ward)
             ->with('success', 'Patient admitted successfully');
+    }
+
+    /**
+     * Show patient details page with tabs for a patient in a ward.
+     */
+    public function patientDetails(Ward $ward, $bedId)
+    {
+        // Find the bed within this ward
+        $bed = $ward->beds()->findOrFail($bedId);
+        
+        // Check if the bed has a patient
+        if (!$bed->patient_id) {
+            return redirect()->route('admin.beds.wards.dashboard', $ward)
+                ->with('error', 'This bed does not have a patient assigned.');
+        }
+        
+        // Get the patient
+        $patient = $bed->patient;
+        
+        // Get the active admission
+        $activeAdmission = $patient->activeAdmission;
+        
+        // Get patient movements
+        $patientMovements = \App\Models\PatientMovement::where('patient_id', $patient->id)
+            ->orderBy('scheduled_time', 'desc')
+            ->get();
+        
+        // Service locations list - you may want to make this dynamic from DB in the future
+        $serviceLocations = [
+            'X-Ray',
+            'CT Scan',
+            'MRI',
+            'Ultrasound',
+            'Cardiology',
+            'Neurology',
+            'Gynecology',
+            'Physical Therapy',
+            'Dialysis',
+            'Laboratory',
+            'Operation Theatre',
+            'Endoscopy',
+        ];
+        
+        return view('admin.beds.wards.patient_details', compact(
+            'ward', 
+            'bed', 
+            'patient', 
+            'activeAdmission', 
+            'patientMovements', 
+            'serviceLocations'
+        ));
+    }
+
+    /**
+     * Update risk factors for a patient's admission
+     */
+    public function updateRiskFactors(Request $request, Ward $ward, $bedId)
+    {
+        // Find the bed within this ward
+        $bed = $ward->beds()->findOrFail($bedId);
+        
+        // Check if the bed has a patient
+        if (!$bed->patient_id) {
+            return redirect()->route('admin.beds.wards.dashboard', $ward)
+                ->with('error', 'This bed does not have a patient assigned.');
+        }
+        
+        // Get the patient
+        $patient = $bed->patient;
+        
+        // Get the active admission
+        $activeAdmission = $patient->activeAdmission;
+        
+        if (!$activeAdmission) {
+            return redirect()->route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id])
+                ->with('error', 'No active admission found for this patient.');
+        }
+        
+        // Update risk factors
+        $riskFactors = $request->has('risk_factors') ? $request->risk_factors : [];
+        $activeAdmission->update([
+            'risk_factors' => $riskFactors,
+        ]);
+        
+        return redirect()->route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id])
+            ->with('success', 'Risk factors updated successfully.');
     }
 }

@@ -69,20 +69,26 @@
                                                 <p class="text-muted mb-1">
                                                     <i class="fas fa-clock"></i> 
                                                     @php
-                                                        // For demo, just show random days
-                                                        $days = $bed->id * 11 % 120;
-                                                        echo $days . ' days';
+                                                        // Get actual admission duration from the patient's active admission
+                                                        $activeAdmission = $bed->patient->activeAdmission;
+                                                        echo $activeAdmission ? $activeAdmission->getStayDurationAttribute() : 'Just admitted';
                                                     @endphp
                                                 </p>
                                                 
+                                                @if(isset($activeMovements[$bed->patient_id]))
+                                                    <div class="alert alert-info p-1 mb-2 text-center">
+                                                        <small><i class="fas fa-external-link-alt"></i> At {{ $activeMovements[$bed->patient_id]->to_service_location }}</small>
+                                                    </div>
+                                                @endif
+                                                
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
-                                                    <a href="{{ route('admin.beds.beds.show', $bed) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-list"></i>
                                                     </a>
                                                     <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.beds.beds.show', $bed) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
                                                     @if($bed->id % 7 == 0)
@@ -111,12 +117,7 @@
                                                     <i class="fas fa-bed"></i> No Patient
                                                 </p>
                                                 <p class="text-muted mb-1">
-                                                    <i class="fas fa-clock"></i> 
-                                                    @php
-                                                        // For demo, just show random days
-                                                        $days = $bed->id * 11 % 120;
-                                                        echo $days . ' days';
-                                                    @endphp
+                                                    <i class="fas fa-clock"></i> Bed is available
                                                 </p>
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
                                                     <a href="{{ route('admin.beds.beds.show', $bed) }}" class="btn btn-outline-secondary">

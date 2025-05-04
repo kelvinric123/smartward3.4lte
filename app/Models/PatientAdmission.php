@@ -26,6 +26,7 @@ class PatientAdmission extends Model
         'admitted_by',
         'admission_notes',
         'is_active',
+        'risk_factors',
     ];
 
     /**
@@ -36,6 +37,7 @@ class PatientAdmission extends Model
     protected $casts = [
         'admission_date' => 'datetime',
         'is_active' => 'boolean',
+        'risk_factors' => 'json',
     ];
 
     /**
