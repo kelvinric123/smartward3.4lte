@@ -26,10 +26,6 @@
             </div>
         @endif
 
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> Please run <code>php artisan migrate</code> to add the risk_factors column to the patient_admissions table.
-        </div>
-        
         <div class="card">
             <div class="card-header p-0">
                 <ul class="nav nav-tabs" id="patientTabs" role="tablist">
@@ -336,7 +332,114 @@
                     
                     <!-- Referrals Tab -->
                     <div class="tab-pane fade" id="referrals" role="tabpanel" aria-labelledby="referrals-tab">
-                        <p class="text-muted">Referrals information will be displayed here.</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="m-0">Create Referral</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <form action="{{ route('admin.beds.wards.patient.createReferral', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
+                                            @csrf
+                                            <div class="form-group">
+                                                <label for="hospital_id">Hospital</label>
+                                                <select class="form-control" id="hospital_id" name="hospital_id" required>
+                                                    <option value="{{ $ward->hospital->id }}" selected>{{ $ward->hospital->name }}</option>
+                                                    @foreach(\App\Models\Hospital::where('is_active', true)->where('id', '!=', $ward->hospital->id)->get() as $hospital)
+                                                        <option value="{{ $hospital->id }}">{{ $hospital->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="to_specialty_id">Specialty</label>
+                                                <select class="form-control" id="to_specialty_id" name="to_specialty_id" required>
+                                                    <option value="">Select Specialty</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="to_consultant_id">Consultant</label>
+                                                <select class="form-control" id="to_consultant_id" name="to_consultant_id" required>
+                                                    <option value="">Select Consultant</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="reason">Reason for Referral</label>
+                                                <input type="text" class="form-control" id="reason" name="reason" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="notes">Additional Notes</label>
+                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">Create Referral</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h5 class="m-0">Primary Team</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>
+                                            <i class="fas fa-hospital"></i> <strong>Ward:</strong> {{ $ward->name }}
+                                        </p>
+                                        <p>
+                                            <i class="fas fa-stethoscope"></i> <strong>Specialty:</strong> {{ $ward->specialty->name }}
+                                        </p>
+                                        <p>
+                                            <i class="fas fa-user-md"></i> <strong>Consultant:</strong> 
+                                            @if($bed->consultant)
+                                                {{ $bed->consultant->name }}
+                                            @else
+                                                Not assigned
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="m-0">Referral History</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-bordered table-striped mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>To Specialty</th>
+                                            <th>To Consultant</th>
+                                            <th>Reason</th>
+                                            <th>Status</th>
+                                            <th>Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($patientReferrals as $referral)
+                                            <tr class="{{ $referral->status == 'pending' ? 'table-warning' : ($referral->status == 'accepted' ? 'table-success' : ($referral->status == 'declined' ? 'table-danger' : 'table-info')) }}">
+                                                <td>{{ $referral->formatted_referral_date }}</td>
+                                                <td>{{ $referral->toSpecialty->name }}</td>
+                                                <td>{{ $referral->toConsultant->name }}</td>
+                                                <td>{{ $referral->reason }}</td>
+                                                <td>
+                                                    <span class="badge badge-{{ $referral->status == 'pending' ? 'warning' : ($referral->status == 'accepted' ? 'success' : ($referral->status == 'declined' ? 'danger' : 'info')) }}">
+                                                        {{ ucfirst($referral->status) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $referral->notes }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center">No referral history available</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Discharge Tab -->
@@ -449,6 +552,107 @@
             var lastTab = localStorage.getItem('lastActivePatientTab');
             if (lastTab) {
                 $('a[href="' + lastTab + '"]').tab('show');
+                
+                // If referrals tab is active, load specialties
+                if (lastTab === '#referrals') {
+                    setTimeout(function() {
+                        updateSpecialties();
+                    }, 100);
+                }
+            }
+            
+            // Update specialties based on selected hospital
+            function updateSpecialties() {
+                const hospitalId = $('#hospital_id').val();
+                
+                console.log('Updating specialties for hospital ID:', hospitalId);
+                
+                if (hospitalId) {
+                    $.ajax({
+                        url: "{{ route('admin.specialties.by-hospital') }}",
+                        type: "GET",
+                        data: {
+                            hospital_id: hospitalId
+                        },
+                        success: function(data) {
+                            console.log('Received specialties data:', data);
+                            let options = '<option value="">Select Specialty</option>';
+                            data.forEach(function(specialty) {
+                                options += `<option value="${specialty.id}">${specialty.name}</option>`;
+                            });
+                            $('#to_specialty_id').html(options);
+                            // Clear consultant dropdown
+                            $('#to_consultant_id').html('<option value="">Select Consultant</option>');
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error fetching specialties:', error);
+                            console.log(xhr.responseText);
+                        }
+                    });
+                } else {
+                    $('#to_specialty_id').html('<option value="">Select Specialty</option>');
+                    $('#to_consultant_id').html('<option value="">Select Consultant</option>');
+                }
+            }
+            
+            // Update consultants based on selected hospital and specialty
+            function updateConsultants() {
+                const hospitalId = $('#hospital_id').val();
+                const specialtyId = $('#to_specialty_id').val();
+                
+                console.log('Updating consultants for hospital ID:', hospitalId, 'and specialty ID:', specialtyId);
+                
+                if (specialtyId && hospitalId) {
+                    $.ajax({
+                        url: "{{ route('admin.referrals.consultants-by-specialty') }}",
+                        type: "GET",
+                        data: {
+                            specialty_id: specialtyId,
+                            hospital_id: hospitalId
+                        },
+                        success: function(data) {
+                            console.log('Received consultants data:', data);
+                            let options = '<option value="">Select Consultant</option>';
+                            data.forEach(function(consultant) {
+                                options += `<option value="${consultant.id}">${consultant.name}</option>`;
+                            });
+                            $('#to_consultant_id').html(options);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error fetching consultants:', error);
+                            console.log(xhr.responseText);
+                        }
+                    });
+                } else {
+                    $('#to_consultant_id').html('<option value="">Select Consultant</option>');
+                }
+            }
+            
+            // Load specialties when page loads with default hospital
+            if ($('#hospital_id').length) {
+                updateSpecialties();
+            }
+            
+            // Handle tab switching - if referrals tab is shown, update specialties
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                if (e.target.id === 'referrals-tab') {
+                    updateSpecialties();
+                }
+            });
+            
+            // Add special handler for the referrals tab
+            $('#referrals-tab').on('shown.bs.tab', function () {
+                console.log('Referrals tab shown, updating specialties');
+                updateSpecialties();
+            });
+            
+            // Event handlers
+            $('#hospital_id').on('change', updateSpecialties);
+            $('#to_specialty_id').on('change', updateConsultants);
+            
+            // Initialize specialties right away if we're already on the referrals tab
+            if ($('#referrals-tab').hasClass('active')) {
+                updateSpecialties();
             }
         });
     </script>

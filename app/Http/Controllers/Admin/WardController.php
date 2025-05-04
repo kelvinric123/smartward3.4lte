@@ -251,6 +251,19 @@ class WardController extends Controller
             ->orderBy('scheduled_time', 'desc')
             ->get();
         
+        // Get patient referrals
+        $patientReferrals = \App\Models\PatientReferral::where('patient_id', $patient->id)
+            ->with(['toSpecialty', 'toConsultant'])
+            ->orderBy('referral_date', 'desc')
+            ->get();
+        
+        // Get active specialties for referrals
+        $specialties = \App\Models\Specialty::where('is_active', true)
+            ->with(['consultants' => function($query) {
+                $query->where('is_active', true);
+            }])
+            ->get();
+        
         // Service locations list - you may want to make this dynamic from DB in the future
         $serviceLocations = [
             'X-Ray',
@@ -273,7 +286,9 @@ class WardController extends Controller
             'patient', 
             'activeAdmission', 
             'patientMovements', 
-            'serviceLocations'
+            'serviceLocations',
+            'patientReferrals',
+            'specialties'
         ));
     }
 

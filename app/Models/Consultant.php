@@ -16,6 +16,7 @@ class Consultant extends Model
         'qualification',
         'experience_years',
         'specialty_id',
+        'hospital_id',
         'is_active',
         'bio',
         'photo',
@@ -33,6 +34,6 @@ class Consultant extends Model
 
     public function hospital()
     {
-        return $this->hasOneThrough(Hospital::class, Specialty::class);
+        return $this->belongsTo(Hospital::class);
     }
 } 

@@ -11,19 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('patient_admissions', function (Blueprint $table) {
+        Schema::create('beds', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('patient_id')->constrained()->onDelete('cascade');
-            $table->foreignId('ward_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('bed_number')->nullable();
-            $table->foreignId('bed_id')->nullable()->constrained()->nullOnDelete();
-            $table->dateTime('admission_date');
+            $table->string('bed_number');
+            $table->enum('status', ['available', 'occupied', 'maintenance'])->default('available');
+            $table->foreignId('ward_id')->constrained()->onDelete('cascade');
             $table->foreignId('consultant_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('nurse_id')->nullable()->references('id')->on('users')->nullOnDelete();
-            $table->foreignId('admitted_by')->nullable()->references('id')->on('users')->nullOnDelete();
-            $table->text('admission_notes')->nullable();
+            $table->foreignId('patient_id')->nullable()->constrained()->nullOnDelete();
+            $table->text('notes')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
+            
+            // Create a unique constraint for bed_number within the same ward
+            $table->unique(['ward_id', 'bed_number']);
         });
     }
 
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('patient_admissions');
+        Schema::dropIfExists('beds');
     }
-};
+}; 

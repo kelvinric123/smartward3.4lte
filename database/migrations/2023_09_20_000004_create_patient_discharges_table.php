@@ -31,4 +31,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('patient_discharges');
     }
-};
+}; 

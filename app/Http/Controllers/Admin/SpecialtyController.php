@@ -64,4 +64,32 @@ class SpecialtyController extends Controller
         return redirect()->route('admin.specialties.index')
             ->with('success', 'Specialty deleted successfully.');
     }
+
+    /**
+     * Display the specified specialty.
+     *
+     * @param  \App\Models\Specialty  $specialty
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Specialty $specialty)
+    {
+        $specialty->load(['consultants' => function($query) {
+            $query->orderBy('name');
+        }]);
+        
+        return view('admin.specialties.show', compact('specialty'));
+    }
+
+    /**
+     * Get specialties by hospital
+     */
+    public function getSpecialtiesByHospital(Request $request)
+    {
+        $hospitalId = $request->input('hospital_id');
+        $specialties = Specialty::where('hospital_id', $hospitalId)
+            ->where('is_active', true)
+            ->get();
+            
+        return response()->json($specialties);
+    }
 } 

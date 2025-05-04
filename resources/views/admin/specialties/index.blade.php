@@ -50,6 +50,9 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
+                                        <a href="{{ route('admin.specialties.show', $specialty) }}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <a href="{{ route('admin.specialties.edit', $specialty) }}" class="btn btn-warning btn-sm">
                                             <i class="fas fa-edit"></i>
                                         </a>

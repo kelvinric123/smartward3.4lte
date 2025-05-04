@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\VitalSignController;
 use App\Http\Controllers\Admin\PatientDischargeController;
 use App\Http\Controllers\Admin\PatientMovementController;
+use App\Http\Controllers\Admin\PatientReferralController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +58,17 @@ Route::prefix('admin')->group(function () {
         Route::put('{movement}/cancel', [PatientMovementController::class, 'cancelMovement'])->name('cancel');
     });
     
+    // Referral Actions
+    Route::prefix('referrals')->name('referrals.')->group(function () {
+        Route::get('consultants-by-specialty', [PatientReferralController::class, 'getConsultantsBySpecialty'])->name('consultants-by-specialty');
+        Route::put('{referral}/status', [PatientReferralController::class, 'updateStatus'])->name('update-status');
+    });
+    
+    // Specialty Actions
+    Route::prefix('specialties')->name('specialties.')->group(function () {
+        Route::get('/by-hospital', [SpecialtyController::class, 'getSpecialtiesByHospital'])->name('by-hospital');
+    });
+    
     // Vital Signs Routes
     Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
     Route::get('vital-signs/patient/{patientId}/trend', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
@@ -80,6 +92,9 @@ Route::prefix('admin')->group(function () {
         
         // Patient Movement
         Route::post('wards/{ward}/bed/{bedId}/movement', [PatientMovementController::class, 'scheduleMovement'])->name('wards.patient.scheduleMovement');
+        
+        // Patient Referral
+        Route::post('wards/{ward}/bed/{bedId}/referral', [PatientReferralController::class, 'createReferral'])->name('wards.patient.createReferral');
         
         // Beds Routes
         Route::resource('beds', App\Http\Controllers\Admin\BedController::class)->names('beds');
