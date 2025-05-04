@@ -75,6 +75,7 @@
                                     <thead>
                                         <tr>
                                             <th>Patient</th>
+                                            <th>Status</th>
                                             <th>Discharge Date</th>
                                             <th>Admission Date</th>
                                             <th>Stay Duration</th>
@@ -100,9 +101,24 @@
                                                         <span class="text-muted">Unknown</span>
                                                     @endif
                                                 </td>
-                                                <td>{{ $discharge->formatted_discharge_date }}</td>
                                                 <td>
-                                                    @if($discharge->admission)
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        <span class="badge badge-success">Currently Admitted</span>
+                                                    @else
+                                                        <span class="badge badge-secondary">Discharged</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        <span class="text-muted">-</span>
+                                                    @else
+                                                        {{ $discharge->formatted_discharge_date }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        {{ $discharge->formatted_admission_date }}
+                                                    @elseif($discharge->admission)
                                                         {{ $discharge->admission->formatted_admission_date }}
                                                     @else
                                                         @php
@@ -115,7 +131,18 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if($discharge->admission)
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        @php
+                                                            $now = \Carbon\Carbon::now();
+                                                            $admissionDate = $discharge->admission_date;
+                                                            $diff = $admissionDate->diff($now);
+                                                            
+                                                            $days = $diff->days;
+                                                            $hours = $diff->h;
+                                                            
+                                                            echo $days . ' days, ' . $hours . ' hours';
+                                                        @endphp
+                                                    @elseif($discharge->admission)
                                                         @php
                                                             $admissionDate = $discharge->admission->admission_date;
                                                             $dischargeDate = $discharge->discharge_date;
@@ -134,15 +161,29 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if($discharge->ward)
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        @if($discharge->ward)
+                                                            {{ $discharge->ward->name }}
+                                                        @else
+                                                            <span class="text-muted">Unknown</span>
+                                                        @endif
+                                                    @elseif($discharge->ward)
                                                         {{ $discharge->ward->name }}
                                                     @else
                                                         <span class="text-muted">Unknown</span>
                                                     @endif
                                                 </td>
-                                                <td>{{ $discharge->bed_number ?: 'Unknown' }}</td>
                                                 <td>
-                                                    @if($discharge->discharge_type == 'routine' || $discharge->discharge_type == 'regular')
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        {{ $discharge->bed_number ?: 'Unknown' }}
+                                                    @else
+                                                        {{ $discharge->bed_number ?: 'Unknown' }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        <span class="badge badge-success">Active</span>
+                                                    @elseif($discharge->discharge_type == 'routine' || $discharge->discharge_type == 'regular')
                                                         <span class="badge badge-success">Routine</span>
                                                     @elseif($discharge->discharge_type == 'against_medical_advice')
                                                         <span class="badge badge-warning">Against Medical Advice</span>
@@ -151,11 +192,39 @@
                                                     @elseif($discharge->discharge_type == 'deceased')
                                                         <span class="badge badge-danger">Deceased</span>
                                                     @else
-                                                        <span class="badge badge-secondary">{{ ucfirst($discharge->discharge_type) }}</span>
+                                                        <span class="badge badge-secondary">{{ ucfirst($discharge->discharge_type ?? 'Unknown') }}</span>
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    @if(!empty($discharge->discharge_notes))
+                                                    @if(isset($discharge->record_type) && $discharge->record_type === 'active_admission')
+                                                        @if(!empty($discharge->admission_notes))
+                                                            <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#notesModal-{{ $discharge->id }}">
+                                                                <i class="fas fa-sticky-note"></i> Notes
+                                                            </button>
+                                                            
+                                                            <!-- Notes Modal -->
+                                                            <div class="modal fade" id="notesModal-{{ $discharge->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                                                <div class="modal-dialog" role="document">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title">Admission Notes</h5>
+                                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            {{ $discharge->admission_notes }}
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">No notes</span>
+                                                        @endif
+                                                    @elseif(!empty($discharge->discharge_notes))
                                                         <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#notesModal-{{ $discharge->id }}">
                                                             <i class="fas fa-sticky-note"></i> Notes
                                                         </button>

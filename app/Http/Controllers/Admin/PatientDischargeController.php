@@ -87,11 +87,12 @@ class PatientDischargeController extends Controller
      */
     public function admissionHistory(Request $request)
     {
-        $query = PatientDischarge::with(['patient', 'ward', 'dischargedBy']);
+        // Get discharge records first
+        $dischargeQuery = PatientDischarge::with(['patient', 'ward', 'dischargedBy']);
         
         // Filter by patient name if provided
         if ($request->filled('search')) {
-            $query->whereHas('patient', function($q) use ($request) {
+            $dischargeQuery->whereHas('patient', function($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('identity_number', 'like', '%' . $request->search . '%')
                   ->orWhere('mrn', 'like', '%' . $request->search . '%');
@@ -100,17 +101,15 @@ class PatientDischargeController extends Controller
         
         // Filter by date range if provided
         if ($request->filled('date_from')) {
-            $query->whereDate('discharge_date', '>=', $request->date_from);
+            $dischargeQuery->whereDate('discharge_date', '>=', $request->date_from);
         }
         
         if ($request->filled('date_to')) {
-            $query->whereDate('discharge_date', '<=', $request->date_to);
+            $dischargeQuery->whereDate('discharge_date', '<=', $request->date_to);
         }
         
-        // Get paginated results ordered by most recent
-        $discharges = $query->orderBy('discharge_date', 'desc')
-            ->paginate(15)
-            ->appends($request->except('page'));
+        // Get discharge results ordered by most recent
+        $discharges = $dischargeQuery->orderBy('discharge_date', 'desc')->get();
         
         // For each discharge, find the matching admission
         foreach ($discharges as $discharge) {
@@ -123,8 +122,64 @@ class PatientDischargeController extends Controller
                 ->first();
             
             $discharge->admission = $admission;
+            $discharge->record_type = 'discharge'; // Mark as discharge record
         }
+        
+        // Get active admissions
+        $activeAdmissionsQuery = \App\Models\PatientAdmission::with(['patient', 'ward', 'consultant', 'nurse'])
+            ->where('is_active', true);
             
-        return view('admin.patients.admission_history', compact('discharges'));
+        // Apply the same filters as discharge records    
+        if ($request->filled('search')) {
+            $activeAdmissionsQuery->whereHas('patient', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('identity_number', 'like', '%' . $request->search . '%')
+                  ->orWhere('mrn', 'like', '%' . $request->search . '%');
+            });
+        }
+        
+        if ($request->filled('date_from')) {
+            $activeAdmissionsQuery->whereDate('admission_date', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $activeAdmissionsQuery->whereDate('admission_date', '<=', $request->date_to);
+        }
+        
+        $activeAdmissions = $activeAdmissionsQuery->orderBy('admission_date', 'desc')->get();
+        
+        // Mark active admissions
+        foreach ($activeAdmissions as $admission) {
+            $admission->record_type = 'active_admission'; // Mark as active admission
+        }
+        
+        // Merge the collections
+        $allRecords = $discharges->concat($activeAdmissions);
+        
+        // Sort by date (admission or discharge date) - most recent first
+        $allRecords = $allRecords->sortByDesc(function ($record) {
+            return $record->record_type === 'discharge' 
+                ? $record->discharge_date 
+                : $record->admission_date;
+        });
+        
+        // Paginate the combined results
+        $perPage = 15;
+        $page = $request->input('page', 1);
+        $total = $allRecords->count();
+        
+        $allRecords = $allRecords->slice(($page - 1) * $perPage, $perPage);
+        
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator(
+            $allRecords, 
+            $total, 
+            $perPage, 
+            $page, 
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+            
+        return view('admin.patients.admission_history', [
+            'discharges' => $paginator
+        ]);
     }
 }
