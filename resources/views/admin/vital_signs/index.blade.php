@@ -1,21 +1,23 @@
 @extends('adminlte::page')
 
-@section('title', isset($patient) ? $patient->name . ' - Vital Signs' : 'Vital Signs')
+@section('title', isset($patient) ? $patient->name . ' - Vital Signs' : 'Patient Vital Signs')
 
 @section('content_header')
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>{{ isset($patient) ? $patient->name . ' - Vital Signs' : 'Vital Signs' }}</h1>
+                <h1>{{ isset($patient) ? $patient->name . ' - Vital Signs' : 'Patient Vital Signs' }}</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                     @if(isset($patient))
                         <li class="breadcrumb-item"><a href="{{ route('admin.patients.index') }}">Patients</a></li>
-                        <li class="breadcrumb-item"><a href="{{ route('admin.patients.show', $patient->id) }}">{{ $patient->name }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.vital-signs.index') }}">Vital Signs</a></li>
+                        <li class="breadcrumb-item active">{{ $patient->name }}</li>
+                    @else
+                        <li class="breadcrumb-item active">Vital Signs</li>
                     @endif
-                    <li class="breadcrumb-item active">Vital Signs</li>
                 </ol>
             </div>
         </div>
@@ -33,22 +35,61 @@
                     </div>
                 @endif
                 
+                @if(isset($patient))
+                <!-- Patient Information Card -->
+                <div class="card card-primary card-outline mb-4">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-user-injured mr-2"></i>
+                            Patient Information
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong><i class="fas fa-id-card mr-1"></i> Name:</strong> {{ $patient->name }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong><i class="fas fa-hospital-user mr-1"></i> MRN:</strong> {{ $patient->mrn ?: 'Not Available' }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong><i class="fas fa-calendar-alt mr-1"></i> DOB:</strong> {{ $patient->dob ? $patient->dob->format('d/m/Y') : 'Not Available' }}
+                                @if($patient->dob)
+                                    ({{ $patient->age }} years)
+                                @endif
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <strong><i class="fas fa-venus-mars mr-1"></i> Gender:</strong> {{ $patient->gender ?? 'Not Available' }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong><i class="fas fa-phone mr-1"></i> Contact:</strong> {{ $patient->phone ?? 'Not Available' }}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="btn-group float-right">
+                                    <a href="{{ route('admin.patients.show', $patient->id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-user mr-1"></i> Patient Profile
+                                    </a>
+                                    <a href="{{ route('admin.vital-signs.trend', $patient->id) }}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-chart-line mr-1"></i> View Trend
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Vital Signs Records</h3>
                         <div class="card-tools">
-                            @if(isset($patient))
-                                <a href="{{ route('admin.vital-signs.create', ['patient_id' => $patient->id]) }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Record Vital Signs
-                                </a>
-                                <a href="{{ route('admin.vital-signs.trend', $patient->id) }}" class="btn btn-info btn-sm">
-                                    <i class="fas fa-chart-line"></i> View Trend
-                                </a>
-                            @else
-                                <a href="{{ route('admin.vital-signs.create') }}" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-plus"></i> Record Vital Signs
-                                </a>
-                            @endif
+                            <a href="{{ route('admin.vital-signs.create', ['patient_id' => $patient->id]) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Record Vital Signs
+                            </a>
+                            <a href="{{ route('admin.vital-signs.trend', $patient->id) }}" class="btn btn-info btn-sm">
+                                <i class="fas fa-chart-line"></i> View Trend
+                            </a>
                         </div>
                     </div>
                     <!-- /.card-header -->
@@ -57,9 +98,6 @@
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    @if(!isset($patient))
-                                        <th>Patient</th>
-                                    @endif
                                     <th>Date & Time</th>
                                     <th>Temp (°C)</th>
                                     <th>HR (bpm)</th>
@@ -76,17 +114,6 @@
                                 @forelse($vitalSigns as $vitalSign)
                                     <tr class="@if($vitalSign->total_ews >= 7) table-danger @elseif($vitalSign->total_ews >= 5) table-warning @elseif($vitalSign->total_ews >= 3) table-info @else @endif">
                                         <td>{{ $vitalSign->id }}</td>
-                                        @if(!isset($patient))
-                                            <td>
-                                                <a href="{{ route('admin.patients.show', $vitalSign->patient_id) }}">
-                                                    {{ $vitalSign->patient->name }}
-                                                </a>
-                                                <br>
-                                                <small class="text-muted">
-                                                    {{ $vitalSign->patient->mrn ?: 'No MRN' }}
-                                                </small>
-                                            </td>
-                                        @endif
                                         <td>{{ $vitalSign->formatted_recorded_at }}</td>
                                         <td>{{ $vitalSign->temperature ?: '-' }}</td>
                                         <td>{{ $vitalSign->heart_rate ?: '-' }}</td>
@@ -141,7 +168,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ isset($patient) ? '11' : '12' }}" class="text-center">No vital signs records found.</td>
+                                        <td colspan="11" class="text-center">No vital signs records found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -152,6 +179,94 @@
                         {{ $vitalSigns->appends(request()->query())->links() }}
                     </div>
                 </div>
+                @else
+                <!-- Patients List Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Patients with Vital Sign Records</h3>
+                        <div class="card-tools">
+                            <a href="{{ route('admin.vital-signs.create') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Record New Vital Signs
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <form method="GET" action="{{ route('admin.vital-signs.index') }}">
+                                    <div class="input-group">
+                                        <input type="text" name="search" class="form-control" placeholder="Search by patient name or MRN..." value="{{ request('search') }}">
+                                        <div class="input-group-append">
+                                            <button type="submit" class="btn btn-default">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Patient Name</th>
+                                        <th>MRN</th>
+                                        <th>Gender</th>
+                                        <th>Age</th>
+                                        <th>Records Count</th>
+                                        <th>Last Record</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($patients as $patient)
+                                        <tr>
+                                            <td>{{ $patient->id }}</td>
+                                            <td>{{ $patient->name }}</td>
+                                            <td>{{ $patient->mrn ?: 'Not available' }}</td>
+                                            <td>{{ ucfirst($patient->gender ?? 'Not specified') }}</td>
+                                            <td>{{ $patient->age ?? 'N/A' }}</td>
+                                            <td>
+                                                <span class="badge badge-info">
+                                                    {{ $patient->vital_signs_count }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if($patient->latestVitalSigns)
+                                                    {{ $patient->latestVitalSigns->formatted_recorded_at ?? 'N/A' }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <a href="{{ route('admin.vital-signs.index', ['patient_id' => $patient->id]) }}" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> View Records
+                                                </a>
+                                                <a href="{{ route('admin.vital-signs.trend', $patient->id) }}" class="btn btn-success btn-sm">
+                                                    <i class="fas fa-chart-line"></i> Trend
+                                                </a>
+                                                <a href="{{ route('admin.vital-signs.create', ['patient_id' => $patient->id]) }}" class="btn btn-primary btn-sm">
+                                                    <i class="fas fa-plus"></i> Record
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="8" class="text-center">No patients with vital signs found.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="mt-3">
+                            {{ $patients->appends(request()->except('page'))->links() }}
+                        </div>
+                    </div>
+                </div>
+                @endif
                 <!-- /.card -->
             </div>
         </div>

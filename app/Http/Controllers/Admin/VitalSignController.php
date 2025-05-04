@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class VitalSignController extends Controller
 {
@@ -20,21 +21,38 @@ class VitalSignController extends Controller
      */
     public function index(Request $request)
     {
-        $query = VitalSign::with(['patient', 'recorder']);
-        
         // Filter by patient if specified
         if ($request->has('patient_id')) {
+            $query = VitalSign::with(['patient', 'recorder']);
             $query->where('patient_id', $request->patient_id);
             $patient = Patient::findOrFail($request->patient_id);
+            
             return view('admin.vital_signs.index', [
                 'vitalSigns' => $query->latest('recorded_at')->paginate(15),
                 'patient' => $patient
             ]);
         }
         
-        // Get all vital signs, group by patient
-        $vitalSigns = $query->latest('recorded_at')->paginate(15);
-        return view('admin.vital_signs.index', compact('vitalSigns'));
+        // Show list of patients with vital signs
+        $patientsQuery = Patient::select('patients.*')
+            ->join('vital_signs', 'patients.id', '=', 'vital_signs.patient_id')
+            ->groupBy('patients.id')
+            ->withCount(['vitalSigns'])
+            ->with('latestVitalSigns');
+            
+        // Handle search
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $patientsQuery->where(function($query) use ($search) {
+                $query->where('patients.name', 'like', "%{$search}%")
+                    ->orWhere('patients.mrn', 'like', "%{$search}%")
+                    ->orWhere('patients.identity_number', 'like', "%{$search}%");
+            });
+        }
+            
+        $patients = $patientsQuery->orderBy('name')->paginate(15);
+            
+        return view('admin.vital_signs.index', compact('patients'));
     }
 
     /**
