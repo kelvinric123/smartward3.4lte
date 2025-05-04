@@ -138,6 +138,17 @@
                                 </div>
                             </div>
 
+                            <div class="form-group admission-field" id="admission-date-field" style="{{ isset($isAdmitting) && $isAdmitting ? '' : 'display: none;' }}">
+                                <label for="admission_date">Admission Date & Time</label>
+                                <input type="datetime-local" name="admission_date" id="admission_date" 
+                                    class="form-control @error('admission_date') is-invalid @enderror" 
+                                    value="{{ old('admission_date', isset($admissionDate) ? $admissionDate : now()->format('Y-m-d\TH:i')) }}">
+                                @error('admission_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Leave as is for current date/time or adjust if needed.</small>
+                            </div>
+
                             <div class="form-group">
                                 <label for="notes">Notes</label>
                                 <textarea name="notes" id="notes" class="form-control @error('notes') is-invalid @enderror" rows="3">{{ old('notes', $bed->notes) }}</textarea>
@@ -175,13 +186,17 @@
             // Handle changing the status to conditionally show/hide fields
             function updateFieldsVisibility() {
                 var status = $('#status').val();
+                var currentPatientId = "{{ $bed->patient_id }}";
+                var newPatientId = $('#patient_id').val();
                 
                 if (status === 'available') {
                     $('.assign-fields select').val('');
                     $('.assign-fields').hide();
+                    $('.admission-field').hide();
                 } else if (status === 'maintenance') {
                     $('.assign-fields select').val('');
                     $('.assign-fields').hide();
+                    $('.admission-field').hide();
                 } else {
                     $('.assign-fields').show();
                     
@@ -189,9 +204,17 @@
                     if (status === 'occupied') {
                         $('#patient_id').prop('required', true);
                         $('#patient-field label').html('Patient <span class="text-danger">*</span>');
+                        
+                        // Show admission date field only when admitting a new patient
+                        if (!currentPatientId || currentPatientId !== newPatientId) {
+                            $('.admission-field').show();
+                        } else {
+                            $('.admission-field').hide();
+                        }
                     } else {
                         $('#patient_id').prop('required', false);
                         $('#patient-field label').text('Patient');
+                        $('.admission-field').hide();
                     }
                 }
             }
@@ -201,6 +224,9 @@
             
             // Update visibility when status changes
             $('#status').change(updateFieldsVisibility);
+            
+            // Update visibility when patient changes
+            $('#patient_id').change(updateFieldsVisibility);
         });
     </script>
 @stop 

@@ -121,6 +121,30 @@ class Patient extends Model
     }
     
     /**
+     * Get the admission records for this patient
+     */
+    public function admissions()
+    {
+        return $this->hasMany(PatientAdmission::class);
+    }
+    
+    /**
+     * Get the current active admission
+     */
+    public function activeAdmission()
+    {
+        return $this->hasOne(PatientAdmission::class)->where('is_active', true)->latest('admission_date');
+    }
+    
+    /**
+     * Get the latest admission record
+     */
+    public function latestAdmission()
+    {
+        return $this->hasOne(PatientAdmission::class)->latest('admission_date');
+    }
+    
+    /**
      * Get the bed this patient is currently assigned to
      */
     public function bed()

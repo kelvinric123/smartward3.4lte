@@ -111,6 +111,17 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="admission_date">Admission Date & Time</label>
+                                <input type="datetime-local" name="admission_date" id="admission_date" 
+                                    class="form-control @error('admission_date') is-invalid @enderror" 
+                                    value="{{ old('admission_date', now()->format('Y-m-d\TH:i')) }}">
+                                @error('admission_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Leave as is for current date/time or adjust if needed.</small>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="notes">Admission Notes</label>
                                 <textarea name="notes" id="notes" class="form-control @error('notes') is-invalid @enderror" rows="3">{{ old('notes') }}</textarea>
                                 @error('notes')

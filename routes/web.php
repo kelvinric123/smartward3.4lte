@@ -47,6 +47,7 @@ Route::prefix('admin')->group(function () {
     Route::get('patients/{patientId}/discharge', [PatientDischargeController::class, 'create'])->name('admin.patients.discharge');
     Route::post('patients/{patientId}/discharge', [PatientDischargeController::class, 'store'])->name('admin.patients.discharge.store');
     Route::get('patients/{patientId}/discharge-history', [PatientDischargeController::class, 'history'])->name('admin.patients.discharge.history');
+    Route::get('admission-history', [PatientDischargeController::class, 'admissionHistory'])->name('admin.admission.history');
     
     // Vital Signs Routes
     Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
@@ -70,6 +71,9 @@ Route::prefix('admin')->group(function () {
         
         // Admit Patient to Bed
         Route::get('beds/{bed}/admit', [App\Http\Controllers\Admin\BedController::class, 'admitPatient'])->name('beds.admit');
+        
+        // Discharge Patient from Bed
+        Route::post('beds/{bed}/discharge', [App\Http\Controllers\Admin\BedController::class, 'discharge'])->name('beds.discharge');
     });
 });
 

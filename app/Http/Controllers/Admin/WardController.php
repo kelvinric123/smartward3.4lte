@@ -178,6 +178,7 @@ class WardController extends Controller
             'consultant_id' => 'nullable|exists:consultants,id',
             'nurse_id' => 'nullable|exists:users,id',
             'notes' => 'nullable|string',
+            'admission_date' => 'nullable|date',
         ]);
         
         // Find the bed
@@ -190,6 +191,20 @@ class WardController extends Controller
             'consultant_id' => $validated['consultant_id'],
             'nurse_id' => $validated['nurse_id'],
             'notes' => $validated['notes'],
+        ]);
+        
+        // Create admission record
+        \App\Models\PatientAdmission::create([
+            'patient_id' => $validated['patient_id'],
+            'ward_id' => $ward->id,
+            'bed_id' => $bed->id,
+            'bed_number' => $bed->bed_number,
+            'admission_date' => $request->filled('admission_date') ? $request->admission_date : now(),
+            'consultant_id' => $validated['consultant_id'],
+            'nurse_id' => $validated['nurse_id'],
+            'admitted_by' => auth()->id(),
+            'admission_notes' => $validated['notes'],
+            'is_active' => true,
         ]);
         
         return redirect()->route('admin.beds.wards.dashboard', $ward)

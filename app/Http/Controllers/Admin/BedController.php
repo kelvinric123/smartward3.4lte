@@ -139,7 +139,11 @@ class BedController extends Controller
             $bed->status = $request->status;
         }
 
-        return view('admin.beds.beds.edit', compact('bed', 'wards', 'consultants', 'patients', 'nurses', 'statuses'));
+        // If this is an admission request (patient is being added to bed)
+        $isAdmitting = $request->has('status') && $request->status === Bed::STATUS_OCCUPIED && !$bed->patient_id;
+        $admissionDate = now()->format('Y-m-d\TH:i');
+
+        return view('admin.beds.beds.edit', compact('bed', 'wards', 'consultants', 'patients', 'nurses', 'statuses', 'isAdmitting', 'admissionDate'));
     }
 
     /**
@@ -156,6 +160,7 @@ class BedController extends Controller
             'patient_id' => 'nullable|exists:patients,id',
             'notes' => 'nullable|string',
             'is_active' => 'boolean',
+            'admission_date' => 'nullable|date',
         ]);
 
         // Check for uniqueness of bed number in ward (if changed)
@@ -185,8 +190,29 @@ class BedController extends Controller
                 'patient_id' => 'A patient must be assigned when the bed status is Occupied.'
             ]);
         }
-
+        
+        // Check if this is a new patient admission
+        $isNewAdmission = $request->status === Bed::STATUS_OCCUPIED && 
+                         (empty($bed->patient_id) || $bed->patient_id != $request->patient_id);
+        
+        // Update the bed
         $bed->update($validated);
+        
+        // Create admission record if this is a new admission
+        if ($isNewAdmission) {
+            \App\Models\PatientAdmission::create([
+                'patient_id' => $validated['patient_id'],
+                'ward_id' => $validated['ward_id'],
+                'bed_id' => $bed->id,
+                'bed_number' => $validated['bed_number'],
+                'admission_date' => $request->filled('admission_date') ? $request->admission_date : now(),
+                'consultant_id' => $validated['consultant_id'],
+                'nurse_id' => $validated['nurse_id'],
+                'admitted_by' => auth()->id(),
+                'admission_notes' => $validated['notes'],
+                'is_active' => true,
+            ]);
+        }
 
         return redirect()->route('admin.beds.beds.index')
             ->with('success', 'Bed updated successfully');
@@ -213,5 +239,49 @@ class BedController extends Controller
             'bed' => $bed, 
             'status' => 'occupied'
         ]);
+    }
+    
+    /**
+     * Discharge a patient from the bed
+     */
+    public function discharge(Request $request, Bed $bed)
+    {
+        // Check if the bed has a patient
+        if (!$bed->patient_id) {
+            return redirect()->route('admin.beds.beds.show', $bed)
+                ->with('error', 'No patient assigned to this bed.');
+        }
+        
+        // Get data needed for discharge record
+        $patientId = $bed->patient_id;
+        $wardId = $bed->ward_id;
+        $bedNumber = $bed->bed_number;
+        
+        // Mark any active admissions as inactive
+        \App\Models\PatientAdmission::where('patient_id', $patientId)
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+        
+        // Create discharge record
+        \App\Models\PatientDischarge::create([
+            'patient_id' => $patientId,
+            'ward_id' => $wardId,
+            'bed_number' => $bedNumber,
+            'discharge_date' => now(),
+            'discharge_type' => 'regular', // Default discharge type
+            'discharged_by' => auth()->id(),
+            'discharge_notes' => $request->has('notes') ? $request->notes : 'Discharged from bed ' . $bedNumber,
+        ]);
+        
+        // Update bed status to available and remove patient assignment
+        $bed->update([
+            'status' => Bed::STATUS_AVAILABLE,
+            'patient_id' => null,
+            'consultant_id' => null,
+            'nurse_id' => null,
+        ]);
+        
+        return redirect()->route('admin.beds.beds.show', $bed)
+            ->with('success', 'Patient discharged successfully.');
     }
 }

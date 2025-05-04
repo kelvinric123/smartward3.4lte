@@ -381,6 +381,11 @@ return [
                     'url' => 'admin/vital-signs',
                     'icon' => 'fas fa-fw fa-heartbeat',
                 ],
+                [
+                    'text' => 'Admission History',
+                    'url' => 'admin/admission-history',
+                    'icon' => 'fas fa-fw fa-history',
+                ],
             ],
         ],
     ],
