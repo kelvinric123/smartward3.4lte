@@ -98,6 +98,99 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Admission Status Section -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="card card-outline {{ $patient->is_admitted ? 'card-success' : 'card-secondary' }}">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-hospital-user mr-1"></i> Admission Status
+                                        </h3>
+                                        @if($patient->is_admitted)
+                                        <div class="card-tools">
+                                            <a href="{{ route('admin.patients.discharge', $patient->id) }}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-door-open mr-1"></i> Discharge Patient
+                                            </a>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    <div class="card-body">
+                                        @if($patient->is_admitted)
+                                            @php
+                                                $bed = $patient->bed;
+                                                $ward = $bed ? $bed->ward : null;
+                                            @endphp
+                                            <div class="alert alert-success">
+                                                <i class="fas fa-check-circle mr-1"></i> <strong>Currently Admitted</strong>
+                                            </div>
+                                            
+                                            @if($bed && $ward)
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <strong>Ward:</strong> 
+                                                        <a href="{{ route('admin.beds.wards.show', $ward->id) }}">
+                                                            {{ $ward->name }} ({{ $ward->specialty->name }})
+                                                        </a>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <strong>Bed:</strong> 
+                                                        <a href="{{ route('admin.beds.beds.show', $bed->id) }}">
+                                                            {{ $bed->bed_number }}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                
+                                                @if($bed->consultant)
+                                                    <div class="mt-2">
+                                                        <strong>Consultant:</strong> {{ $bed->consultant->name }}
+                                                    </div>
+                                                @endif
+                                                
+                                                @if(!empty($bed->notes))
+                                                    <div class="mt-2">
+                                                        <strong>Admission Notes:</strong> {{ $bed->notes }}
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        @else
+                                            <div class="alert alert-secondary">
+                                                <i class="fas fa-info-circle mr-1"></i> <strong>Not Currently Admitted</strong>
+                                            </div>
+                                            
+                                            @php
+                                                $latestDischarge = $patient->latestDischarge;
+                                            @endphp
+                                            
+                                            @if($latestDischarge)
+                                                <div class="mt-2">
+                                                    <strong>Last Discharge:</strong> {{ $latestDischarge->formatted_discharge_date }}
+                                                    @if($latestDischarge->ward)
+                                                        from {{ $latestDischarge->ward->name }} 
+                                                        (Bed: {{ $latestDischarge->bed_number }})
+                                                    @endif
+                                                </div>
+                                                
+                                                @if(!empty($latestDischarge->discharge_notes))
+                                                    <div class="mt-2">
+                                                        <strong>Discharge Notes:</strong> {{ $latestDischarge->discharge_notes }}
+                                                    </div>
+                                                @endif
+                                                
+                                                <div class="mt-3">
+                                                    <a href="{{ route('admin.patients.discharge.history', $patient->id) }}" class="btn btn-info btn-sm">
+                                                        <i class="fas fa-history mr-1"></i> View Complete Discharge History
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="text-muted">No previous admission records found.</div>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Admission Status Section -->
                     </div>
                     <!-- /.card-body -->
                     <div class="card-footer">

@@ -103,4 +103,36 @@ class Patient extends Model
     {
         return $this->hasOne(VitalSign::class)->latest('recorded_at');
     }
+    
+    /**
+     * Get the discharge records for this patient
+     */
+    public function discharges()
+    {
+        return $this->hasMany(PatientDischarge::class);
+    }
+    
+    /**
+     * Get the latest discharge record
+     */
+    public function latestDischarge()
+    {
+        return $this->hasOne(PatientDischarge::class)->latest('discharge_date');
+    }
+    
+    /**
+     * Get the bed this patient is currently assigned to
+     */
+    public function bed()
+    {
+        return $this->hasOne(Bed::class);
+    }
+    
+    /**
+     * Check if the patient is currently admitted
+     */
+    public function getIsAdmittedAttribute()
+    {
+        return $this->bed()->exists();
+    }
 } 

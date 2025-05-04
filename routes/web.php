@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\SpecialtyController;
 use App\Http\Controllers\Admin\ConsultantController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\VitalSignController;
+use App\Http\Controllers\Admin\PatientDischargeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,11 @@ Route::prefix('admin')->group(function () {
     Route::resource('consultants', ConsultantController::class)->names('admin.consultants');
     Route::resource('nurses', App\Http\Controllers\Admin\NurseController::class)->names('admin.nurses');
     Route::resource('patients', PatientController::class)->names('admin.patients');
+    
+    // Patient Discharge Routes
+    Route::get('patients/{patientId}/discharge', [PatientDischargeController::class, 'create'])->name('admin.patients.discharge');
+    Route::post('patients/{patientId}/discharge', [PatientDischargeController::class, 'store'])->name('admin.patients.discharge.store');
+    Route::get('patients/{patientId}/discharge-history', [PatientDischargeController::class, 'history'])->name('admin.patients.discharge.history');
     
     // Vital Signs Routes
     Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
