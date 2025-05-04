@@ -17,20 +17,28 @@ class PatientSeeder extends Seeder
     {
         $faker = Faker::create('ms_MY'); // Malaysian locale
         
-        // Generate Malaysian names
-        $malaysianFirstNames = [
-            'Ahmad', 'Muhammad', 'Ali', 'Ibrahim', 'Ismail', 'Abdul', 'Hassan', 'Yusof', 'Omar', 'Aziz',
-            'Fatimah', 'Siti', 'Aishah', 'Aminah', 'Zainab', 'Nor', 'Farah', 'Sarah', 'Nurul', 'Nadia',
-            'Chong', 'Tan', 'Wong', 'Lim', 'Lee', 'Ng', 'Ooi', 'Cheah', 'Goh', 'Teoh',
-            'Raj', 'Kumar', 'Ravi', 'Siva', 'Muthu', 'Suresh', 'Ramesh', 'Ganesh', 'Vijay', 'Arvind',
-            'Lakshmi', 'Priya', 'Devi', 'Anita', 'Kavita', 'Meena', 'Rani', 'Uma', 'Sunita', 'Shanti'
-        ];
-        
-        $malaysianLastNames = [
-            'bin Abdullah', 'bin Mohamed', 'bin Rahman', 'bin Ismail', 'bin Ibrahim', 'bin Hassan', 
-            'binti Omar', 'binti Yusof', 'binti Abdul Rahman', 'binti Aziz', 'binti Hassan',
-            'Wei', 'Ming', 'Hong', 'Ling', 'Hui', 'Xin', 'Jie', 'Feng', 'Cheng', 'Yong',
-            'Kumar', 'Singh', 'Kaur', 'Raj', 'Rajan', 'Pillai', 'Muthu', 'Krishnan', 'Gopal', 'Anand'
+        // Fixed list of patient names
+        $patientNames = [
+            'Ahmad bin Abdullah',
+            'Siti Aishah binti Hassan',
+            'Muhammad bin Ibrahim',
+            'Nurul Ain binti Yusof',
+            'Tan Wei Ming',
+            'Wong Li Hua',
+            'Lee Chong Wei',
+            'Lim Mei Ling',
+            'Raj Kumar a/l Muthu',
+            'Priya d/o Krishnan',
+            'Suresh a/l Gopal',
+            'Kavita d/o Anand',
+            'Abdul Rahman bin Ismail',
+            'Fatimah binti Omar',
+            'Chong Wei Feng',
+            'Ng Hui Ling',
+            'Ravi a/l Pillai',
+            'Meena d/o Rajan',
+            'Aziz bin Hassan',
+            'Zainab binti Abdul Rahman'
         ];
         
         // Helper function to generate a valid Malaysian IC number
@@ -63,15 +71,13 @@ class PatientSeeder extends Seeder
             return strtoupper($letters) . $numbers;
         };
         
-        // Generate MRN with the format MRN-YYYYMMDD-XXXX
+        // Generate MRN with a simple numeric format starting from 10000
         $generateMRN = function() use ($faker) {
-            $date = $faker->dateTimeBetween('-3 years', 'now')->format('Ymd');
-            $number = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-            return 'MRN-' . $date . '-' . $number;
+            return 10000 + $faker->unique()->numberBetween(1, 9999);
         };
         
-        // Generate 50 patients
-        for ($i = 0; $i < 50; $i++) {
+        // Create patients with fixed names
+        foreach ($patientNames as $index => $name) {
             // Randomly decide if this patient uses IC or passport
             $identityType = $faker->randomElement(['ic', 'passport', 'ic', 'ic']); // More weight to IC
             
@@ -86,14 +92,9 @@ class PatientSeeder extends Seeder
                 $gender = $faker->randomElement(['male', 'female']);
             }
             
-            // Generate full name based on common Malaysian patterns
-            $firstName = $faker->randomElement($malaysianFirstNames);
-            $lastName = $faker->randomElement($malaysianLastNames);
-            $fullName = $firstName . ' ' . $lastName;
-            
             Patient::create([
-                'name' => $fullName,
-                'mrn' => $generateMRN(),
+                'name' => $name,
+                'mrn' => 10000 + $index,
                 'identity_number' => $identityNumber,
                 'identity_type' => $identityType,
                 'age' => $age,

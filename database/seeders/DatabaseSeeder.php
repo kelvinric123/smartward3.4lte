@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             WardSeeder::class,
             NurseSeeder::class,
             BedSeeder::class,
+            LeeChongWeiVitalSignsSeeder::class,
         ]);
     }
 }
