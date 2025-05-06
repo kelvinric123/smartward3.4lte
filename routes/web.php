@@ -59,14 +59,14 @@ Route::prefix('admin')->group(function () {
     });
     
     // Referral Actions
-    Route::prefix('referrals')->name('referrals.')->group(function () {
-        Route::get('consultants-by-specialty', [PatientReferralController::class, 'getConsultantsBySpecialty'])->name('consultants-by-specialty');
-        Route::put('{referral}/status', [PatientReferralController::class, 'updateStatus'])->name('update-status');
+    Route::prefix('referrals')->group(function () {
+        Route::get('consultants-by-specialty', [PatientReferralController::class, 'getConsultantsBySpecialty'])->name('admin.referrals.consultants-by-specialty');
+        Route::put('{referral}/status', [PatientReferralController::class, 'updateStatus'])->name('admin.referrals.update-status');
     });
     
     // Specialty Actions
-    Route::prefix('specialties')->name('specialties.')->group(function () {
-        Route::get('/by-hospital', [SpecialtyController::class, 'getSpecialtiesByHospital'])->name('by-hospital');
+    Route::prefix('specialties')->group(function () {
+        Route::get('/by-hospital', [SpecialtyController::class, 'getSpecialtiesByHospital'])->name('admin.specialties.by-hospital');
     });
     
     // Vital Signs Routes

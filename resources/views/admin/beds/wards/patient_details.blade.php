@@ -231,9 +231,43 @@
                                                 </select>
                                             </div>
                                             <div class="form-group">
-                                                <label for="scheduled_time">Scheduled Time</label>
-                                                <input type="datetime-local" class="form-control" id="scheduled_time" name="scheduled_time" min="{{ now()->format('Y-m-d\TH:i') }}" step="1800" required>
+                                                <label for="scheduled_date">Scheduled Date</label>
+                                                <input type="date" class="form-control" id="scheduled_date" name="scheduled_date" min="{{ now()->format('Y-m-d') }}" required>
                                             </div>
+                                            <div class="form-group">
+                                                <label for="scheduled_time_slot">Scheduled Time</label>
+                                                <select class="form-control" id="scheduled_time_slot" name="scheduled_time_slot" required>
+                                                    <option value="">Select Time</option>
+                                                    <option value="08:00">08:00 AM</option>
+                                                    <option value="08:30">08:30 AM</option>
+                                                    <option value="09:00">09:00 AM</option>
+                                                    <option value="09:30">09:30 AM</option>
+                                                    <option value="10:00">10:00 AM</option>
+                                                    <option value="10:30">10:30 AM</option>
+                                                    <option value="11:00">11:00 AM</option>
+                                                    <option value="11:30">11:30 AM</option>
+                                                    <option value="12:00">12:00 PM</option>
+                                                    <option value="12:30">12:30 PM</option>
+                                                    <option value="13:00">01:00 PM</option>
+                                                    <option value="13:30">01:30 PM</option>
+                                                    <option value="14:00">02:00 PM</option>
+                                                    <option value="14:30">02:30 PM</option>
+                                                    <option value="15:00">03:00 PM</option>
+                                                    <option value="15:30">03:30 PM</option>
+                                                    <option value="16:00">04:00 PM</option>
+                                                    <option value="16:30">04:30 PM</option>
+                                                    <option value="17:00">05:00 PM</option>
+                                                    <option value="17:30">05:30 PM</option>
+                                                    <option value="18:00">06:00 PM</option>
+                                                    <option value="18:30">06:30 PM</option>
+                                                    <option value="19:00">07:00 PM</option>
+                                                    <option value="19:30">07:30 PM</option>
+                                                    <option value="20:00">08:00 PM</option>
+                                                    <option value="20:30">08:30 PM</option>
+                                                </select>
+                                            </div>
+                                            <!-- Hidden input to combine date and time for form submission -->
+                                            <input type="hidden" id="scheduled_time" name="scheduled_time">
                                             <div class="form-group">
                                                 <label for="notes">Notes</label>
                                                 <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
@@ -505,6 +539,22 @@
         .text-pink {
             color: #e83e8c !important;
         }
+        
+        /* Hide datetime picker calendar button */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            opacity: 0.5;
+        }
+        input[type="datetime-local"] {
+            cursor: pointer;
+        }
+        
+        /* Styling for date/time inputs */
+        input[type="date"] {
+            cursor: pointer;
+        }
+        select.form-control {
+            cursor: pointer;
+        }
     </style>
 @stop
 
@@ -533,16 +583,58 @@
                 }
             });
             
-            // Set default scheduled time to next 30-minute increment
-            const now = new Date();
-            // Round up to next 30 minutes
-            now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30);
-            // If we're at the exact 30-minute mark, add 30 more minutes for future safety
-            if (now.getTime() <= new Date().getTime()) {
-                now.setMinutes(now.getMinutes() + 30);
+            // Set default scheduled time to today's date without specifying time
+            function setDefaultScheduledTime() {
+                const now = new Date();
+                
+                // Format for date input (YYYY-MM-DD)
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0'); // months are 0-indexed
+                const day = String(now.getDate()).padStart(2, '0');
+                
+                // Set input to today's date
+                const defaultDate = `${year}-${month}-${day}`;
+                $("#scheduled_date").val(defaultDate);
+                
+                console.log("Default date set to:", defaultDate);
             }
-            const defaultDateTime = now.toISOString().slice(0, 16);
-            $("#scheduled_time").val(defaultDateTime);
+            
+            // Function to combine date and time for submission
+            function updateCombinedDateTime() {
+                const date = $("#scheduled_date").val();
+                const time = $("#scheduled_time_slot").val();
+                
+                if (date && time) {
+                    const combinedDateTime = `${date}T${time}`;
+                    $("#scheduled_time").val(combinedDateTime);
+                    console.log("Combined datetime:", combinedDateTime);
+                }
+            }
+            
+            // Set initial default date
+            setDefaultScheduledTime();
+            
+            // Update combined value when either date or time changes
+            $("#scheduled_date, #scheduled_time_slot").on('change', function() {
+                updateCombinedDateTime();
+            });
+            
+            // Add form submit handler to ensure the combined value is set
+            $("form").on('submit', function(e) {
+                updateCombinedDateTime();
+                
+                // Validate that both date and time are selected
+                const date = $("#scheduled_date").val();
+                const time = $("#scheduled_time_slot").val();
+                
+                if (!date || !time) {
+                    e.preventDefault();
+                    alert("Please select both a date and time for the scheduled movement.");
+                    return false;
+                }
+                
+                return true;
+            });
             
             // Maintain active tab after page reload
             $('a[data-toggle="tab"]').on('click', function (e) {
