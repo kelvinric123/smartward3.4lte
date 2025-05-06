@@ -40,16 +40,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="treatment-tab" data-toggle="tab" href="#treatment" role="tab" aria-controls="treatment" aria-selected="false">
-                            <i class="fas fa-clipboard-list"></i> Treatment Plan
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="wardchecks-tab" data-toggle="tab" href="#wardchecks" role="tab" aria-controls="wardchecks" aria-selected="false">
-                            <i class="fas fa-check-square"></i> Ward Checks
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" id="patientview-tab" data-toggle="tab" href="#patientview" role="tab" aria-controls="patientview" aria-selected="false">
                             <i class="fas fa-mobile-alt"></i> Patient View
                         </a>
@@ -347,16 +337,6 @@
                                 </table>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Treatment Plan Tab -->
-                    <div class="tab-pane fade" id="treatment" role="tabpanel" aria-labelledby="treatment-tab">
-                        <p class="text-muted">Treatment plan information will be displayed here.</p>
-                    </div>
-                    
-                    <!-- Ward Checks Tab -->
-                    <div class="tab-pane fade" id="wardchecks" role="tabpanel" aria-labelledby="wardchecks-tab">
-                        <p class="text-muted">Ward checks information will be displayed here.</p>
                     </div>
                     
                     <!-- Patient View Tab -->
