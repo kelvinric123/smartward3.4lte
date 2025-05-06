@@ -121,7 +121,7 @@ class WardController extends Controller
     public function dashboard(Ward $ward)
     {
         // Load the ward with its relationships
-        $ward->load(['hospital', 'specialty', 'beds.consultant', 'beds.nurse', 'beds.patient']);
+        $ward->load(['hospital', 'specialty', 'beds.consultant', 'beds.nurse', 'beds.patient.latestVitalSigns']);
         
         // Get bed status counts for dashboard stats
         $availableBeds = $ward->beds->where('status', 'available')->count();

@@ -74,6 +74,38 @@ class VitalSignController extends Controller
     }
 
     /**
+     * Ward Admin version - Show the form for creating a new vital sign in fullscreen mode.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function createWardAdmin(Request $request)
+    {
+        $patientId = $request->input('patient_id');
+        
+        if (!$patientId) {
+            return redirect()->back()->with('error', 'Patient ID is required');
+        }
+        
+        $patient = Patient::findOrFail($patientId);
+        
+        // Get the ward information for the back button
+        $ward = null;
+        // Find an active admission for this patient
+        $admission = \App\Models\PatientAdmission::where('patient_id', $patientId)
+            ->where('is_active', true)
+            ->first();
+            
+        if ($admission) {
+            $ward = $admission->ward;
+        } else {
+            // If no admission found, redirect back
+            return redirect()->back()->with('error', 'No active admission found for this patient');
+        }
+        
+        return view('admin.vital_signs.create-wardadmin', compact('patient', 'ward'));
+    }
+
+    /**
      * Store a newly created vital sign in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -130,6 +162,63 @@ class VitalSignController extends Controller
         }
         
         return redirect()->route('admin.vital-signs.index', ['patient_id' => $request->patient_id])
+            ->with('success', 'Vital signs recorded successfully!');
+    }
+    
+    /**
+     * Ward Admin version - Store a newly created vital sign and redirect to ward admin pages.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function storeWardAdmin(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'patient_id' => 'required|exists:patients,id',
+            'recorded_at' => 'required|date',
+            'temperature' => 'nullable|numeric|between:30,45',
+            'heart_rate' => 'nullable|numeric|between:0,300',
+            'respiratory_rate' => 'nullable|numeric|between:0,100',
+            'systolic_bp' => 'nullable|numeric|between:0,300',
+            'diastolic_bp' => 'nullable|numeric|between:0,200',
+            'oxygen_saturation' => 'nullable|numeric|between:0,100',
+            'consciousness' => 'nullable|in:A,V,P,U,Alert,Verbal,Pain,Unresponsive',
+            'notes' => 'nullable|string',
+            'ward_id' => 'required|exists:wards,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $data = $request->all();
+        
+        // Set recorder to current user
+        $data['recorded_by'] = Auth::id();
+        
+        // Calculate EWS scores
+        $ewsResults = VitalSign::calculateEWS([
+            'temperature' => $request->temperature,
+            'heart_rate' => $request->heart_rate,
+            'respiratory_rate' => $request->respiratory_rate,
+            'systolic_bp' => $request->systolic_bp,
+            'oxygen_saturation' => $request->oxygen_saturation,
+            'consciousness' => $request->consciousness,
+        ]);
+        
+        // Merge EWS scores
+        $data = array_merge($data, $ewsResults['scores']);
+        $data['total_ews'] = $ewsResults['total_ews'];
+        
+        // Create the vital sign record
+        $vitalSign = VitalSign::create($data);
+        
+        Session::flash('success', 'Vital signs recorded successfully!');
+        
+        // Redirect to ward admin vital signs trend page
+        return redirect()->route('admin.vital-signs.flipbox-trend.direct', ['patientId' => $request->patient_id])
             ->with('success', 'Vital signs recorded successfully!');
     }
 
@@ -254,5 +343,49 @@ class VitalSignController extends Controller
         $vitalSigns = $patient->vitalSigns()->orderBy('recorded_at', 'asc')->get();
         
         return view('admin.vital_signs.flipbox_trend', compact('patient', 'vitalSigns'));
+    }
+    
+    /**
+     * Display a trend chart for a specific patient in ward admin fullscreen mode
+     */
+    public function trendWardAdmin($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $vitalSigns = $patient->vitalSigns()->orderBy('recorded_at', 'asc')->get();
+        
+        // Get the ward information for the back button
+        $ward = null;
+        // Find an active admission for this patient
+        $admission = \App\Models\PatientAdmission::where('patient_id', $patientId)
+            ->where('is_active', true)
+            ->first();
+            
+        if ($admission) {
+            $ward = $admission->ward;
+        }
+        
+        return view('admin.vital_signs.trend-wardadmin', compact('patient', 'vitalSigns', 'ward'));
+    }
+    
+    /**
+     * Display a flipbox style trend chart for a specific patient in ward admin fullscreen mode
+     */
+    public function flipboxTrendWardAdmin($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $vitalSigns = $patient->vitalSigns()->orderBy('recorded_at', 'asc')->get();
+        
+        // Get the ward information for the back button
+        $ward = null;
+        // Find an active admission for this patient
+        $admission = \App\Models\PatientAdmission::where('patient_id', $patientId)
+            ->where('is_active', true)
+            ->first();
+            
+        if ($admission) {
+            $ward = $admission->ward;
+        }
+        
+        return view('admin.vital_signs.flipbox_trend_wardadmin', compact('patient', 'vitalSigns', 'ward'));
     }
 } 

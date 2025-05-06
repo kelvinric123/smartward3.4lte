@@ -45,6 +45,11 @@ class RoleSeeder extends Seeder
                 'slug' => 'nurse',
                 'description' => 'Nurse with patient care access',
             ],
+            [
+                'name' => 'Ward Admin',
+                'slug' => 'ward-admin',
+                'description' => 'Ward Administrator with dashboard view access',
+            ],
         ];
 
         foreach ($roles as $role) {

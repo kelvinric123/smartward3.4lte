@@ -55,8 +55,26 @@
                     <div class="card-body">
                         <div class="row" id="beds-container">
                             @forelse($ward->beds as $bed)
+                                @php
+                                    // Default border color based on bed status
+                                    // Change default color for occupied beds from 'danger' to 'success'
+                                    $borderColor = $bed->status === 'available' ? 'success' : ($bed->status === 'occupied' ? 'success' : ($bed->status === 'reserved' ? 'warning' : 'secondary'));
+                                    
+                                    // Check for abnormal EWS in latest vital signs
+                                    if ($bed->status === 'occupied' && $bed->patient && $bed->patient->latestVitalSigns) {
+                                        $latestEws = $bed->patient->latestVitalSigns->total_ews;
+                                        if ($latestEws >= 7) {
+                                            $borderColor = 'danger'; // Red for critical (EWS >= 7)
+                                        } elseif ($latestEws >= 5) {
+                                            $borderColor = 'warning'; // Orange for high risk (EWS 5-6)
+                                        } elseif ($latestEws >= 3) {
+                                            $borderColor = 'info'; // Blue for medium risk (EWS 3-4)
+                                        }
+                                        // If EWS is normal (0-2), keep the green border
+                                    }
+                                @endphp
                                 <div class="col-lg-4 col-md-6 mb-4 bed-box">
-                                    <div class="card border-{{ $bed->status === 'available' ? 'success' : ($bed->status === 'occupied' ? 'danger' : ($bed->status === 'reserved' ? 'warning' : 'secondary')) }} mb-0">
+                                    <div class="card border-{{ $borderColor }} mb-0">
                                         <div class="card-header bg-light d-flex justify-content-between align-items-center p-2">
                                             <h5 class="m-0">Bed {{ $bed->bed_number }} 
                                                 @if($bed->status === 'occupied')
@@ -68,6 +86,24 @@
                                             </span>
                                         </div>
                                         <div class="card-body p-3">
+                                            @if($bed->patient)
+                                                <p class="mb-1">
+                                                    <i class="fas fa-user"></i> 
+                                                    @php
+                                                        if ($bed->patient->name) {
+                                                            $fullName = $bed->patient->name;
+                                                            $nameLength = mb_strlen($fullName);
+                                                            $halfLength = intval($nameLength / 2);
+                                                            $visiblePart = mb_substr($fullName, 0, $halfLength);
+                                                            $hiddenPart = str_repeat('*', $nameLength - $halfLength);
+                                                            echo $visiblePart . $hiddenPart;
+                                                        } else {
+                                                            echo 'No name';
+                                                        }
+                                                    @endphp
+                                                </p>
+                                            @endif
+                                            
                                             @if($bed->consultant)
                                                 <p class="mb-1">
                                                     <i class="fas fa-user-md"></i> {{ $bed->consultant->name }}
@@ -88,6 +124,29 @@
                                                     @endphp
                                                 </p>
                                                 
+                                                @if($bed->patient && $bed->patient->latestVitalSigns && $bed->patient->latestVitalSigns->total_ews >= 3)
+                                                    <p class="mb-1">
+                                                        <i class="fas fa-heartbeat"></i> 
+                                                        <span class="badge badge-{{ $bed->patient->latestVitalSigns->status_color }}">
+                                                            EWS: {{ $bed->patient->latestVitalSigns->total_ews }}
+                                                        </span>
+                                                    </p>
+                                                @elseif($bed->patient && $bed->patient->latestVitalSigns)
+                                                    <p class="mb-1">
+                                                        <i class="fas fa-heartbeat"></i> 
+                                                        <span class="badge badge-success">
+                                                            EWS: {{ $bed->patient->latestVitalSigns->total_ews }}
+                                                        </span>
+                                                    </p>
+                                                @elseif($bed->patient)
+                                                    <p class="mb-1">
+                                                        <i class="fas fa-heartbeat"></i> 
+                                                        <span class="badge badge-secondary">
+                                                            No vital signs
+                                                        </span>
+                                                    </p>
+                                                @endif
+                                                
                                                 @if(isset($activeMovements[$bed->patient_id]))
                                                     <div class="alert alert-info p-1 mb-2 text-center">
                                                         <small><i class="fas fa-external-link-alt"></i> At {{ $activeMovements[$bed->patient_id]->to_service_location }}</small>
@@ -95,33 +154,22 @@
                                                 @endif
                                                 
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
-                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-list"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
+                                                    <a href="{{ route('admin.vital-signs.flipbox-trend.direct', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
-                                                    @if($bed->id % 7 == 0)
-                                                        <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-pink">
-                                                            <i class="fas fa-heart"></i>
-                                                        </a>
-                                                        <a href="#" class="btn btn-outline-secondary text-info">
-                                                            <i class="fas fa-info-circle"></i>
-                                                        </a>
-                                                        <a href="#" class="btn btn-outline-secondary text-warning">
-                                                            <i class="fas fa-exclamation-triangle"></i>
-                                                        </a>
-                                                    @endif
                                                 </div>
                                             @elseif($bed->status == 'available')
                                                 <p class="mb-1">
                                                     <i class="fas fa-bed"></i> No Patient
                                                 </p>
                                                 <div class="mt-2">
-                                                    <a href="{{ route('admin.beds.wards.admit', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-success btn-block">
+                                                    <a href="{{ route('admin.beds.wards.admit.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-success btn-block">
                                                         <i class="fas fa-user-plus"></i> Admit Patient
                                                     </a>
                                                 </div>
@@ -219,6 +267,22 @@
         
         .border-right {
             border-right: 1px solid #444 !important;
+        }
+        
+        /* Enhanced borders for EWS status */
+        .border-warning {
+            border-width: 3px !important;
+            border-color: #ffc107 !important;
+        }
+        
+        .border-danger {
+            border-width: 3px !important;
+            border-color: #dc3545 !important;
+        }
+        
+        .border-info {
+            border-width: 2px !important;
+            border-color: #17a2b8 !important;
         }
         
         @media (max-width: 768px) {

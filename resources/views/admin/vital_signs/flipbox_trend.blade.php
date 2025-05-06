@@ -272,6 +272,77 @@
         .text-purple {
             color: #6f42c1;
         }
+        
+        /* Transition effect for chart changes */
+        .chart-transition {
+            animation: chartFadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes chartFadeIn {
+            0% { opacity: 0.7; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Add visual cues for scrolling */
+        .chart-card {
+            position: relative;
+            will-change: transform;
+            touch-action: pan-y;
+        }
+        
+        .chart-card::after {
+            content: "Drag to view more";
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #6c757d;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 4px;
+            opacity: 0.8;
+        }
+        
+        /* Cursor styling to indicate scrollable content */
+        .container-fluid {
+            cursor: grab;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
+        
+        .container-fluid.dragging {
+            cursor: grabbing;
+            user-select: none;
+        }
+        
+        /* Drag indicators */
+        .drag-indicator {
+            position: absolute;
+            top: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .drag-indicator.left {
+            left: 10px;
+        }
+        
+        .drag-indicator.right {
+            right: 10px;
+        }
+        
+        .container-fluid.dragging .drag-indicator {
+            opacity: 1;
+        }
     </style>
 @stop
 
@@ -642,14 +713,42 @@
             const chartCards = document.querySelectorAll('.chart-card');
             const totalCharts = chartCards.length;
             let currentChartIndex = 0;
+            let scrollTimeout = null;
+            let isSwitchingChart = false;
+            
+            // Variables for drag scrolling
+            let isDragging = false;
+            let startDragX = 0;
+            let dragThreshold = 100; // Minimum drag distance to trigger chart change
+            let dragStartTime = 0;
+            let dragEndTime = 0;
+            let lastDragVelocity = 0;
 
-            function showChart(index) {
+            function showChart(index, transition = true) {
+                // Prevent rapid chart switching
+                if (isSwitchingChart) return;
+                
+                isSwitchingChart = true;
+                
                 // Hide all charts
                 chartCards.forEach(card => card.style.display = 'none');
                 
                 // Show the current chart
                 chartCards[index].style.display = 'block';
                 currentChartIndex = index;
+                
+                // Add a visual indicator for the chart change
+                if (transition) {
+                    const activeCard = chartCards[index];
+                    activeCard.classList.add('chart-transition');
+                    
+                    setTimeout(() => {
+                        activeCard.classList.remove('chart-transition');
+                        isSwitchingChart = false;
+                    }, 300);
+                } else {
+                    isSwitchingChart = false;
+                }
             }
 
             function nextChart() {
@@ -680,20 +779,211 @@
                 }
             });
 
-            // Touch swipe navigation
-            const container = document.querySelector('.container-fluid');
-            const hammer = new Hammer(container);
-            
-            hammer.on('swipeleft', function() {
-                nextChart();
+            // Mouse wheel scrolling for chart navigation
+            document.addEventListener('wheel', function(e) {
+                // Clear any existing timeout
+                if (scrollTimeout) {
+                    clearTimeout(scrollTimeout);
+                }
+                
+                // Set a timeout to prevent too many chart changes
+                scrollTimeout = setTimeout(() => {
+                    // deltaY > 0 means scrolling down/right
+                    if (e.deltaY > 50) {
+                        nextChart();
+                    } 
+                    // deltaY < 0 means scrolling up/left
+                    else if (e.deltaY < -50) {
+                        prevChart();
+                    }
+                }, 100);
             });
             
-            hammer.on('swiperight', function() {
-                prevChart();
+            // Mouse drag implementation
+            const container = document.querySelector('.container-fluid');
+            
+            // Mouse events for desktop drag
+            container.addEventListener('mousedown', function(e) {
+                startDragX = e.clientX;
+                isDragging = true;
+                dragStartTime = performance.now();
+                
+                // Change cursor to indicate dragging
+                container.classList.add('dragging');
+                
+                // Start displaying drag indicator
+                updateDragIndicator(0);
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                // Calculate drag distance
+                const dragDistance = e.clientX - startDragX;
+                
+                // Update drag indicator
+                updateDragIndicator(dragDistance);
+                
+                // Prevent default behavior to avoid text selection
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mouseup', function(e) {
+                if (!isDragging) return;
+                
+                // Calculate drag distance and velocity
+                const dragDistance = e.clientX - startDragX;
+                dragEndTime = performance.now();
+                const dragDuration = dragEndTime - dragStartTime;
+                lastDragVelocity = Math.abs(dragDistance) / dragDuration;
+                
+                // Check if drag was significant enough
+                if (Math.abs(dragDistance) > dragThreshold || lastDragVelocity > 0.5) {
+                    if (dragDistance > 0) {
+                        prevChart();
+                    } else {
+                        nextChart();
+                    }
+                } else {
+                    // If the drag wasn't enough, just reset the indicator
+                    updateDragIndicator(0, true);
+                }
+                
+                // Reset drag state
+                isDragging = false;
+                container.classList.remove('dragging');
+            });
+            
+            // Cancel drag on mouse leave
+            document.addEventListener('mouseleave', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    container.classList.remove('dragging');
+                    updateDragIndicator(0, true);
+                }
+            });
+            
+            // Touch events for mobile drag (better than Hammer.js for this use case)
+            container.addEventListener('touchstart', function(e) {
+                startDragX = e.touches[0].clientX;
+                isDragging = true;
+                dragStartTime = performance.now();
+                
+                // Start displaying drag indicator
+                updateDragIndicator(0);
+            }, { passive: false });
+            
+            container.addEventListener('touchmove', function(e) {
+                if (!isDragging) return;
+                
+                // Calculate drag distance
+                const dragDistance = e.touches[0].clientX - startDragX;
+                
+                // Update drag indicator
+                updateDragIndicator(dragDistance);
+                
+                // Prevent default scrolling behavior
+                e.preventDefault();
+            }, { passive: false });
+            
+            container.addEventListener('touchend', function(e) {
+                if (!isDragging) return;
+                
+                // Calculate drag distance and velocity
+                const dragDistance = e.changedTouches[0].clientX - startDragX;
+                dragEndTime = performance.now();
+                const dragDuration = dragEndTime - dragStartTime;
+                lastDragVelocity = Math.abs(dragDistance) / dragDuration;
+                
+                // Check if drag was significant enough
+                if (Math.abs(dragDistance) > dragThreshold || lastDragVelocity > 0.5) {
+                    if (dragDistance > 0) {
+                        prevChart();
+                    } else {
+                        nextChart();
+                    }
+                } else {
+                    // If the drag wasn't enough, just reset the indicator
+                    updateDragIndicator(0, true);
+                }
+                
+                // Reset drag state
+                isDragging = false;
+            }, { passive: false });
+            
+            // Function to update the drag indicator
+            function updateDragIndicator(dragDistance, reset = false) {
+                // Get current visible chart
+                const currentCard = chartCards[currentChartIndex];
+                
+                // If reset, return to normal position without animation
+                if (reset) {
+                    currentCard.style.transform = '';
+                    currentCard.style.transition = 'transform 0.3s ease-out';
+                    setTimeout(() => {
+                        currentCard.style.transition = '';
+                    }, 300);
+                    return;
+                }
+                
+                // Limit the drag effect (diminishing returns for long drags)
+                const scaledDistance = Math.sign(dragDistance) * Math.min(Math.abs(dragDistance), 150);
+                
+                // Apply transform to indicate dragging direction
+                currentCard.style.transform = `translateX(${scaledDistance}px)`;
+                
+                // Remove any transition during active dragging
+                currentCard.style.transition = 'none';
+                
+                // Show preview of next/prev chart at edges
+                if (Math.abs(dragDistance) > 50) {
+                    // Determine which chart to preview
+                    let previewIndex;
+                    if (dragDistance > 0) {
+                        // Dragging right - show previous chart
+                        previewIndex = (currentChartIndex - 1 + totalCharts) % totalCharts;
+                    } else {
+                        // Dragging left - show next chart
+                        previewIndex = (currentChartIndex + 1) % totalCharts;
+                    }
+                    
+                    // Position the preview chart
+                    const previewCard = chartCards[previewIndex];
+                    previewCard.style.display = 'block';
+                    previewCard.style.opacity = '0.5';
+                    previewCard.style.position = 'absolute';
+                    previewCard.style.top = currentCard.offsetTop + 'px';
+                    previewCard.style.width = currentCard.offsetWidth + 'px';
+                    previewCard.style.zIndex = '-1';
+                    
+                    if (dragDistance > 0) {
+                        // Previous chart to the left
+                        previewCard.style.transform = `translateX(${-currentCard.offsetWidth + scaledDistance}px)`;
+                    } else {
+                        // Next chart to the right
+                        previewCard.style.transform = `translateX(${currentCard.offsetWidth + scaledDistance}px)`;
+                    }
+                }
+            }
+
+            // Keep simplified Hammer touch support for compatibility
+            const hammer = new Hammer(container);
+            hammer.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL });
+            
+            hammer.on('swipeleft', function(e) {
+                if (e.distance > 50 && !isDragging) {
+                    nextChart();
+                }
+            });
+            
+            hammer.on('swiperight', function(e) {
+                if (e.distance > 50 && !isDragging) {
+                    prevChart();
+                }
             });
 
             // Initialize with the first chart
-            showChart(0);
+            showChart(0, false);
         @else
             document.getElementById('bpChart').innerHTML = '<div class="text-center p-5 text-muted">No data available</div>';
         @endif
