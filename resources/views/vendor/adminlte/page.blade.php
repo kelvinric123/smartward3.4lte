@@ -5,19 +5,6 @@
 
 @section('adminlte_css')
     <link rel="stylesheet" href="{{ asset('css/admin_custom.css') }}">
-    @if(isset($fullscreen_mode) && $fullscreen_mode)
-    <style>
-        .main-sidebar {
-            display: none !important;
-        }
-        .content-wrapper {
-            margin-left: 0 !important;
-        }
-        .main-header {
-            margin-left: 0 !important;
-        }
-    </style>
-    @endif
     @stack('css')
     @yield('css')
 @stop
@@ -42,7 +29,7 @@
         @endif
 
         {{-- Left Main Sidebar --}}
-        @if(!$layoutHelper->isLayoutTopnavEnabled() && !(isset($fullscreen_mode) && $fullscreen_mode))
+        @if(!$layoutHelper->isLayoutTopnavEnabled())
             @include('adminlte::partials.sidebar.left-sidebar')
         @endif
 

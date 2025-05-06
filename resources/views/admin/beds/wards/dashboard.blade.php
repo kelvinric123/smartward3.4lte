@@ -154,13 +154,13 @@
                                                 @endif
                                                 
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
-                                                    <a href="{{ route('admin.beds.wards.patient.details.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-list"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.vital-signs.flipbox-trend.direct', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
+                                                    <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.beds.wards.patient.details.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
                                                 </div>
@@ -169,7 +169,7 @@
                                                     <i class="fas fa-bed"></i> No Patient
                                                 </p>
                                                 <div class="mt-2">
-                                                    <a href="{{ route('admin.beds.wards.admit.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-success btn-block">
+                                                    <a href="{{ route('admin.beds.wards.admit', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-success btn-block">
                                                         <i class="fas fa-user-plus"></i> Admit Patient
                                                     </a>
                                                 </div>

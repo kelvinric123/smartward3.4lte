@@ -11,7 +11,9 @@
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.beds.wards.dashboard.direct', ['ward' => $ward->id]) }}">Ward Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.beds.wards.index') }}">Wards</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.beds.wards.dashboard', $ward) }}">Ward Dashboard</a></li>
                     <li class="breadcrumb-item active">Admit Patient</li>
                 </ol>
             </div>
@@ -38,7 +40,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('admin.beds.wards.admit.store.direct', ['ward' => $ward, 'bedId' => $bed->id]) }}" method="POST">
+                        <form action="{{ route('admin.beds.wards.admit.store', ['ward' => $ward, 'bedId' => $bed->id]) }}" method="POST">
                             @csrf
                             <input type="hidden" name="ward_id" value="{{ $ward->id }}">
                             <input type="hidden" name="bed_id" value="{{ $bed->id }}">
@@ -129,7 +131,7 @@
 
                             <div class="form-group">
                                 <button type="submit" class="btn btn-primary">Admit Patient</button>
-                                <a href="{{ route('admin.beds.wards.dashboard.direct', ['ward' => $ward->id]) }}" class="btn btn-default">Cancel</a>
+                                <a href="{{ route('admin.beds.wards.dashboard', $ward) }}" class="btn btn-default">Cancel</a>
                             </div>
                         </form>
                     </div>

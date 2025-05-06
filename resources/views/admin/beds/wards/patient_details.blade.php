@@ -5,7 +5,7 @@
 @section('content_header')
     <div class="container-fluid bg-dark text-white py-2">
         <div class="d-flex justify-content-between align-items-center">
-            <a href="{{ route('admin.beds.wards.dashboard.direct', $ward) }}" class="btn btn-outline-light">
+            <a href="{{ route('admin.beds.wards.dashboard', $ward) }}" class="btn btn-outline-light">
                 <i class="fas fa-arrow-left"></i> Back to Ward
             </a>
             <h1 class="m-0">Patient Details</h1>
@@ -142,29 +142,29 @@
                             </div>
                             <div class="col-md-6">
                                 <label>Risk Factors</label>
-                                <form id="riskFactorsForm" action="{{ route('admin.beds.wards.patient.updateRiskFactors.direct', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
+                                <form id="riskFactorsForm" action="{{ route('admin.beds.wards.patient.updateRiskFactors', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
                                     @csrf
                                     <div class="form-group">
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="dnr" name="risk_factors[]" value="dnr" {{ isset($admission->risk_factors) && in_array('dnr', $admission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <input type="checkbox" class="custom-control-input" id="dnr" name="risk_factors[]" value="dnr" {{ isset($activeAdmission->risk_factors) && in_array('dnr', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
                                             <label class="custom-control-label" for="dnr">
                                                 <i class="fas fa-heart text-danger"></i> DNR
                                             </label>
                                         </div>
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="fallrisk" name="risk_factors[]" value="fallrisk" {{ isset($admission->risk_factors) && in_array('fallrisk', $admission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <input type="checkbox" class="custom-control-input" id="fallrisk" name="risk_factors[]" value="fallrisk" {{ isset($activeAdmission->risk_factors) && in_array('fallrisk', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
                                             <label class="custom-control-label" for="fallrisk">
                                                 <i class="fas fa-exclamation-triangle text-warning"></i> Fall Risk
                                             </label>
                                         </div>
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="intubated" name="risk_factors[]" value="intubated" {{ isset($admission->risk_factors) && in_array('intubated', $admission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <input type="checkbox" class="custom-control-input" id="intubated" name="risk_factors[]" value="intubated" {{ isset($activeAdmission->risk_factors) && in_array('intubated', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
                                             <label class="custom-control-label" for="intubated">
                                                 <i class="fas fa-lungs text-primary"></i> Intubated
                                             </label>
                                         </div>
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="isolation" name="risk_factors[]" value="isolation" {{ isset($admission->risk_factors) && in_array('isolation', $admission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <input type="checkbox" class="custom-control-input" id="isolation" name="risk_factors[]" value="isolation" {{ isset($activeAdmission->risk_factors) && in_array('isolation', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
                                             <label class="custom-control-label" for="isolation">
                                                 <i class="fas fa-shield-virus text-info"></i> Isolation
                                             </label>
@@ -193,8 +193,8 @@
                                         </p>
                                         <p>
                                             <i class="fas fa-clock"></i> <strong>Since:</strong> 
-                                            @if($admission)
-                                                {{ $admission->formatted_admission_date }}
+                                            @if($activeAdmission)
+                                                {{ $activeAdmission->formatted_admission_date }}
                                             @else
                                                 N/A
                                             @endif
@@ -209,7 +209,7 @@
                                         <h5 class="m-0">Schedule Movement</h5>
                                     </div>
                                     <div class="card-body">
-                                        <form action="{{ route('admin.beds.wards.patient.scheduleMovement.direct', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
+                                        <form action="{{ route('admin.beds.wards.patient.scheduleMovement', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
                                             @csrf
                                             <div class="form-group">
                                                 <label for="to_service_location">Service Location</label>
@@ -307,18 +307,18 @@
                                                 <td>{{ $movement->notes ?? 'No notes' }}</td>
                                                 <td>
                                                     @if($movement->status == 'scheduled')
-                                                        <form class="d-inline" action="{{ route('wardadmin.movements.send.direct', ['movement' => $movement->id]) }}" method="POST">
+                                                        <form class="d-inline" action="{{ route('movements.send', ['movement' => $movement->id]) }}" method="POST">
                                                             @csrf
                                                             @method('PUT')
                                                             <button type="submit" class="btn btn-sm btn-primary">Send</button>
                                                         </form>
-                                                        <form class="d-inline" action="{{ route('wardadmin.movements.cancel.direct', ['movement' => $movement->id]) }}" method="POST">
+                                                        <form class="d-inline" action="{{ route('movements.cancel', ['movement' => $movement->id]) }}" method="POST">
                                                             @csrf
                                                             @method('PUT')
                                                             <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
                                                         </form>
                                                     @elseif($movement->status == 'sent')
-                                                        <form class="d-inline" action="{{ route('wardadmin.movements.return.direct', ['movement' => $movement->id]) }}" method="POST">
+                                                        <form class="d-inline" action="{{ route('movements.return', ['movement' => $movement->id]) }}" method="POST">
                                                             @csrf
                                                             @method('PUT')
                                                             <button type="submit" class="btn btn-sm btn-success">Return</button>
@@ -350,7 +350,7 @@
                             <i class="fas fa-info-circle"></i> Use this form to refer the patient to other consultants.
                         </div>
                         
-                        <form action="{{ route('admin.patients.referral.store.direct', $patient->id) }}" method="POST">
+                        <form action="{{ route('admin.patients.referral.store', $patient->id) }}" method="POST">
                             @csrf
                             <div class="row">
                                 <div class="col-md-6">
@@ -603,7 +603,7 @@
                             <i class="fas fa-info-circle"></i> Use this form to discharge the patient from the ward.
                         </div>
                         
-                        <form action="{{ route('admin.patients.discharge.store.direct', $patient->id) }}" method="POST">
+                        <form action="{{ route('admin.patients.discharge.store', $patient->id) }}" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="discharge_date">Discharge Date</label>
