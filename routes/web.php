@@ -73,9 +73,15 @@ Route::prefix('admin')->group(function () {
     });
     
     // Vital Signs Routes
-    Route::resource('vital-signs', VitalSignController::class)->names('admin.vital-signs');
-    Route::get('vital-signs/patient/{patientId}/trend', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
-    Route::get('vital-signs/patient/{patientId}/flipbox-trend', [VitalSignController::class, 'flipboxTrend'])->name('admin.vital-signs.flipbox-trend');
+    Route::get('/vital-signs', [VitalSignController::class, 'index'])->name('admin.vital-signs.index');
+    Route::get('/vital-signs/create', [VitalSignController::class, 'create'])->name('admin.vital-signs.create');
+    Route::post('/vital-signs', [VitalSignController::class, 'store'])->name('admin.vital-signs.store');
+    Route::get('/vital-signs/{vitalSign}/edit', [VitalSignController::class, 'edit'])->name('admin.vital-signs.edit');
+    Route::put('/vital-signs/{vitalSign}', [VitalSignController::class, 'update'])->name('admin.vital-signs.update');
+    Route::delete('/vital-signs/{vitalSign}', [VitalSignController::class, 'destroy'])->name('admin.vital-signs.destroy');
+    Route::get('/vital-signs/trend/{patientId}', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
+    Route::get('/vital-signs/flipbox-trend/{patientId}', [VitalSignController::class, 'flipboxTrend'])->name('admin.vital-signs.flipbox-trend');
+    Route::get('/vital-signs/iframe-trend/{patientId}', [VitalSignController::class, 'iframeTrend'])->name('admin.vital-signs.iframe-trend');
     
     // Bed Management Routes
     Route::prefix('beds')->name('admin.beds.')->group(function () {

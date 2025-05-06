@@ -172,7 +172,7 @@
                                                     <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-list"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary text-danger">
+                                                    <a href="{{ route('admin.vital-signs.iframe-trend', $bed->patient->id) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary text-danger btn-vital-signs" data-patient-name="{{ $bed->patient->name }}">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
                                                     <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary">
@@ -256,6 +256,23 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vital Signs Modal -->
+    <div class="modal fade" id="vitalSignsModal" tabindex="-1" role="dialog" aria-labelledby="vitalSignsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vitalSignsModalLabel">Patient Vital Signs</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="vitalSignsFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
                 </div>
             </div>
         </div>
@@ -358,6 +375,22 @@
         body.fullscreen-mode #beds-container {
             padding-bottom: 100px; /* Ensure content doesn't get hidden under the fixed footer */
         }
+        
+        /* Modal iframe styles */
+        #vitalSignsModal .modal-content {
+            height: 90vh;
+        }
+        
+        #vitalSignsModal .modal-body {
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #vitalSignsFrame {
+            width: 100%;
+            height: calc(90vh - 60px); /* Subtract header height */
+            border: none;
+        }
     </style>
 @stop
 
@@ -411,6 +444,20 @@
                 body.addClass('fullscreen-mode');
                 fullscreenToggle.find('i').removeClass('fa-expand').addClass('fa-compress');
             }
+            
+            // Vital Signs Modal functionality
+            $('.btn-vital-signs').on('click', function(e) {
+                e.preventDefault();
+                const url = $(this).attr('href');
+                $('#vitalSignsFrame').attr('src', url);
+                $('#vitalSignsModalLabel').text('Vital Signs: ' + $(this).data('patient-name'));
+                $('#vitalSignsModal').modal('show');
+            });
+            
+            // Clear iframe when modal is closed to prevent memory issues
+            $('#vitalSignsModal').on('hidden.bs.modal', function () {
+                $('#vitalSignsFrame').attr('src', '');
+            });
         });
     </script>
 @stop 

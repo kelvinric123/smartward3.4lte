@@ -251,8 +251,42 @@ class VitalSignController extends Controller
     public function flipboxTrend($patientId)
     {
         $patient = Patient::findOrFail($patientId);
-        $vitalSigns = $patient->vitalSigns()->orderBy('recorded_at', 'asc')->get();
+        $vitalSigns = $patient->vitalSigns()
+                             ->orderBy('recorded_at', 'asc')
+                             ->get();
+                             
+        foreach ($vitalSigns as $vitalSign) {
+            $vitalSign->formatted_recorded_at = $vitalSign->recorded_at->format('M j, Y H:i');
+        }
         
         return view('admin.vital_signs.flipbox_trend', compact('patient', 'vitalSigns'));
+    }
+
+    /**
+     * Display the specified vital sign trend in iframe.
+     *
+     * @param  int  $patientId
+     * @return \Illuminate\Http\Response
+     */
+    public function iframeTrend($patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        
+        $query = $patient->vitalSigns()->orderBy('recorded_at', 'asc');
+        
+        // Handle date filtering
+        if (request()->has('start') && request()->has('end')) {
+            $startDate = request('start');
+            $endDate = request('end') . ' 23:59:59';
+            $query->whereBetween('recorded_at', [$startDate, $endDate]);
+        }
+        
+        $vitalSigns = $query->get();
+        
+        foreach ($vitalSigns as $vitalSign) {
+            $vitalSign->formatted_recorded_at = $vitalSign->recorded_at->format('M j, Y H:i');
+        }
+        
+        return view('admin.vital_signs.iframe_trend', compact('patient', 'vitalSigns'));
     }
 } 
