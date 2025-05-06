@@ -97,6 +97,7 @@ Route::prefix('admin')->group(function () {
         
         // Patient Details in Ward
         Route::get('wards/{ward}/bed/{bedId}/patient', [App\Http\Controllers\Admin\WardController::class, 'patientDetails'])->name('wards.patient.details');
+        Route::get('wards/{ward}/bed/{bedId}/patient/iframe', [App\Http\Controllers\Admin\WardController::class, 'iframePatientDetails'])->name('wards.patient.iframe');
         Route::post('wards/{ward}/bed/{bedId}/risk-factors', [App\Http\Controllers\Admin\WardController::class, 'updateRiskFactors'])->name('wards.patient.updateRiskFactors');
         
         // Patient Movement

@@ -169,13 +169,13 @@
                                                 @endif
                                                 
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
-                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.iframe', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary btn-patient-details" data-patient-name="{{ $bed->patient->name }}">
                                                         <i class="fas fa-list"></i>
                                                     </a>
                                                     <a href="{{ route('admin.vital-signs.iframe-trend', $bed->patient->id) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary text-danger btn-vital-signs" data-patient-name="{{ $bed->patient->name }}">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.iframe', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary btn-patient-details" data-patient-name="{{ $bed->patient->name }}">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
                                                 </div>
@@ -273,6 +273,23 @@
                 </div>
                 <div class="modal-body p-0">
                     <iframe id="vitalSignsFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Patient Details Modal -->
+    <div class="modal fade" id="patientDetailsModal" tabindex="-1" role="dialog" aria-labelledby="patientDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="patientDetailsModalLabel">Patient Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="patientDetailsFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
                 </div>
             </div>
         </div>
@@ -457,6 +474,20 @@
             // Clear iframe when modal is closed to prevent memory issues
             $('#vitalSignsModal').on('hidden.bs.modal', function () {
                 $('#vitalSignsFrame').attr('src', '');
+            });
+            
+            // Patient Details Modal functionality
+            $('.btn-patient-details').on('click', function(e) {
+                e.preventDefault();
+                const url = $(this).attr('href');
+                $('#patientDetailsFrame').attr('src', url);
+                $('#patientDetailsModalLabel').text('Patient Details: ' + $(this).data('patient-name'));
+                $('#patientDetailsModal').modal('show');
+            });
+            
+            // Clear iframe when modal is closed to prevent memory issues
+            $('#patientDetailsModal').on('hidden.bs.modal', function () {
+                $('#patientDetailsFrame').attr('src', '');
             });
         });
     </script>

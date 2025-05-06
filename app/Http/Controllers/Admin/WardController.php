@@ -351,4 +351,53 @@ class WardController extends Controller
         return redirect($redirectRoute)
             ->with('success', 'Risk factors updated successfully.');
     }
+
+    /**
+     * Display patient details in iframe
+     */
+    public function iframePatientDetails(Ward $ward, $bedId)
+    {
+        try {
+            // Find the bed within this ward
+            $bed = $ward->beds()->findOrFail($bedId);
+            
+            // Check if the bed has a patient
+            if (!$bed->patient_id) {
+                return response()->view('layouts.iframe_error', [
+                    'message' => 'This bed does not have a patient assigned.'
+                ]);
+            }
+            
+            // Get the patient
+            $patient = $bed->patient;
+            
+            // Get the active admission
+            $activeAdmission = $patient->activeAdmission;
+            
+            // Get patient movements (scheduled and past)
+            $patientMovements = \App\Models\PatientMovement::where('patient_id', $patient->id)
+                ->orderBy('scheduled_time', 'desc')
+                ->get();
+                
+            // Get all service locations for the dropdown
+            $serviceLocations = ['Radiology', 'Laboratory', 'Physiotherapy', 'Pharmacy', 'Dialysis', 'Operating Theatre'];
+            
+            // Load patient referrals
+            $patientReferrals = $patient->referrals;
+            
+            return view('admin.beds.wards.iframe_patient_details', compact(
+                'ward', 
+                'bed', 
+                'patient', 
+                'activeAdmission', 
+                'patientMovements',
+                'serviceLocations',
+                'patientReferrals'
+            ));
+        } catch (\Exception $e) {
+            return response()->view('layouts.iframe_error', [
+                'message' => 'An error occurred while loading patient details: ' . $e->getMessage()
+            ]);
+        }
+    }
 }
