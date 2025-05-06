@@ -71,7 +71,10 @@ class WardController extends Controller
      */
     public function show(Ward $ward)
     {
-        return view('admin.beds.wards.show', compact('ward'));
+        // Get all active wards for the ward selector dropdown
+        $allWards = Ward::where('is_active', true)->get();
+        
+        return view('admin.beds.wards.show', compact('ward', 'allWards'));
     }
 
     /**
@@ -123,6 +126,9 @@ class WardController extends Controller
         // Load the ward with its relationships
         $ward->load(['hospital', 'specialty', 'beds.consultant', 'beds.nurse', 'beds.patient.latestVitalSigns']);
         
+        // Get all active wards for the ward selector dropdown
+        $allWards = Ward::where('is_active', true)->get();
+        
         // Get bed status counts for dashboard stats
         $availableBeds = $ward->beds->where('status', 'available')->count();
         $totalBeds = $ward->beds->count();
@@ -148,6 +154,7 @@ class WardController extends Controller
         
         return view('admin.beds.wards.dashboard', compact(
             'ward', 
+            'allWards',
             'availableBeds', 
             'nursesOnDuty',
             'occupiedBeds',
@@ -223,7 +230,13 @@ class WardController extends Controller
             'is_active' => true,
         ]);
         
-        return redirect()->route('admin.beds.wards.dashboard', $ward)
+        // Preserve fullscreen mode if it was enabled
+        $redirectRoute = route('admin.beds.wards.dashboard', $ward);
+        if ($request->has('fullscreen') && $request->fullscreen == 'true') {
+            $redirectRoute .= '?fullscreen=true';
+        }
+        
+        return redirect($redirectRoute)
             ->with('success', 'Patient admitted successfully');
     }
 
@@ -238,7 +251,13 @@ class WardController extends Controller
             
             // Check if the bed has a patient
             if (!$bed->patient_id) {
-                return redirect()->route('admin.beds.wards.dashboard', $ward)
+                // Preserve fullscreen mode if it was enabled
+                $redirectRoute = route('admin.beds.wards.dashboard', $ward);
+                if (request()->has('fullscreen') && request()->fullscreen == 'true') {
+                    $redirectRoute .= '?fullscreen=true';
+                }
+                
+                return redirect($redirectRoute)
                     ->with('error', 'This bed does not have a patient assigned.');
             }
             
@@ -269,7 +288,13 @@ class WardController extends Controller
                 'patientReferrals'
             ));
         } catch (\Exception $e) {
-            return redirect()->route('admin.beds.wards.dashboard', $ward)
+            // Preserve fullscreen mode if it was enabled
+            $redirectRoute = route('admin.beds.wards.dashboard', $ward);
+            if (request()->has('fullscreen') && request()->fullscreen == 'true') {
+                $redirectRoute .= '?fullscreen=true';
+            }
+            
+            return redirect($redirectRoute)
                 ->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
@@ -284,7 +309,13 @@ class WardController extends Controller
         
         // Check if the bed has a patient
         if (!$bed->patient_id) {
-            return redirect()->route('admin.beds.wards.dashboard', $ward)
+            // Preserve fullscreen mode if it was enabled
+            $redirectRoute = route('admin.beds.wards.dashboard', $ward);
+            if ($request->has('fullscreen') && $request->fullscreen == 'true') {
+                $redirectRoute .= '?fullscreen=true';
+            }
+            
+            return redirect($redirectRoute)
                 ->with('error', 'This bed does not have a patient assigned.');
         }
         
@@ -295,7 +326,13 @@ class WardController extends Controller
         $activeAdmission = $patient->activeAdmission;
         
         if (!$activeAdmission) {
-            return redirect()->route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id])
+            // Preserve fullscreen mode if it was enabled
+            $redirectRoute = route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id]);
+            if ($request->has('fullscreen') && $request->fullscreen == 'true') {
+                $redirectRoute .= '?fullscreen=true';
+            }
+            
+            return redirect($redirectRoute)
                 ->with('error', 'No active admission found for this patient.');
         }
         
@@ -305,7 +342,13 @@ class WardController extends Controller
             'risk_factors' => $riskFactors,
         ]);
         
-        return redirect()->route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id])
+        // Preserve fullscreen mode if it was enabled
+        $redirectRoute = route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id]);
+        if ($request->has('fullscreen') && $request->fullscreen == 'true') {
+            $redirectRoute .= '?fullscreen=true';
+        }
+        
+        return redirect($redirectRoute)
             ->with('success', 'Risk factors updated successfully.');
     }
 }

@@ -6,7 +6,22 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1>{{ $ward->name }}</h1>
+                <div class="d-flex align-items-center">
+                    <h1 class="mr-2">{{ $ward->name }}</h1>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="wardViewDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-exchange-alt"></i> Change Ward
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="wardViewDropdown">
+                            @foreach($allWards as $availableWard)
+                                <a class="dropdown-item {{ $ward->id == $availableWard->id ? 'active' : '' }}" 
+                                   href="{{ route('admin.beds.wards.dashboard', $availableWard) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}">
+                                    {{ $availableWard->name }} <small class="text-muted">({{ $availableWard->specialty->name }})</small>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
                 <span class="badge badge-secondary">{{ $ward->specialty->name }} Ward</span>
             </div>
             <div class="col-sm-6">
@@ -43,7 +58,7 @@
                         <div class="d-flex justify-content-between">
                             <h3 class="card-title">Beds Layout</h3>
                             <div class="btn-group">
-                                <a href="{{ route('admin.beds.wards.show', $ward) }}" class="btn btn-default">
+                                <a href="{{ route('admin.beds.wards.show', $ward) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-default">
                                     <i class="fas fa-info-circle"></i> Ward Details
                                 </a>
                                 <a href="{{ route('admin.beds.beds.create') }}" class="btn btn-primary">
@@ -154,13 +169,13 @@
                                                 @endif
                                                 
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
-                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-list"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}" class="btn btn-outline-secondary text-danger">
+                                                    <a href="{{ route('admin.vital-signs.flipbox-trend', $bed->patient->id) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary text-danger">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-outline-secondary">
+                                                    <a href="{{ route('admin.beds.wards.patient.details', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary">
                                                         <i class="fas fa-chart-line"></i>
                                                     </a>
                                                 </div>
@@ -169,7 +184,7 @@
                                                     <i class="fas fa-bed"></i> No Patient
                                                 </p>
                                                 <div class="mt-2">
-                                                    <a href="{{ route('admin.beds.wards.admit', ['ward' => $ward, 'bedId' => $bed->id]) }}" class="btn btn-success btn-block">
+                                                    <a href="{{ route('admin.beds.wards.admit', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-success btn-block">
                                                         <i class="fas fa-user-plus"></i> Admit Patient
                                                     </a>
                                                 </div>
@@ -204,10 +219,10 @@
         </div>
         
         <!-- Dashboard Footer with Stats -->
-        <div class="row">
+        <div class="row stats-footer-row">
             <div class="col-12">
-                <div class="card bg-dark">
-                    <div class="card-body">
+                <div class="card bg-dark mb-0">
+                    <div class="card-body py-2">
                         <div class="row">
                             <div class="col-md-2 col-sm-4 col-6 text-center border-right">
                                 <div class="text-muted mb-1">AVAILABLE BEDS</div>
@@ -241,17 +256,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="mb-3 text-right">
-                    <a href="{{ route('admin.beds.wards.index') }}" class="btn btn-default">
-                        <i class="fas fa-arrow-left"></i> Back to Wards
-                    </a>
-                    <a href="{{ route('admin.beds.beds.index') }}" class="btn btn-info">
-                        <i class="fas fa-list"></i> View All Beds
-                    </a>
-                    <button class="btn btn-success">
-                        <i class="fas fa-print"></i> Print Ward Report
-                    </button>
                 </div>
             </div>
         </div>
@@ -320,6 +324,39 @@
         body.fullscreen-mode .bed-box {
             flex: 0 0 20%;
             max-width: 20%;
+        }
+        
+        /* Sticky footer styles */
+        body.fullscreen-mode {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        body.fullscreen-mode .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.fullscreen-mode .container-fluid {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.fullscreen-mode .stats-footer-row {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            z-index: 1000;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        body.fullscreen-mode #beds-container {
+            padding-bottom: 100px; /* Ensure content doesn't get hidden under the fixed footer */
         }
     </style>
 @stop
