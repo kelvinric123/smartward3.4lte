@@ -55,8 +55,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="referrals-tab" data-toggle="tab" href="#referrals" role="tab" aria-controls="referrals" aria-selected="false">
-                            <i class="fas fa-user-md"></i> Referrals
+                        <a class="nav-link" id="referral-tab" data-toggle="tab" href="#referral" role="tab" aria-controls="referral" aria-selected="false">
+                            <i class="fas fa-user-md"></i> Referral
                         </a>
                     </li>
                     <li class="nav-item">
@@ -364,115 +364,256 @@
                         <p class="text-muted">Patient view information will be displayed here.</p>
                     </div>
                     
-                    <!-- Referrals Tab -->
-                    <div class="tab-pane fade" id="referrals" role="tabpanel" aria-labelledby="referrals-tab">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card mb-4">
-                                    <div class="card-header bg-primary text-white">
-                                        <h5 class="m-0">Create Referral</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form action="{{ route('admin.beds.wards.patient.createReferral', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
-                                            @csrf
-                                            <div class="form-group">
-                                                <label for="hospital_id">Hospital</label>
-                                                <select class="form-control" id="hospital_id" name="hospital_id" required>
-                                                    <option value="{{ $ward->hospital->id }}" selected>{{ $ward->hospital->name }}</option>
-                                                    @foreach(\App\Models\Hospital::where('is_active', true)->where('id', '!=', $ward->hospital->id)->get() as $hospital)
-                                                        <option value="{{ $hospital->id }}">{{ $hospital->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="to_specialty_id">Specialty</label>
-                                                <select class="form-control" id="to_specialty_id" name="to_specialty_id" required>
-                                                    <option value="">Select Specialty</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="to_consultant_id">Consultant</label>
-                                                <select class="form-control" id="to_consultant_id" name="to_consultant_id" required>
-                                                    <option value="">Select Consultant</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="reason">Reason for Referral</label>
-                                                <input type="text" class="form-control" id="reason" name="reason" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="notes">Additional Notes</label>
-                                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary">Create Referral</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="card mb-4">
-                                    <div class="card-header bg-secondary text-white">
-                                        <h5 class="m-0">Primary Team</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <p>
-                                            <i class="fas fa-hospital"></i> <strong>Ward:</strong> {{ $ward->name }}
-                                        </p>
-                                        <p>
-                                            <i class="fas fa-stethoscope"></i> <strong>Specialty:</strong> {{ $ward->specialty->name }}
-                                        </p>
-                                        <p>
-                                            <i class="fas fa-user-md"></i> <strong>Consultant:</strong> 
-                                            @if($bed->consultant)
-                                                {{ $bed->consultant->name }}
-                                            @else
-                                                Not assigned
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Referral Tab -->
+                    <div class="tab-pane fade" id="referral" role="tabpanel" aria-labelledby="referral-tab">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Use this form to refer the patient to other consultants.
                         </div>
-
-                        <div class="card mt-4">
-                            <div class="card-header bg-dark text-white">
-                                <h5 class="m-0">Referral History</h5>
+                        
+                        <form action="{{ route('admin.patients.referral.store', $patient->id) }}" method="POST">
+                            @csrf
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="referring_doctor">Referring Doctor</label>
+                                        <input type="text" class="form-control" id="referring_doctor" name="referring_doctor" value="{{ auth()->user()->name }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="referral_date">Referral Date</label>
+                                        <input type="datetime-local" class="form-control" id="referral_date" name="referral_date" value="{{ now()->format('Y-m-d\TH:i') }}" required>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body p-0">
-                                <table class="table table-bordered table-striped mb-0">
-                                    <thead class="thead-light">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="specialty">Specialty</label>
+                                        <select class="form-control" id="specialty" name="specialty" required>
+                                            <option value="">Select Specialty</option>
+                                            <option value="cardiology">Cardiology</option>
+                                            <option value="neurology">Neurology</option>
+                                            <option value="orthopedics">Orthopedics</option>
+                                            <option value="gastroenterology">Gastroenterology</option>
+                                            <option value="pulmonology">Pulmonology</option>
+                                            <option value="nephrology">Nephrology</option>
+                                            <option value="endocrinology">Endocrinology</option>
+                                            <option value="oncology">Oncology</option>
+                                            <option value="rheumatology">Rheumatology</option>
+                                            <option value="dermatology">Dermatology</option>
+                                            <option value="urology">Urology</option>
+                                            <option value="ent">ENT</option>
+                                            <option value="ophthalmology">Ophthalmology</option>
+                                            <option value="psychiatry">Psychiatry</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="consultant">Consultant</label>
+                                        <select class="form-control" id="consultant" name="consultant" required>
+                                            <option value="">Select Consultant</option>
+                                            <!-- Consultant options will be populated dynamically based on specialty -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clinical_question">Clinical Question</label>
+                                <textarea class="form-control" id="clinical_question" name="clinical_question" rows="2" placeholder="What specific clinical question are you asking?" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="reason_for_referral">Reason for Referral</label>
+                                <textarea class="form-control" id="reason_for_referral" name="reason_for_referral" rows="3" placeholder="Describe the reason for this referral" required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="relevant_clinical_info">Relevant Clinical Information</label>
+                                <textarea class="form-control" id="relevant_clinical_info" name="relevant_clinical_info" rows="4" placeholder="Include any relevant history, examination findings, investigation results, etc."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Urgency</label>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="urgency_routine" name="urgency" value="routine" class="custom-control-input" checked>
+                                    <label class="custom-control-label" for="urgency_routine">Routine</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="urgency_urgent" name="urgency" value="urgent" class="custom-control-input">
+                                    <label class="custom-control-label" for="urgency_urgent">Urgent (within 24-48 hours)</label>
+                                </div>
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" id="urgency_emergency" name="urgency" value="emergency" class="custom-control-input">
+                                    <label class="custom-control-label text-danger" for="urgency_emergency">Emergency (immediate)</label>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Submit Referral
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <hr class="mt-4 mb-4">
+                        
+                        <h4 class="mb-3"><i class="fas fa-history"></i> Previous Referrals</h4>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Specialty</th>
+                                        <th>Consultant</th>
+                                        <th>Reason</th>
+                                        <th>Urgency</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($patient->referrals ?? [] as $referral)
                                         <tr>
-                                            <th>Date</th>
-                                            <th>To Specialty</th>
-                                            <th>To Consultant</th>
-                                            <th>Reason</th>
-                                            <th>Status</th>
-                                            <th>Notes</th>
+                                            <td>{{ $referral->formatted_referral_date }}</td>
+                                            <td>
+                                                {{ $referral->to_specialty ?? ($referral->toSpecialty->name ?? 'N/A') }}
+                                            </td>
+                                            <td>
+                                                {{ $referral->to_consultant ?? ($referral->toConsultant->name ?? 'N/A') }}
+                                            </td>
+                                            <td>{{ Str::limit($referral->reason, 50) }}</td>
+                                            <td>
+                                                @if($referral->urgency == 'routine')
+                                                    <span class="badge badge-success">Routine</span>
+                                                @elseif($referral->urgency == 'urgent')
+                                                    <span class="badge badge-warning">Urgent</span>
+                                                @elseif($referral->urgency == 'emergency')
+                                                    <span class="badge badge-danger">Emergency</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($referral->status == 'pending')
+                                                    <span class="badge badge-warning">Pending</span>
+                                                @elseif($referral->status == 'accepted')
+                                                    <span class="badge badge-success">Accepted</span>
+                                                @elseif($referral->status == 'declined')
+                                                    <span class="badge badge-danger">Declined</span>
+                                                @elseif($referral->status == 'completed')
+                                                    <span class="badge badge-info">Completed</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#viewReferralModal{{ $referral->id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($patientReferrals as $referral)
-                                            <tr class="{{ $referral->status == 'pending' ? 'table-warning' : ($referral->status == 'accepted' ? 'table-success' : ($referral->status == 'declined' ? 'table-danger' : 'table-info')) }}">
-                                                <td>{{ $referral->formatted_referral_date }}</td>
-                                                <td>{{ $referral->toSpecialty->name }}</td>
-                                                <td>{{ $referral->toConsultant->name }}</td>
-                                                <td>{{ $referral->reason }}</td>
-                                                <td>
-                                                    <span class="badge badge-{{ $referral->status == 'pending' ? 'warning' : ($referral->status == 'accepted' ? 'success' : ($referral->status == 'declined' ? 'danger' : 'info')) }}">
-                                                        {{ ucfirst($referral->status) }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $referral->notes }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center">No referral history available</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
+                                        
+                                        <!-- View Referral Modal -->
+                                        <div class="modal fade" id="viewReferralModal{{ $referral->id }}" tabindex="-1" role="dialog" aria-labelledby="viewReferralModalLabel{{ $referral->id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-info text-white">
+                                                        <h5 class="modal-title" id="viewReferralModalLabel{{ $referral->id }}">Referral Details</h5>
+                                                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <p><strong>Date:</strong> {{ $referral->formatted_referral_date }}</p>
+                                                                <p><strong>From Ward:</strong> {{ $referral->fromWard->name ?? 'N/A' }}</p>
+                                                                <p><strong>Referring Doctor:</strong> {{ $referral->referring_doctor ?? ($referral->referredBy->name ?? 'N/A') }}</p>
+                                                                <p><strong>Clinical Question:</strong> {{ $referral->clinical_question ?? 'N/A' }}</p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <p><strong>Status:</strong> 
+                                                                    @if($referral->status == 'pending')
+                                                                        <span class="badge badge-warning">Pending</span>
+                                                                    @elseif($referral->status == 'accepted')
+                                                                        <span class="badge badge-success">Accepted</span>
+                                                                    @elseif($referral->status == 'declined')
+                                                                        <span class="badge badge-danger">Declined</span>
+                                                                    @elseif($referral->status == 'completed')
+                                                                        <span class="badge badge-info">Completed</span>
+                                                                    @endif
+                                                                </p>
+                                                                <p><strong>Specialty:</strong> {{ $referral->to_specialty ?? ($referral->toSpecialty->name ?? 'N/A') }}</p>
+                                                                <p><strong>Consultant:</strong> {{ $referral->to_consultant ?? ($referral->toConsultant->name ?? 'N/A') }}</p>
+                                                                <p><strong>Urgency:</strong> 
+                                                                    @if($referral->urgency == 'routine')
+                                                                        <span class="badge badge-success">Routine</span>
+                                                                    @elseif($referral->urgency == 'urgent')
+                                                                        <span class="badge badge-warning">Urgent</span>
+                                                                    @elseif($referral->urgency == 'emergency')
+                                                                        <span class="badge badge-danger">Emergency</span>
+                                                                    @else
+                                                                        <span class="badge badge-secondary">{{ $referral->urgency ?? 'N/A' }}</span>
+                                                                    @endif
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mt-3">
+                                                            <div class="col-md-12">
+                                                                <div class="card">
+                                                                    <div class="card-header bg-light">
+                                                                        <strong>Reason for Referral</strong>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        {{ $referral->reason }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @if($referral->notes)
+                                                        <div class="row mt-3">
+                                                            <div class="col-md-12">
+                                                                <div class="card">
+                                                                    <div class="card-header bg-light">
+                                                                        <strong>Clinical Information</strong>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        {{ $referral->notes }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                        @if($referral->response_notes)
+                                                        <div class="row mt-3">
+                                                            <div class="col-md-12">
+                                                                <div class="card">
+                                                                    <div class="card-header bg-light">
+                                                                        <strong>Consultant Response</strong>
+                                                                    </div>
+                                                                    <div class="card-body">
+                                                                        {{ $referral->response_notes }}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        @endif
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center">No previous referrals found for this patient.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     
@@ -621,16 +762,19 @@
             
             // Add form submit handler to ensure the combined value is set
             $("form").on('submit', function(e) {
-                updateCombinedDateTime();
-                
-                // Validate that both date and time are selected
-                const date = $("#scheduled_date").val();
-                const time = $("#scheduled_time_slot").val();
-                
-                if (!date || !time) {
-                    e.preventDefault();
-                    alert("Please select both a date and time for the scheduled movement.");
-                    return false;
+                // Only apply this validation to the movement form
+                if ($(this).closest('#movement').length > 0) {
+                    updateCombinedDateTime();
+                    
+                    // Validate that both date and time are selected
+                    const date = $("#scheduled_date").val();
+                    const time = $("#scheduled_time_slot").val();
+                    
+                    if (!date || !time) {
+                        e.preventDefault();
+                        alert("Please select both a date and time for the scheduled movement.");
+                        return false;
+                    }
                 }
                 
                 return true;
@@ -644,108 +788,43 @@
             var lastTab = localStorage.getItem('lastActivePatientTab');
             if (lastTab) {
                 $('a[href="' + lastTab + '"]').tab('show');
-                
-                // If referrals tab is active, load specialties
-                if (lastTab === '#referrals') {
-                    setTimeout(function() {
-                        updateSpecialties();
-                    }, 100);
-                }
             }
             
-            // Update specialties based on selected hospital
-            function updateSpecialties() {
-                const hospitalId = $('#hospital_id').val();
+            // Specialty to Consultants mapping
+            const consultantsBySpecialty = {
+                'cardiology': ['Dr. Sarah Johnson', 'Dr. Michael Chen', 'Dr. David Williams'],
+                'neurology': ['Dr. Emily Roberts', 'Dr. James Wilson', 'Dr. Lisa Thompson'],
+                'orthopedics': ['Dr. Robert Brown', 'Dr. Jennifer Lee', 'Dr. Thomas Anderson'],
+                'gastroenterology': ['Dr. Maria Garcia', 'Dr. John Miller', 'Dr. Karen Davis'],
+                'pulmonology': ['Dr. Richard Martinez', 'Dr. Susan Taylor', 'Dr. Kevin White'],
+                'nephrology': ['Dr. Patricia Lewis', 'Dr. Charles Moore', 'Dr. Elizabeth Wright'],
+                'endocrinology': ['Dr. Daniel Clark', 'Dr. Nancy Rodriguez', 'Dr. Mark Harris'],
+                'oncology': ['Dr. Linda Hall', 'Dr. Edward Young', 'Dr. Barbara Turner'],
+                'rheumatology': ['Dr. Joseph Allen', 'Dr. Carol Walker', 'Dr. Steven King'],
+                'dermatology': ['Dr. Helen Scott', 'Dr. George Baker', 'Dr. Donna Green'],
+                'urology': ['Dr. Paul Adams', 'Dr. Sandra Nelson', 'Dr. Brian Hill'],
+                'ent': ['Dr. Michelle Phillips', 'Dr. Donald Evans', 'Dr. Margaret Campbell'],
+                'ophthalmology': ['Dr. Andrew Mitchell', 'Dr. Rebecca Carter', 'Dr. Kenneth Roberts'],
+                'psychiatry': ['Dr. Laura Cooper', 'Dr. Timothy Gray', 'Dr. Deborah Morgan'],
+                'other': ['Dr. General Consultant']
+            };
+            
+            // Handle specialty change to update consultant options
+            $('#specialty').on('change', function() {
+                const specialty = $(this).val();
+                const consultantSelect = $('#consultant');
                 
-                console.log('Updating specialties for hospital ID:', hospitalId);
+                // Clear consultant dropdown
+                consultantSelect.empty();
+                consultantSelect.append('<option value="">Select Consultant</option>');
                 
-                if (hospitalId) {
-                    $.ajax({
-                        url: "{{ route('admin.specialties.by-hospital') }}",
-                        type: "GET",
-                        data: {
-                            hospital_id: hospitalId
-                        },
-                        success: function(data) {
-                            console.log('Received specialties data:', data);
-                            let options = '<option value="">Select Specialty</option>';
-                            data.forEach(function(specialty) {
-                                options += `<option value="${specialty.id}">${specialty.name}</option>`;
-                            });
-                            $('#to_specialty_id').html(options);
-                            // Clear consultant dropdown
-                            $('#to_consultant_id').html('<option value="">Select Consultant</option>');
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error fetching specialties:', error);
-                            console.log(xhr.responseText);
-                        }
+                // Populate consultants based on specialty
+                if (specialty && consultantsBySpecialty[specialty]) {
+                    consultantsBySpecialty[specialty].forEach(consultant => {
+                        consultantSelect.append(`<option value="${consultant}">${consultant}</option>`);
                     });
-                } else {
-                    $('#to_specialty_id').html('<option value="">Select Specialty</option>');
-                    $('#to_consultant_id').html('<option value="">Select Consultant</option>');
-                }
-            }
-            
-            // Update consultants based on selected hospital and specialty
-            function updateConsultants() {
-                const hospitalId = $('#hospital_id').val();
-                const specialtyId = $('#to_specialty_id').val();
-                
-                console.log('Updating consultants for hospital ID:', hospitalId, 'and specialty ID:', specialtyId);
-                
-                if (specialtyId && hospitalId) {
-                    $.ajax({
-                        url: "{{ route('admin.referrals.consultants-by-specialty') }}",
-                        type: "GET",
-                        data: {
-                            specialty_id: specialtyId,
-                            hospital_id: hospitalId
-                        },
-                        success: function(data) {
-                            console.log('Received consultants data:', data);
-                            let options = '<option value="">Select Consultant</option>';
-                            data.forEach(function(consultant) {
-                                options += `<option value="${consultant.id}">${consultant.name}</option>`;
-                            });
-                            $('#to_consultant_id').html(options);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error fetching consultants:', error);
-                            console.log(xhr.responseText);
-                        }
-                    });
-                } else {
-                    $('#to_consultant_id').html('<option value="">Select Consultant</option>');
-                }
-            }
-            
-            // Load specialties when page loads with default hospital
-            if ($('#hospital_id').length) {
-                updateSpecialties();
-            }
-            
-            // Handle tab switching - if referrals tab is shown, update specialties
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                if (e.target.id === 'referrals-tab') {
-                    updateSpecialties();
                 }
             });
-            
-            // Add special handler for the referrals tab
-            $('#referrals-tab').on('shown.bs.tab', function () {
-                console.log('Referrals tab shown, updating specialties');
-                updateSpecialties();
-            });
-            
-            // Event handlers
-            $('#hospital_id').on('change', updateSpecialties);
-            $('#to_specialty_id').on('change', updateConsultants);
-            
-            // Initialize specialties right away if we're already on the referrals tab
-            if ($('#referrals-tab').hasClass('active')) {
-                updateSpecialties();
-            }
         });
     </script>
 @stop 

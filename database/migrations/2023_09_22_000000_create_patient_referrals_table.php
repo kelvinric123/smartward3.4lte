@@ -19,6 +19,11 @@ return new class extends Migration
             $table->foreignId('from_consultant_id')->nullable()->constrained('consultants')->nullOnDelete();
             $table->foreignId('to_specialty_id')->nullable()->constrained('specialties')->nullOnDelete();
             $table->foreignId('to_consultant_id')->nullable()->constrained('consultants')->nullOnDelete();
+            $table->string('to_specialty')->nullable();
+            $table->string('to_consultant')->nullable();
+            $table->string('clinical_question')->nullable();
+            $table->enum('urgency', ['routine', 'urgent', 'emergency'])->default('routine');
+            $table->string('referring_doctor')->nullable();
             $table->dateTime('referral_date');
             $table->string('reason');
             $table->text('notes')->nullable();

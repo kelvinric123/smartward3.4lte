@@ -114,4 +114,94 @@ class PatientReferralController extends Controller
             
         return response()->json($consultants);
     }
+    
+    /**
+     * Get consultants by specialty - direct method
+     */
+    public function getConsultantsBySpecialtyDirect(Request $request)
+    {
+        try {
+            $specialtyId = $request->input('specialty_id');
+            $hospitalId = $request->input('hospital_id');
+            
+            if (!$specialtyId) {
+                return response()->json(['error' => 'Specialty ID is required'], 400);
+            }
+            
+            $query = Consultant::where('specialty_id', $specialtyId)
+                ->where('is_active', true);
+                
+            // Filter by hospital if provided
+            if ($hospitalId) {
+                $query->where('hospital_id', $hospitalId);
+            }
+            
+            $consultants = $query->get(['id', 'name', 'specialty_id', 'hospital_id']);
+                
+            return response()->json($consultants);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    /**
+     * Store a new patient referral
+     */
+    public function store(Request $request, $patientId)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'specialty' => 'required|string',
+            'consultant' => 'required|string',
+            'referral_date' => 'required|date',
+            'clinical_question' => 'required|string',
+            'reason_for_referral' => 'required|string',
+            'relevant_clinical_info' => 'nullable|string',
+            'urgency' => 'required|in:routine,urgent,emergency',
+            'referring_doctor' => 'required|string',
+        ]);
+        
+        // Find the patient
+        $patient = Patient::findOrFail($patientId);
+        
+        // Get the patient's active admission
+        $activeAdmission = $patient->activeAdmission;
+        
+        if (!$activeAdmission) {
+            return redirect()->back()
+                ->with('error', 'No active admission found for this patient.');
+        }
+        
+        // Find the bed the patient is assigned to
+        $bed = Bed::where('patient_id', $patient->id)->first();
+        
+        if (!$bed) {
+            return redirect()->back()
+                ->with('error', 'Patient is not assigned to a bed.');
+        }
+        
+        // Find the ward for this bed
+        $ward = $bed->ward;
+        
+        // Create the patient referral
+        PatientReferral::create([
+            'patient_id' => $patient->id,
+            'admission_id' => $activeAdmission->id,
+            'from_ward_id' => $ward->id,
+            'from_consultant_id' => $bed->consultant_id ?? null,
+            'to_specialty' => $validated['specialty'],
+            'to_consultant' => $validated['consultant'],
+            'referral_date' => $validated['referral_date'],
+            'clinical_question' => $validated['clinical_question'],
+            'reason' => $validated['reason_for_referral'],
+            'notes' => $validated['relevant_clinical_info'],
+            'urgency' => $validated['urgency'],
+            'status' => 'pending',
+            'referred_by' => auth()->id(),
+            'referring_doctor' => $validated['referring_doctor'],
+        ]);
+        
+        return redirect()->back()
+            ->with('success', 'Patient referral submitted successfully.');
+    }
 } 

@@ -159,4 +159,12 @@ class Patient extends Model
     {
         return $this->bed()->exists();
     }
+    
+    /**
+     * Get all referrals for this patient
+     */
+    public function referrals()
+    {
+        return $this->hasMany(PatientReferral::class)->orderBy('referral_date', 'desc');
+    }
 } 

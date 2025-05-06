@@ -7,6 +7,7 @@ use App\Models\Hospital;
 use App\Models\Specialty;
 use App\Models\Ward;
 use Illuminate\Http\Request;
+use App\Models\PatientMovement;
 
 class WardController extends Controller
 {
@@ -227,69 +228,50 @@ class WardController extends Controller
     }
 
     /**
-     * Show patient details page with tabs for a patient in a ward.
+     * Display patient details
      */
     public function patientDetails(Ward $ward, $bedId)
     {
-        // Find the bed within this ward
-        $bed = $ward->beds()->findOrFail($bedId);
-        
-        // Check if the bed has a patient
-        if (!$bed->patient_id) {
+        try {
+            // Find the bed within this ward
+            $bed = $ward->beds()->findOrFail($bedId);
+            
+            // Check if the bed has a patient
+            if (!$bed->patient_id) {
+                return redirect()->route('admin.beds.wards.dashboard', $ward)
+                    ->with('error', 'This bed does not have a patient assigned.');
+            }
+            
+            // Get the patient
+            $patient = $bed->patient;
+            
+            // Get the active admission
+            $activeAdmission = $patient->activeAdmission;
+            
+            // Get patient movements (scheduled and past)
+            $patientMovements = PatientMovement::where('patient_id', $patient->id)
+                ->orderBy('scheduled_time', 'desc')
+                ->get();
+                
+            // Get all service locations for the dropdown
+            $serviceLocations = ['Radiology', 'Laboratory', 'Physiotherapy', 'Pharmacy', 'Dialysis', 'Operating Theatre'];
+            
+            // Load patient referrals
+            $patientReferrals = $patient->referrals;
+            
+            return view('admin.beds.wards.patient_details', compact(
+                'ward', 
+                'bed', 
+                'patient', 
+                'activeAdmission', 
+                'patientMovements',
+                'serviceLocations',
+                'patientReferrals'
+            ));
+        } catch (\Exception $e) {
             return redirect()->route('admin.beds.wards.dashboard', $ward)
-                ->with('error', 'This bed does not have a patient assigned.');
+                ->with('error', 'An error occurred: ' . $e->getMessage());
         }
-        
-        // Get the patient
-        $patient = $bed->patient;
-        
-        // Get the active admission
-        $activeAdmission = $patient->activeAdmission;
-        
-        // Get patient movements
-        $patientMovements = \App\Models\PatientMovement::where('patient_id', $patient->id)
-            ->orderBy('scheduled_time', 'desc')
-            ->get();
-        
-        // Get patient referrals
-        $patientReferrals = \App\Models\PatientReferral::where('patient_id', $patient->id)
-            ->with(['toSpecialty', 'toConsultant'])
-            ->orderBy('referral_date', 'desc')
-            ->get();
-        
-        // Get active specialties for referrals
-        $specialties = \App\Models\Specialty::where('is_active', true)
-            ->with(['consultants' => function($query) {
-                $query->where('is_active', true);
-            }])
-            ->get();
-        
-        // Service locations list - you may want to make this dynamic from DB in the future
-        $serviceLocations = [
-            'X-Ray',
-            'CT Scan',
-            'MRI',
-            'Ultrasound',
-            'Cardiology',
-            'Neurology',
-            'Gynecology',
-            'Physical Therapy',
-            'Dialysis',
-            'Laboratory',
-            'Operation Theatre',
-            'Endoscopy',
-        ];
-        
-        return view('admin.beds.wards.patient_details', compact(
-            'ward', 
-            'bed', 
-            'patient', 
-            'activeAdmission', 
-            'patientMovements', 
-            'serviceLocations',
-            'patientReferrals',
-            'specialties'
-        ));
     }
 
     /**

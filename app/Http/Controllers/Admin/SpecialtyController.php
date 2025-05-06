@@ -92,4 +92,27 @@ class SpecialtyController extends Controller
             
         return response()->json($specialties);
     }
+    
+    /**
+     * Alternative method for getting specialties by hospital
+     * Used as a direct route
+     */
+    public function getSpecialtiesByHospitalDirect(Request $request)
+    {
+        try {
+            $hospitalId = $request->input('hospital_id');
+            
+            if (!$hospitalId) {
+                return response()->json(['error' => 'Hospital ID is required'], 400);
+            }
+            
+            $specialties = Specialty::where('hospital_id', $hospitalId)
+                ->where('is_active', true)
+                ->get(['id', 'name', 'hospital_id']);
+                
+            return response()->json($specialties);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 } 

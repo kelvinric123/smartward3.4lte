@@ -20,6 +20,19 @@
     </div>
 @stop
 
+@section('content_top_nav_right')
+    <li class="nav-item d-none" id="current-datetime">
+        <span class="nav-link">
+            <i class="far fa-clock mr-1"></i> <span id="current-date-time-display"></span>
+        </span>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" id="fullscreen-toggle" role="button">
+            <i class="fas fa-expand"></i>
+        </a>
+    </li>
+@stop
+
 @section('content')
     <div class="container-fluid">
         <!-- Bed Grid -->
@@ -40,9 +53,9 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row" id="beds-container">
                             @forelse($ward->beds as $bed)
-                                <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="col-lg-4 col-md-6 mb-4 bed-box">
                                     <div class="card border-{{ $bed->status === 'available' ? 'success' : ($bed->status === 'occupied' ? 'danger' : ($bed->status === 'reserved' ? 'warning' : 'secondary')) }} mb-0">
                                         <div class="card-header bg-light d-flex justify-content-between align-items-center p-2">
                                             <h5 class="m-0">Bed {{ $bed->bed_number }} 
@@ -216,13 +229,87 @@
                 padding-bottom: 1rem;
             }
         }
+        
+        /* Fullscreen mode styles */
+        body.fullscreen-mode .main-sidebar {
+            display: none !important;
+        }
+        
+        body.fullscreen-mode .content-wrapper {
+            margin-left: 0 !important;
+        }
+        
+        body.fullscreen-mode #fullscreen-toggle i {
+            transform: rotate(180deg);
+        }
+        
+        body.fullscreen-mode #current-datetime {
+            display: block !important;
+        }
+        
+        /* Hide pushmenu toggle button in fullscreen mode */
+        body.fullscreen-mode [data-widget="pushmenu"] {
+            display: none !important;
+        }
+        
+        /* 5 beds horizontal in fullscreen mode */
+        body.fullscreen-mode .bed-box {
+            flex: 0 0 20%;
+            max-width: 20%;
+        }
     </style>
 @stop
 
 @section('js')
     <script>
         $(document).ready(function() {
-            // You can add JavaScript for dynamic functions here if needed
+            // Fullscreen toggle functionality
+            const fullscreenToggle = $('#fullscreen-toggle');
+            const body = $('body');
+            const currentDateTime = $('#current-datetime');
+            const dateTimeDisplay = $('#current-date-time-display');
+            
+            // Update current date and time
+            function updateDateTime() {
+                const now = new Date();
+                const formattedDateTime = now.toLocaleString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                dateTimeDisplay.text(formattedDateTime);
+            }
+            
+            // Initial update
+            updateDateTime();
+            
+            // Update every second
+            setInterval(updateDateTime, 1000);
+            
+            // Toggle fullscreen mode
+            fullscreenToggle.on('click', function(e) {
+                e.preventDefault();
+                body.toggleClass('fullscreen-mode');
+                
+                // Toggle icon
+                const icon = $(this).find('i');
+                if (body.hasClass('fullscreen-mode')) {
+                    icon.removeClass('fa-expand').addClass('fa-compress');
+                } else {
+                    icon.removeClass('fa-compress').addClass('fa-expand');
+                }
+            });
+            
+            // Check URL for fullscreen parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('fullscreen') === 'true') {
+                body.addClass('fullscreen-mode');
+                fullscreenToggle.find('i').removeClass('fa-expand').addClass('fa-compress');
+            }
         });
     </script>
 @stop 

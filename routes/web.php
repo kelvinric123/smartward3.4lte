@@ -64,6 +64,9 @@ Route::prefix('admin')->group(function () {
         Route::put('{referral}/status', [PatientReferralController::class, 'updateStatus'])->name('admin.referrals.update-status');
     });
     
+    // Patient Referral Routes
+    Route::post('patients/{patientId}/referral', [PatientReferralController::class, 'store'])->name('admin.patients.referral.store');
+    
     // Specialty Actions
     Route::prefix('specialties')->group(function () {
         Route::get('/by-hospital', [SpecialtyController::class, 'getSpecialtiesByHospital'])->name('admin.specialties.by-hospital');
@@ -92,9 +95,6 @@ Route::prefix('admin')->group(function () {
         
         // Patient Movement
         Route::post('wards/{ward}/bed/{bedId}/movement', [PatientMovementController::class, 'scheduleMovement'])->name('wards.patient.scheduleMovement');
-        
-        // Patient Referral
-        Route::post('wards/{ward}/bed/{bedId}/referral', [PatientReferralController::class, 'createReferral'])->name('wards.patient.createReferral');
         
         // Beds Routes
         Route::resource('beds', App\Http\Controllers\Admin\BedController::class)->names('beds');
@@ -126,3 +126,9 @@ Route::prefix('doctor')->group(function () {
 Route::prefix('booking')->group(function () {
     Route::get('/dashboard', [BookingDashboardController::class, 'index'])->name('booking.dashboard');
 });
+
+// Add a direct fix for the route that seems to be causing issues - this is a troubleshooting method
+Route::get('/admin/specialties/by-hospital', [App\Http\Controllers\Admin\SpecialtyController::class, 'getSpecialtiesByHospitalDirect'])->name('admin.specialties.by-hospital.direct');
+
+// Add direct route for consultants by specialty
+Route::get('/admin/referrals/consultants-by-specialty', [App\Http\Controllers\Admin\PatientReferralController::class, 'getConsultantsBySpecialtyDirect'])->name('admin.referrals.consultants-by-specialty.direct');
