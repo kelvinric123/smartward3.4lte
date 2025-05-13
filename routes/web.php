@@ -145,3 +145,12 @@ Route::get('/admin/specialties/by-hospital', [App\Http\Controllers\Admin\Special
 
 // Add direct route for consultants by specialty
 Route::get('/admin/referrals/consultants-by-specialty', [App\Http\Controllers\Admin\PatientReferralController::class, 'getConsultantsBySpecialtyDirect'])->name('admin.referrals.consultants-by-specialty.direct');
+
+// Add a named route 'admin.movements.send' for sending a patient movement
+Route::put('movements/{movement}/send', [App\Http\Controllers\Admin\PatientMovementController::class, 'sendPatient'])->name('admin.movements.send');
+
+// Add a named route 'admin.movements.cancel' for canceling a patient movement
+Route::put('movements/{movement}/cancel', [App\Http\Controllers\Admin\PatientMovementController::class, 'cancelMovement'])->name('admin.movements.cancel');
+
+// Add a named route 'admin.movements.return' for returning a patient from movement
+Route::put('movements/{movement}/return', [App\Http\Controllers\Admin\PatientMovementController::class, 'returnPatient'])->name('admin.movements.return');

@@ -315,7 +315,7 @@
                                     <h5 class="m-0">Schedule Movement</h5>
                                 </div>
                                 <div class="card-body">
-                                    <form action="{{ route('admin.beds.wards.patient.scheduleMovement', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST" target="_blank">
+                                    <form id="scheduleMovementForm" action="{{ route('admin.beds.wards.patient.scheduleMovement', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
                                         @csrf
                                         <div class="form-group">
                                             <label for="to_service_location">Destination</label>
@@ -368,8 +368,8 @@
                                                                 <span class="badge badge-warning">Out of Ward</span>
                                                             @elseif($movement->status == 'returned')
                                                                 <span class="badge badge-success">Returned</span>
-                                                            @elseif($movement->status == 'canceled')
-                                                                <span class="badge badge-danger">Canceled</span>
+                                                            @elseif($movement->status == 'cancelled')
+                                                                <span class="badge badge-danger">Cancelled</span>
                                                             @endif
                                                         </td>
                                                         <td>
@@ -581,6 +581,27 @@
         </div>
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmScheduleModal" tabindex="-1" role="dialog" aria-labelledby="confirmScheduleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmScheduleModalLabel">Confirm Schedule Movement</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to schedule this patient movement?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmScheduleBtn">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('js')
@@ -636,6 +657,52 @@
                 $('#consultant_id').empty().prop('disabled', true);
                 $('#consultant_id').append('<option value="">Select Consultant</option>');
             }
+        });
+
+        let scheduleForm = $('#scheduleMovementForm');
+        let confirmModal = $('#confirmScheduleModal');
+        let confirmBtn = $('#confirmScheduleBtn');
+        let formData = null;
+
+        scheduleForm.on('submit', function(e) {
+            e.preventDefault();
+            formData = scheduleForm.serialize();
+            confirmModal.modal('show');
+        });
+
+        confirmBtn.on('click', function() {
+            confirmModal.modal('hide');
+            // Remove previous error highlights/messages
+            scheduleForm.find('.is-invalid').removeClass('is-invalid');
+            scheduleForm.find('.invalid-feedback').remove();
+            $.ajax({
+                url: scheduleForm.attr('action'),
+                method: 'POST',
+                data: formData,
+                headers: {'X-CSRF-TOKEN': $('input[name="_token"]').val()},
+                success: function(response) {
+                    if(response && response.movement_history_html) {
+                        $('.card .card-body .table-responsive').html(response.movement_history_html);
+                    } else {
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    if(xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        let errors = xhr.responseJSON.errors;
+                        let firstErrorField = null;
+                        for (let field in errors) {
+                            let input = scheduleForm.find('[name="' + field + '"]');
+                            input.addClass('is-invalid');
+                            input.after('<div class="invalid-feedback">' + errors[field][0] + '</div>');
+                            if (!firstErrorField) firstErrorField = input;
+                        }
+                        if (firstErrorField) firstErrorField.focus();
+                    } else {
+                        alert('Failed to schedule movement. Please check your input.');
+                    }
+                }
+            });
         });
     });
 </script>
