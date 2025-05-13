@@ -118,6 +118,12 @@ Route::prefix('admin')->group(function () {
         // Discharge Patient from Bed
         Route::post('beds/{bed}/discharge', [App\Http\Controllers\Admin\BedController::class, 'discharge'])->name('beds.discharge');
     });
+    
+    // Notification Demo Page for Ward (moved out of nested group)
+    Route::get('beds/wards/{ward}/notification-demo', function($ward) {
+        $ward = \App\Models\Ward::findOrFail($ward);
+        return view('admin.beds.wards.notification_demo', compact('ward'));
+    })->name('admin.beds.wards.notification.demo');
 });
 
 // Hospital Admin Routes

@@ -249,7 +249,7 @@
                         <div class="col-md-6">
                             <div class="form-group risk-factors-section">
                                 <label>Risk Factors</label>
-                                <form id="riskFactorsForm" action="{{ route('admin.beds.wards.patient.updateRiskFactors', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST" target="_blank">
+                                <form id="riskFactorsForm" action="{{ route('admin.beds.wards.patient.updateRiskFactors', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
                                     @csrf
                                     <div class="form-group mb-2">
                                         <div class="custom-control custom-checkbox">
@@ -729,6 +729,30 @@
                 },
                 error: function(xhr) {
                     toastr.error('Failed to update patient movement');
+                }
+            });
+        });
+
+        // AJAX for Risk Factors
+        $('#riskFactorsForm').on('submit', function(e) {
+            e.preventDefault();
+            var $form = $(this);
+            var $btn = $form.find('button[type=submit]');
+            $btn.prop('disabled', true);
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: $form.serialize(),
+                headers: {'X-CSRF-TOKEN': $('input[name="_token"]').val()},
+                success: function(response) {
+                    $btn.prop('disabled', false);
+                    toastr.success('Risk factors updated successfully!');
+                    // Optionally, update risk factor icons in the UI here
+                },
+                error: function(xhr) {
+                    $btn.prop('disabled', false);
+                    toastr.error('Failed to update risk factors.');
                 }
             });
         });

@@ -58,12 +58,9 @@
                         <div class="d-flex justify-content-between">
                             <h3 class="card-title">Beds Layout</h3>
                             <div class="btn-group">
-                                <a href="{{ route('admin.beds.wards.show', $ward) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-default">
-                                    <i class="fas fa-info-circle"></i> Ward Details
-                                </a>
-                                <a href="{{ route('admin.beds.beds.create') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus"></i> Add Bed
-                                </a>
+                                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#notificationModal">
+                                    <i class="fas fa-bell"></i> Notification
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -319,6 +316,23 @@
                 </div>
                 <div class="modal-body p-0">
                     <iframe id="patientDetailsFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Patient to Nurse Notifications</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe src="{{ url('/admin/beds/wards/'.$ward->id.'/notification-demo') }}" style="width: 100%; height: 500px; border: none;"></iframe>
                 </div>
             </div>
         </div>

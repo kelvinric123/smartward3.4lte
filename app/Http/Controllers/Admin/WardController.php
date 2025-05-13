@@ -358,7 +358,9 @@ class WardController extends Controller
             if ($request->has('fullscreen') && $request->fullscreen == 'true') {
                 $redirectRoute .= '?fullscreen=true';
             }
-            
+            if ($request->ajax()) {
+                return response()->json(['error' => 'This bed does not have a patient assigned.'], 422);
+            }
             return redirect($redirectRoute)
                 ->with('error', 'This bed does not have a patient assigned.');
         }
@@ -375,7 +377,9 @@ class WardController extends Controller
             if ($request->has('fullscreen') && $request->fullscreen == 'true') {
                 $redirectRoute .= '?fullscreen=true';
             }
-            
+            if ($request->ajax()) {
+                return response()->json(['error' => 'No active admission found for this patient.'], 422);
+            }
             return redirect($redirectRoute)
                 ->with('error', 'No active admission found for this patient.');
         }
@@ -385,6 +389,10 @@ class WardController extends Controller
         $activeAdmission->update([
             'risk_factors' => $riskFactors,
         ]);
+        
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
         
         // Preserve fullscreen mode if it was enabled
         $redirectRoute = route('admin.beds.wards.patient.details', ['ward' => $ward->id, 'bedId' => $bed->id]);
