@@ -2,6 +2,135 @@
 
 @section('title', 'Patient Details - ' . $patient->name)
 
+@section('css')
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            min-height: fit-content;
+            background: #fff;
+            overflow-x: hidden;
+        }
+        .container-fluid {
+            padding: 0;
+            min-height: fit-content;
+            display: flex;
+            flex-direction: column;
+        }
+        .patient-details-card {
+            border: none;
+            margin: 0;
+            border-radius: 0;
+            flex: 1;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .tab-content {
+            padding: 15px 15px 0 15px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        .row {
+            margin-right: -8px;
+            margin-left: -8px;
+        }
+        .col-md-4, .col-md-6 {
+            padding-right: 8px;
+            padding-left: 8px;
+        }
+        .form-control {
+            height: 34px;
+            padding: 6px 12px;
+        }
+        .sensitive-field {
+            position: relative;
+        }
+        .sensitive-field .toggle-visibility {
+            position: absolute;
+            right: 1px;
+            top: 1px;
+            bottom: 1px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.2s;
+        }
+        .sensitive-field .toggle-visibility:hover {
+            color: #007bff;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .sensitive-field .toggle-visibility i {
+            font-size: 14px;
+        }
+        .sensitive-field input {
+            padding-right: 35px;
+        }
+        textarea.form-control {
+            height: auto;
+            min-height: 60px;
+            resize: none;
+        }
+        .risk-factors-section {
+            margin-bottom: 0;
+        }
+        .risk-factors-section .form-group {
+            margin-bottom: 8px;
+        }
+        .risk-factors-section .btn {
+            margin: 8px 0 0 0;
+        }
+        .custom-control {
+            margin-bottom: 6px;
+        }
+        .custom-control:last-child {
+            margin-bottom: 0;
+        }
+        /* Remove any bottom padding/margin from last elements */
+        .tab-pane {
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .card {
+            margin-bottom: 0;
+        }
+        .nav-tabs {
+            padding: 0 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .nav-tabs .nav-link {
+            padding: 10px 15px;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: #495057;
+        }
+        .nav-tabs .nav-link.active {
+            border-bottom: 2px solid #007bff;
+            background: transparent;
+            color: #007bff;
+        }
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        select.form-control {
+            padding-right: 24px;
+        }
+    </style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     @if(session('success'))
@@ -15,7 +144,7 @@
         </div>
     @endif
 
-    <div class="card">
+    <div class="card patient-details-card">
         <div class="card-header p-0">
             <ul class="nav nav-tabs" id="patientTabs" role="tablist">
                 <li class="nav-item">
@@ -57,31 +186,23 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group sensitive-field">
                                 <label for="name">Name</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="name" value="{{ $patient->name }}" data-original="{{ $patient->name }}" data-masked="{{ preg_replace('/(?<=.{3}).(?=.{0})/', '*', $patient->name) }}" readonly>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary toggle-visibility" type="button" data-target="#name">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <input type="text" class="form-control" id="name" value="{{ str_repeat('•', strlen($patient->name)) }}" data-original="{{ $patient->name }}" readonly>
+                                <button type="button" class="toggle-visibility" data-target="#name">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group sensitive-field">
                                 <label for="ic">IC/Passport</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="ic" value="{{ $patient->identity_number }}" data-original="{{ $patient->identity_number }}" data-masked="{{ substr($patient->identity_number, 0, 3) . str_repeat('*', max(0, strlen($patient->identity_number) - 6)) . substr($patient->identity_number, -3) }}" readonly>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary toggle-visibility" type="button" data-target="#ic">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <input type="text" class="form-control" id="ic" value="{{ substr($patient->identity_number, 0, 3) . str_repeat('*', max(0, strlen($patient->identity_number) - 6)) . substr($patient->identity_number, -3) }}" data-original="{{ $patient->identity_number }}" readonly>
+                                <button type="button" class="toggle-visibility" data-target="#ic">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -103,16 +224,12 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="form-group">
+                            <div class="form-group sensitive-field">
                                 <label for="contact">Contact</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="contact" value="{{ $patient->phone }}" data-original="{{ $patient->phone }}" data-masked="{{ substr($patient->phone, 0, 3) . str_repeat('*', max(0, strlen($patient->phone) - 5)) . substr($patient->phone, -2) }}" readonly>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary toggle-visibility" type="button" data-target="#contact">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <input type="text" class="form-control" id="contact" value="{{ substr($patient->phone, 0, 3) . str_repeat('*', max(0, strlen($patient->phone) - 5)) . substr($patient->phone, -2) }}" data-original="{{ $patient->phone }}" readonly>
+                                <button type="button" class="toggle-visibility" data-target="#contact">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -130,37 +247,39 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label>Risk Factors</label>
-                            <form id="riskFactorsForm" action="{{ route('admin.beds.wards.patient.updateRiskFactors', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST" target="_blank">
-                                @csrf
-                                <div class="form-group">
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="dnr" name="risk_factors[]" value="dnr" {{ isset($activeAdmission->risk_factors) && in_array('dnr', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="dnr">
-                                            <i class="fas fa-heart text-danger"></i> DNR
-                                        </label>
+                            <div class="form-group risk-factors-section">
+                                <label>Risk Factors</label>
+                                <form id="riskFactorsForm" action="{{ route('admin.beds.wards.patient.updateRiskFactors', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST" target="_blank">
+                                    @csrf
+                                    <div class="form-group mb-2">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="dnr" name="risk_factors[]" value="dnr" {{ isset($activeAdmission->risk_factors) && in_array('dnr', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="dnr">
+                                                <i class="fas fa-heart text-danger"></i> DNR
+                                            </label>
+                                        </div>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="fallrisk" name="risk_factors[]" value="fallrisk" {{ isset($activeAdmission->risk_factors) && in_array('fallrisk', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="fallrisk">
+                                                <i class="fas fa-exclamation-triangle text-warning"></i> Fall Risk
+                                            </label>
+                                        </div>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="intubated" name="risk_factors[]" value="intubated" {{ isset($activeAdmission->risk_factors) && in_array('intubated', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="intubated">
+                                                <i class="fas fa-lungs text-primary"></i> Intubated
+                                            </label>
+                                        </div>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="isolation" name="risk_factors[]" value="isolation" {{ isset($activeAdmission->risk_factors) && in_array('isolation', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="isolation">
+                                                <i class="fas fa-shield-virus text-info"></i> Isolation
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="fallrisk" name="risk_factors[]" value="fallrisk" {{ isset($activeAdmission->risk_factors) && in_array('fallrisk', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="fallrisk">
-                                            <i class="fas fa-exclamation-triangle text-warning"></i> Fall Risk
-                                        </label>
-                                    </div>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="intubated" name="risk_factors[]" value="intubated" {{ isset($activeAdmission->risk_factors) && in_array('intubated', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="intubated">
-                                            <i class="fas fa-lungs text-primary"></i> Intubated
-                                        </label>
-                                    </div>
-                                    <div class="custom-control custom-checkbox">
-                                        <input type="checkbox" class="custom-control-input" id="isolation" name="risk_factors[]" value="isolation" {{ isset($activeAdmission->risk_factors) && in_array('isolation', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="isolation">
-                                            <i class="fas fa-shield-virus text-info"></i> Isolation
-                                        </label>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-sm">Update Risk Factors</button>
-                            </form>
+                                    <button type="submit" class="btn btn-primary btn-sm">Update Risk Factors</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -467,25 +586,35 @@
 @section('js')
 <script>
     $(document).ready(function() {
-        // Toggle visibility of masked fields
+        // Toggle visibility of sensitive fields
         $('.toggle-visibility').on('click', function() {
             var target = $(this).data('target');
             var input = $(target);
             var icon = $(this).find('i');
             
-            if (input.attr('type') === 'password') {
-                input.attr('type', 'text');
-                icon.removeClass('fa-eye').addClass('fa-eye-slash');
-            } else {
-                if (input.val() === input.data('original')) {
-                    input.val(input.data('masked'));
-                    icon.removeClass('fa-eye-slash').addClass('fa-eye');
-                } else {
-                    input.val(input.data('original'));
-                    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+            if (input.val() === input.data('original')) {
+                // If currently showing original value, mask it
+                if (target === '#name') {
+                    input.val('•'.repeat(input.data('original').length));
+                } else if (target === '#ic') {
+                    var original = input.data('original');
+                    input.val(original.substring(0, 3) + '•'.repeat(Math.max(0, original.length - 6)) + original.slice(-3));
+                } else if (target === '#contact') {
+                    var original = input.data('original');
+                    input.val(original.substring(0, 3) + '•'.repeat(Math.max(0, original.length - 5)) + original.slice(-2));
                 }
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            } else {
+                // If currently masked, show original value
+                input.val(input.data('original'));
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
             }
         });
+        
+        // Helper function to repeat a string
+        function str_repeat(str, count) {
+            return str.repeat(count);
+        }
         
         // Load consultants when specialty is selected
         $('#specialty_id').on('change', function() {
