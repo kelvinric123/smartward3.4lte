@@ -96,9 +96,13 @@
                                                     <span class="badge badge-success">1</span>
                                                 @endif
                                             </h5>
-                                            <span>
-                                                MRN: {{ $bed->patient ? ($bed->patient->mrn ?: 'Not available') : 'Not assigned' }}
-                                            </span>
+                                            @if($bed->patient)
+                                                <span>
+                                                    MRN: {{ $bed->patient->mrn ?: 'Not available' }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted">No Patient</span>
+                                            @endif
                                         </div>
                                         <div class="card-body p-3">
                                             @if($bed->patient)
@@ -190,7 +194,7 @@
                                                 </div>
                                             @else
                                                 <p class="mb-1">
-                                                    <i class="fas fa-bed"></i> No Patient
+                                                    <i class="fas fa-bed"></i> No Patient Admitted
                                                 </p>
                                                 <p class="text-muted mb-1">
                                                     <i class="fas fa-clock"></i> Bed is available
@@ -333,12 +337,82 @@
         }
         
         /* Fullscreen mode styles */
+        body.fullscreen-mode {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
         body.fullscreen-mode .main-sidebar {
             display: none !important;
         }
         
         body.fullscreen-mode .content-wrapper {
             margin-left: 0 !important;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.fullscreen-mode .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        body.fullscreen-mode .container-fluid {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
+        }
+        
+        /* Fixed header in fullscreen mode */
+        body.fullscreen-mode .content-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: #fff;
+            margin: 0;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        /* Scrollable bed grid container */
+        body.fullscreen-mode .card {
+            margin: 0;
+            border-radius: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.fullscreen-mode .card-header {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: #fff;
+        }
+        
+        body.fullscreen-mode .card-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        /* Fixed footer in fullscreen mode */
+        body.fullscreen-mode .stats-footer-row {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            z-index: 1000;
+            background: #343a40;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
         }
         
         body.fullscreen-mode #fullscreen-toggle i {
@@ -358,39 +432,6 @@
         body.fullscreen-mode .bed-box {
             flex: 0 0 20%;
             max-width: 20%;
-        }
-        
-        /* Sticky footer styles */
-        body.fullscreen-mode {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        body.fullscreen-mode .content-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        body.fullscreen-mode .container-fluid {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        body.fullscreen-mode .stats-footer-row {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            z-index: 1000;
-            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        body.fullscreen-mode #beds-container {
-            padding-bottom: 100px; /* Ensure content doesn't get hidden under the fixed footer */
         }
         
         /* Modal iframe styles */

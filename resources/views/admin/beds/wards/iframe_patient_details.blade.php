@@ -374,14 +374,14 @@
                                                         </td>
                                                         <td>
                                                             @if($movement->status == 'scheduled')
-                                                                <form method="POST" action="{{ route('admin.movements.send', $movement->id) }}" style="display: inline;" target="_blank">
+                                                                <form method="POST" action="{{ route('admin.movements.send', $movement->id) }}" class="movement-form" data-action="send">
                                                                     @csrf
                                                                     @method('PUT')
                                                                     <button type="submit" class="btn btn-xs btn-warning">
                                                                         <i class="fas fa-sign-out-alt"></i> Send
                                                                     </button>
                                                                 </form>
-                                                                <form method="POST" action="{{ route('admin.movements.cancel', $movement->id) }}" style="display: inline;" target="_blank">
+                                                                <form method="POST" action="{{ route('admin.movements.cancel', $movement->id) }}" class="movement-form" data-action="cancel">
                                                                     @csrf
                                                                     @method('PUT')
                                                                     <button type="submit" class="btn btn-xs btn-danger">
@@ -389,7 +389,7 @@
                                                                     </button>
                                                                 </form>
                                                             @elseif($movement->status == 'sent')
-                                                                <form method="POST" action="{{ route('admin.movements.return', $movement->id) }}" target="_blank">
+                                                                <form method="POST" action="{{ route('admin.movements.return', $movement->id) }}" class="movement-form" data-action="return">
                                                                     @csrf
                                                                     @method('PUT')
                                                                     <button type="submit" class="btn btn-xs btn-success">
@@ -701,6 +701,34 @@
                     } else {
                         alert('Failed to schedule movement. Please check your input.');
                     }
+                }
+            });
+        });
+
+        // Handle movement form submissions
+        $('.movement-form').on('submit', function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const action = form.data('action');
+            const url = form.attr('action');
+            
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    if(response && response.movement_history_html) {
+                        // Update the movement history table
+                        $('.card .card-body .table-responsive').html(response.movement_history_html);
+                        // Show success message
+                        toastr.success('Patient movement updated successfully');
+                    } else {
+                        // Fallback to page reload if no HTML response
+                        location.reload();
+                    }
+                },
+                error: function(xhr) {
+                    toastr.error('Failed to update patient movement');
                 }
             });
         });

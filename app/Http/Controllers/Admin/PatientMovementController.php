@@ -75,6 +75,9 @@ class PatientMovementController extends Controller
     public function sendPatient(Request $request, PatientMovement $movement)
     {
         if ($movement->status !== 'scheduled') {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'This movement is not in scheduled status.'], 422);
+            }
             return redirect()->back()->with('error', 'This movement is not in scheduled status.');
         }
         
@@ -83,6 +86,23 @@ class PatientMovementController extends Controller
             'sent_time' => now(),
             'status' => 'sent'
         ]);
+        
+        if ($request->ajax()) {
+            // Get updated movement history HTML
+            $patientMovements = PatientMovement::where('patient_id', $movement->patient_id)
+                ->orderBy('scheduled_time', 'desc')
+                ->get();
+            
+            $movementHistoryHtml = view('admin.beds.wards.partials.movement_history_table', [
+                'patientMovements' => $patientMovements
+            ])->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient has been sent to the service location.',
+                'movement_history_html' => $movementHistoryHtml
+            ]);
+        }
         
         return redirect()->back()->with('success', 'Patient has been sent to the service location.');
     }
@@ -93,6 +113,9 @@ class PatientMovementController extends Controller
     public function returnPatient(Request $request, PatientMovement $movement)
     {
         if ($movement->status !== 'sent') {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'This movement is not in sent status.'], 422);
+            }
             return redirect()->back()->with('error', 'This movement is not in sent status.');
         }
         
@@ -101,6 +124,23 @@ class PatientMovementController extends Controller
             'return_time' => now(),
             'status' => 'returned'
         ]);
+        
+        if ($request->ajax()) {
+            // Get updated movement history HTML
+            $patientMovements = PatientMovement::where('patient_id', $movement->patient_id)
+                ->orderBy('scheduled_time', 'desc')
+                ->get();
+            
+            $movementHistoryHtml = view('admin.beds.wards.partials.movement_history_table', [
+                'patientMovements' => $patientMovements
+            ])->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient has returned from the service location.',
+                'movement_history_html' => $movementHistoryHtml
+            ]);
+        }
         
         return redirect()->back()->with('success', 'Patient has returned from the service location.');
     }
@@ -111,13 +151,35 @@ class PatientMovementController extends Controller
     public function cancelMovement(Request $request, PatientMovement $movement)
     {
         if ($movement->status !== 'scheduled') {
-            return redirect()->back()->with('error', 'Only scheduled movements can be cancelled.');
+            if ($request->ajax()) {
+                return response()->json(['error' => 'This movement is not in scheduled status.'], 422);
+            }
+            return redirect()->back()->with('error', 'This movement is not in scheduled status.');
         }
         
         // Update the movement
         $movement->update([
-            'status' => 'cancelled'
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+            'cancelled_by' => auth()->id()
         ]);
+        
+        if ($request->ajax()) {
+            // Get updated movement history HTML
+            $patientMovements = PatientMovement::where('patient_id', $movement->patient_id)
+                ->orderBy('scheduled_time', 'desc')
+                ->get();
+            
+            $movementHistoryHtml = view('admin.beds.wards.partials.movement_history_table', [
+                'patientMovements' => $patientMovements
+            ])->render();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Movement has been cancelled.',
+                'movement_history_html' => $movementHistoryHtml
+            ]);
+        }
         
         return redirect()->back()->with('success', 'Movement has been cancelled.');
     }
