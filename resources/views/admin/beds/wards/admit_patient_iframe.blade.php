@@ -195,7 +195,7 @@
                 templateSelection: formatPatientSelection
             }).on('select2:open', function() {
                 // Clear any previous error messages when opening the dropdown
-                $('.alert-danger').remove();
+                $(this).next('.invalid-feedback').remove();
                 $(this).removeClass('is-invalid');
             });
 
@@ -241,14 +241,50 @@
                     error: function(xhr) {
                         // Handle validation errors
                         if (xhr.status === 422) {
-                            let errors = xhr.responseJSON.errors;
-                            let errorHtml = '<div class="alert alert-danger"><ul>';
-                            for (let field in errors) {
-                                errorHtml += `<li>${errors[field][0]}</li>`;
+                            let response = xhr.responseJSON;
+                            
+                            // Check if this is a system alert for already admitted patient
+                            if (response.systemAlert) {
+                                // Show a system alert modal that user must acknowledge
+                                alert(response.message);
+                                
+                                // Focus back on the patient selection after alert is dismissed
+                                $('#patient_id').select2('open');
+                                return;
                             }
-                            errorHtml += '</ul></div>';
+                            
+                            // For regular validation errors
+                            let errors = response.errors || {};
+                            
+                            // Clear any existing error messages
                             $('.alert-danger').remove();
-                            $('#admitPatientForm').prepend(errorHtml);
+                            
+                            // Handle patient_id specific error (already admitted)
+                            if (errors.patient_id) {
+                                let patientErrorMessage = errors.patient_id[0];
+                                $('#patient_id').addClass('is-invalid');
+                                // Add specific error message below the patient field
+                                $('#patient_id').after(
+                                    `<div class="invalid-feedback d-block">
+                                        <div class="alert alert-danger mt-2">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            ${patientErrorMessage}
+                                        </div>
+                                    </div>`
+                                );
+                                // Scroll to the error
+                                $('html, body').animate({
+                                    scrollTop: $('#patient_id').offset().top - 100
+                                }, 200);
+                            } else {
+                                // For other errors, show at the top of the form
+                                let errorHtml = '<div class="alert alert-danger"><ul>';
+                                for (let field in errors) {
+                                    errorHtml += `<li>${errors[field][0]}</li>`;
+                                }
+                                errorHtml += '</ul></div>';
+                                $('#admitPatientForm').prepend(errorHtml);
+                            }
                         } else {
                             alert('An error occurred while admitting the patient.');
                         }

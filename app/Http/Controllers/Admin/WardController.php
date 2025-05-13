@@ -235,10 +235,12 @@ class WardController extends Controller
             }
             $errorMessage .= '. Please select another patient.';
             
-            // Return validation error to show in the form
-            return back()
-                ->withInput()
-                ->withErrors(['patient_id' => $errorMessage]);
+            // Return a JSON response for AJAX requests
+            return response()->json([
+                'status' => 'error',
+                'message' => $errorMessage,
+                'systemAlert' => true
+            ], 422);
         }
         
         // Find the bed
