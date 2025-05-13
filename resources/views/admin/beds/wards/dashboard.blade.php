@@ -106,20 +106,45 @@
                                         </div>
                                         <div class="card-body p-3">
                                             @if($bed->patient)
-                                                <p class="mb-1">
-                                                    <i class="fas fa-user"></i> 
-                                                    @php
-                                                        if ($bed->patient->name) {
-                                                            $fullName = $bed->patient->name;
-                                                            $nameLength = mb_strlen($fullName);
-                                                            $halfLength = intval($nameLength / 2);
-                                                            $visiblePart = mb_substr($fullName, 0, $halfLength);
-                                                            $hiddenPart = str_repeat('*', $nameLength - $halfLength);
-                                                            echo $visiblePart . $hiddenPart;
-                                                        } else {
-                                                            echo 'No name';
-                                                        }
-                                                    @endphp
+                                                <p class="mb-1 d-flex align-items-center justify-content-between">
+                                                    <span>
+                                                        <i class="fas fa-user"></i> 
+                                                        @php
+                                                            if ($bed->patient->name) {
+                                                                $fullName = $bed->patient->name;
+                                                                $nameLength = mb_strlen($fullName);
+                                                                $halfLength = intval($nameLength / 2);
+                                                                $visiblePart = mb_substr($fullName, 0, $halfLength);
+                                                                $hiddenPart = str_repeat('*', $nameLength - $halfLength);
+                                                                echo $visiblePart . $hiddenPart;
+                                                            } else {
+                                                                echo 'No name';
+                                                            }
+                                                        @endphp
+                                                    </span>
+                                                    @if($bed->patient->activeAdmission && !empty($bed->patient->activeAdmission->risk_factors))
+                                                        <span class="risk-factor-grid">
+                                                            @foreach($bed->patient->activeAdmission->risk_factors as $risk)
+                                                                @if($risk === 'fallrisk')
+                                                                    <span class="risk-icon" title="Fall Risk">
+                                                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                                                    </span>
+                                                                @elseif($risk === 'dnr')
+                                                                    <span class="risk-icon" title="DNR">
+                                                                        <i class="fas fa-heart text-danger"></i>
+                                                                    </span>
+                                                                @elseif($risk === 'intubated')
+                                                                    <span class="risk-icon" title="Intubated">
+                                                                        <i class="fas fa-lungs text-primary"></i>
+                                                                    </span>
+                                                                @elseif($risk === 'isolation')
+                                                                    <span class="risk-icon" title="Isolation">
+                                                                        <i class="fas fa-shield-virus text-info"></i>
+                                                                    </span>
+                                                                @endif
+                                                            @endforeach
+                                                        </span>
+                                                    @endif
                                                 </p>
                                             @endif
                                             
@@ -448,6 +473,27 @@
             width: 100%;
             height: calc(90vh - 60px); /* Subtract header height */
             border: none;
+        }
+        
+        .risk-factor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 2px;
+            width: 36px;
+            height: 36px;
+            margin-left: 8px;
+        }
+        .risk-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+            font-size: 1.1em;
+            width: 16px;
+            height: 16px;
         }
     </style>
 @stop
