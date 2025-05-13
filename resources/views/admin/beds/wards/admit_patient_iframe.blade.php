@@ -85,10 +85,15 @@
                                 <select name="patient_id" id="patient_id" class="form-control select2 @error('patient_id') is-invalid @enderror" required>
                                     <option value="">Type to search patient by name, IC/Passport, MRN, or phone...</option>
                                 </select>
-                                <small class="form-text text-muted">Start typing to search by patient name, IC/Passport number, MRN, or phone number</small>
                                 @error('patient_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">
+                                        <div class="alert alert-danger mt-2">
+                                            <i class="fas fa-exclamation-circle mr-1"></i>
+                                            {{ $message }}
+                                        </div>
+                                    </div>
                                 @enderror
+                                <small class="form-text text-muted">Start typing to search by patient name, IC/Passport number, MRN, or phone number</small>
                             </div>
                         </div>
                     </div>
@@ -175,26 +180,23 @@
                     dataType: 'json',
                     delay: 250,
                     data: function(params) {
-                        console.log('Search params:', params);
                         return {
                             query: params.term || ''
                         };
                     },
                     processResults: function(data) {
-                        console.log('Search results:', data);
                         return {
                             results: data
                         };
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Search error:', error);
-                        console.error('Status:', status);
-                        console.error('Response:', xhr.responseText);
                     },
                     cache: true
                 },
                 templateResult: formatPatient,
                 templateSelection: formatPatientSelection
+            }).on('select2:open', function() {
+                // Clear any previous error messages when opening the dropdown
+                $('.alert-danger').remove();
+                $(this).removeClass('is-invalid');
             });
 
             // Format the patient option in the dropdown

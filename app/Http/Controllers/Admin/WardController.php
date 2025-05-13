@@ -220,6 +220,27 @@ class WardController extends Controller
             'admission_date' => 'nullable|date',
         ]);
         
+        // Find the patient
+        $patient = \App\Models\Patient::findOrFail($validated['patient_id']);
+        
+        // Check if patient is already admitted
+        if ($patient->is_admitted) {
+            // Get the current bed and ward
+            $currentBed = $patient->bed;
+            $currentWard = $currentBed ? $currentBed->ward : null;
+            
+            $errorMessage = 'This patient is already admitted';
+            if ($currentBed && $currentWard) {
+                $errorMessage .= " to {$currentWard->name} (Bed {$currentBed->bed_number})";
+            }
+            $errorMessage .= '. Please select another patient.';
+            
+            // Return validation error to show in the form
+            return back()
+                ->withInput()
+                ->withErrors(['patient_id' => $errorMessage]);
+        }
+        
         // Find the bed
         $bed = $ward->beds()->findOrFail($bedId);
         
