@@ -43,6 +43,11 @@ Route::prefix('admin')->group(function () {
     Route::resource('specialties', SpecialtyController::class)->names('admin.specialties');
     Route::resource('consultants', ConsultantController::class)->names('admin.consultants');
     Route::resource('nurses', App\Http\Controllers\Admin\NurseController::class)->names('admin.nurses');
+    
+    // Patient Search Route - Must be placed before resource route to avoid binding issues
+    Route::get('patients/search', [PatientController::class, 'search'])->name('admin.patients.search');
+    
+    // Patient Resource Routes
     Route::resource('patients', PatientController::class)->names('admin.patients');
     
     // Patient Discharge Routes
@@ -93,6 +98,7 @@ Route::prefix('admin')->group(function () {
         
         // Ward Dashboard - Admit Patient
         Route::get('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'admitPatient'])->name('wards.admit');
+        Route::get('wards/{ward}/admit/{bedId}/iframe', [App\Http\Controllers\Admin\WardController::class, 'iframeAdmitPatient'])->name('wards.admit.iframe');
         Route::post('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'storeAdmission'])->name('wards.admit.store');
         
         // Patient Details in Ward

@@ -184,9 +184,9 @@
                                                     <i class="fas fa-bed"></i> No Patient
                                                 </p>
                                                 <div class="mt-2">
-                                                    <a href="{{ route('admin.beds.wards.admit', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-success btn-block">
+                                                    <button type="button" class="btn btn-success btn-block" onclick="openAdmitPatientModal('{{ route('admin.beds.wards.admit.iframe', ['ward' => $ward, 'bedId' => $bed->id]) }}')">
                                                         <i class="fas fa-user-plus"></i> Admit Patient
-                                                    </a>
+                                                    </button>
                                                 </div>
                                             @else
                                                 <p class="mb-1">
@@ -441,25 +441,29 @@
             // Update every second
             setInterval(updateDateTime, 1000);
             
+            // Function to set fullscreen mode
+            function setFullscreenMode(isFullscreen) {
+                if (isFullscreen) {
+                    body.addClass('fullscreen-mode');
+                    fullscreenToggle.find('i').removeClass('fa-expand').addClass('fa-compress');
+                    localStorage.setItem('wardDashboardFullscreen', 'true');
+                } else {
+                    body.removeClass('fullscreen-mode');
+                    fullscreenToggle.find('i').removeClass('fa-compress').addClass('fa-expand');
+                    localStorage.removeItem('wardDashboardFullscreen');
+                }
+            }
+            
             // Toggle fullscreen mode
             fullscreenToggle.on('click', function(e) {
                 e.preventDefault();
-                body.toggleClass('fullscreen-mode');
-                
-                // Toggle icon
-                const icon = $(this).find('i');
-                if (body.hasClass('fullscreen-mode')) {
-                    icon.removeClass('fa-expand').addClass('fa-compress');
-                } else {
-                    icon.removeClass('fa-compress').addClass('fa-expand');
-                }
+                const isCurrentlyFullscreen = body.hasClass('fullscreen-mode');
+                setFullscreenMode(!isCurrentlyFullscreen);
             });
             
-            // Check URL for fullscreen parameter
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('fullscreen') === 'true') {
-                body.addClass('fullscreen-mode');
-                fullscreenToggle.find('i').removeClass('fa-expand').addClass('fa-compress');
+            // Check localStorage for fullscreen state
+            if (localStorage.getItem('wardDashboardFullscreen') === 'true') {
+                setFullscreenMode(true);
             }
             
             // Vital Signs Modal functionality
@@ -489,6 +493,43 @@
             $('#patientDetailsModal').on('hidden.bs.modal', function () {
                 $('#patientDetailsFrame').attr('src', '');
             });
+        });
+
+        function openAdmitPatientModal(url) {
+            // Create modal if it doesn't exist
+            if (!$('#admitPatientModal').length) {
+                $('body').append(`
+                    <div class="modal fade" id="admitPatientModal" tabindex="-1" role="dialog" aria-labelledby="admitPatientModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="admitPatientModalLabel">Admit Patient</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body p-0">
+                                    <iframe id="admitPatientIframe" style="width: 100%; height: 600px; border: none;"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+
+            // Set iframe source and show modal
+            $('#admitPatientIframe').attr('src', url);
+            $('#admitPatientModal').modal('show');
+        }
+
+        // Function to close the modal (called from iframe)
+        window.closeAdmitPatientModal = function() {
+            $('#admitPatientModal').modal('hide');
+        };
+
+        // Clear iframe src when modal is hidden
+        $('#admitPatientModal').on('hidden.bs.modal', function () {
+            $('#admitPatientIframe').attr('src', 'about:blank');
         });
     </script>
 @stop 

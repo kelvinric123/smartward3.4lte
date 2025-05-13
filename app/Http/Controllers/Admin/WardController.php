@@ -186,6 +186,27 @@ class WardController extends Controller
     }
     
     /**
+     * Show form to admit a patient to a bed from the ward dashboard in an iframe.
+     */
+    public function iframeAdmitPatient(Ward $ward, $bedId)
+    {
+        // Find the bed within this ward
+        $bed = $ward->beds()->findOrFail($bedId);
+        
+        // Load relationships needed for the form
+        $consultants = \App\Models\Consultant::where('is_active', true)->get();
+        $patients = \App\Models\Patient::all();
+        $nurses = \App\Models\User::whereHas('roles', function ($query) {
+            $query->where('name', 'nurse');
+        })->get();
+        
+        // Set bed status to occupied for admission form
+        $bed->status = 'occupied';
+        
+        return view('admin.beds.wards.admit_patient_iframe', compact('ward', 'bed', 'consultants', 'patients', 'nurses'));
+    }
+    
+    /**
      * Process the admission form submission.
      */
     public function storeAdmission(Request $request, Ward $ward, $bedId)

@@ -236,4 +236,90 @@ class PatientController extends Controller
         Session::flash('success', 'Patient deleted successfully!');
         return redirect()->route('admin.patients.index');
     }
+
+    /**
+     * Search patients by IC/Passport/MRN
+     */
+    public function search(Request $request)
+    {
+        try {
+            \Log::info('Patient search request', ['request' => $request->all()]);
+            
+            // Get query from request
+            $query = '';
+            if ($request->has('query')) {
+                $query = trim($request->input('query'));
+            }
+            
+            if (empty($query)) {
+                \Log::info('Empty query, returning empty array');
+                return response()->json([]);
+            }
+            
+            // Split the query into words for better matching
+            $searchTerms = explode(' ', $query);
+            
+            \Log::info('Searching for terms', ['query' => $query, 'terms' => $searchTerms]);
+            
+            $patients = \App\Models\Patient::where(function($q) use ($searchTerms, $query) {
+                    // Exact matches first
+                    $q->where('identity_number', $query)
+                      ->orWhere('mrn', $query)
+                      ->orWhere('name', $query);
+                    
+                    // Then partial matches
+                    foreach ($searchTerms as $term) {
+                        if (strlen($term) >= 3) { // Only search terms with 3 or more characters
+                            $q->orWhere(function($subQ) use ($term) {
+                                $subQ->where('identity_number', 'like', '%' . $term . '%')
+                                     ->orWhere('mrn', 'like', '%' . $term . '%')
+                                     ->orWhere('name', 'like', '%' . $term . '%')
+                                     ->orWhere('phone', 'like', '%' . $term . '%');
+                            });
+                        }
+                    }
+                })
+                ->select('id', 'name', 'identity_number', 'mrn', 'phone')
+                ->orderByRaw("
+                    CASE 
+                        WHEN identity_number = ? THEN 1
+                        WHEN mrn = ? THEN 2
+                        WHEN name = ? THEN 3
+                        ELSE 4
+                    END
+                ", [$query, $query, $query])
+                ->limit(15)
+                ->get();
+                
+            // Format the results for better display
+            $formattedPatients = $patients->map(function($patient) {
+                return [
+                    'id' => $patient->id,
+                    'text' => sprintf(
+                        '%s (%s) %s',
+                        $patient->name,
+                        $patient->identity_number ?: $patient->mrn,
+                        $patient->phone ? ' - ' . $patient->phone : ''
+                    ),
+                    'name' => $patient->name,
+                    'identity_number' => $patient->identity_number,
+                    'mrn' => $patient->mrn,
+                    'phone' => $patient->phone
+                ];
+            });
+            
+            \Log::info('Patient search results', ['count' => count($formattedPatients)]);
+                
+            return response()->json($formattedPatients);
+        } catch (\Exception $e) {
+            \Log::error('Error in patient search', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'An error occurred while searching for patients'
+            ], 500);
+        }
+    }
 } 
