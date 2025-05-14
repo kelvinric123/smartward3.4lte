@@ -171,8 +171,19 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    <!-- Add empty space to push buttons to bottom, mimicking the layout of other beds -->
-                                                    <div style="min-height: 80px;"></div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+                                                        <button type="button" class="btn btn-success btn-sm return-patient-btn" 
+                                                                data-movement-id="{{ $activeMovements[$bed->patient_id]->id }}"
+                                                                data-patient-name="{{ $bed->patient->name }}">
+                                                            <i class="fas fa-sign-in-alt mr-1"></i> Patient Returned
+                                                        </button>
+                                                        <small class="text-muted ml-2">
+                                                            <i class="fas fa-clock"></i> {{ \Carbon\Carbon::parse($activeMovements[$bed->patient_id]->sent_time)->diffForHumans() }}
+                                                        </small>
+                                                    </div>
+                                                    
+                                                    <!-- Add some space to push buttons to bottom -->
+                                                    <div style="min-height: 30px;"></div>
                                                 @else
                                                     <p class="text-muted mb-1">
                                                         <i class="fas fa-clock"></i> 
@@ -644,6 +655,61 @@
         // Clear iframe src when modal is hidden
         $('#admitPatientModal').on('hidden.bs.modal', function () {
             $('#admitPatientIframe').attr('src', 'about:blank');
+        });
+
+        // Enable tooltips
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            
+            // Set current date and time
+            function updateDateTime() {
+                var now = new Date();
+                var options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                };
+                var formattedDate = now.toLocaleDateString('en-US', options);
+                $('#current-date-time-display').text(formattedDate);
+                $('#current-datetime').removeClass('d-none');
+            }
+            
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Return patient button click handler
+            $('.return-patient-btn').on('click', function() {
+                var movementId = $(this).data('movement-id');
+                var patientName = $(this).data('patient-name');
+                var btn = $(this);
+                
+                if (confirm('Are you sure you want to return the patient back to this bed?')) {
+                    btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Processing...');
+                    
+                    $.ajax({
+                        url: '/movements/' + movementId + '/return',
+                        method: 'PUT',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(response) {
+                            // Show success message
+                            toastr.success('Patient has been returned successfully');
+                            // Reload the page to refresh the bed status
+                            location.reload();
+                        },
+                        error: function(xhr) {
+                            // Show error message
+                            toastr.error('Failed to return patient. Please try again.');
+                            btn.prop('disabled', false).html('<i class="fas fa-sign-in-alt mr-1"></i> Return Patient');
+                        }
+                    });
+                }
+            });
         });
     </script>
 @stop 

@@ -128,6 +128,19 @@
         select.form-control {
             padding-right: 24px;
         }
+        .btn-teal {
+            background-color: #20c997;
+            border-color: #20c997;
+            color: #fff;
+        }
+        .btn-teal:hover {
+            background-color: #1ba87e;
+            border-color: #1ba87e;
+            color: #fff;
+        }
+        .bg-teal {
+            background-color: #20c997 !important;
+        }
     </style>
 @endsection
 
@@ -420,7 +433,10 @@
                             <i class="fas fa-mobile-alt fa-5x text-muted mb-3"></i>
                             <h3>Patient View</h3>
                             <p class="lead">This feature will show what information the patient can see on their device.</p>
-                            <p>The patient view is currently under development.</p>
+                            <a href="{{ route('admin.patients.panel', $patient->id) }}" target="_blank" class="btn btn-lg btn-teal mb-3">
+                                <i class="fas fa-external-link-alt mr-1"></i> View Patient Panel
+                            </a>
+                            <p class="text-muted">Opens in a new tab</p>
                         </div>
                     </div>
                 </div>
@@ -569,9 +585,9 @@
                                         <p>This will free up the bed for other patients.</p>
                                     </div>
                                     
-                                    <a href="{{ route('admin.patients.discharge', $patient->id) }}" class="btn btn-danger btn-block btn-lg" target="_blank">
-                                        <i class="fas fa-sign-out-alt mr-2"></i> Proceed to Discharge
-                                    </a>
+                                    <button type="button" class="btn btn-danger btn-block btn-lg" id="dischargePatientBtn">
+                                        <i class="fas fa-sign-out-alt mr-2"></i> Discharge Patient
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -602,6 +618,52 @@
     </div>
   </div>
 </div>
+
+<!-- Discharge Confirmation Modal -->
+<div class="modal fade" id="dischargeConfirmModal" tabindex="-1" role="dialog" aria-labelledby="dischargeConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="dischargeConfirmModalLabel">Confirm Patient Discharge</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="quickDischargeForm" action="{{ route('admin.patients.discharge.quick', $patient->id) }}" method="POST">
+        @csrf
+        <div class="modal-body">
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle mr-2"></i> 
+            Are you sure you want to discharge this patient? This action cannot be undone.
+          </div>
+          
+          <div class="form-group">
+            <label for="discharge_type">Discharge Type</label>
+            <select class="form-control" id="discharge_type" name="discharge_type" required>
+                <option value="regular">Regular Discharge</option>
+                <option value="ama">Against Medical Advice</option>
+                <option value="death">Death</option>
+                <option value="transfer">Transfer to Another Facility</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="discharge_notes">Discharge Notes (Optional)</label>
+            <textarea class="form-control" id="discharge_notes" name="discharge_notes" rows="3"></textarea>
+          </div>
+          
+          <input type="hidden" name="ward_id" value="{{ $bed->ward_id }}">
+          <input type="hidden" name="redirect_to_ward" value="1">
+          <input type="hidden" name="is_iframe" value="1">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Discharge</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('js')
@@ -609,33 +671,27 @@
     $(document).ready(function() {
         // Toggle visibility of sensitive fields
         $('.toggle-visibility').on('click', function() {
-            var target = $(this).data('target');
-            var input = $(target);
-            var icon = $(this).find('i');
+            const target = $($(this).data('target'));
+            const isHidden = target.val().includes('•') || target.val().includes('*');
             
-            if (input.val() === input.data('original')) {
-                // If currently showing original value, mask it
-                if (target === '#name') {
-                    input.val('•'.repeat(input.data('original').length));
-                } else if (target === '#ic') {
-                    var original = input.data('original');
-                    input.val(original.substring(0, 3) + '•'.repeat(Math.max(0, original.length - 6)) + original.slice(-3));
-                } else if (target === '#contact') {
-                    var original = input.data('original');
-                    input.val(original.substring(0, 3) + '•'.repeat(Math.max(0, original.length - 5)) + original.slice(-2));
-                }
-                icon.removeClass('fa-eye-slash').addClass('fa-eye');
+            if (isHidden) {
+                // Show the original value
+                target.val(target.data('original'));
+                $(this).find('i').removeClass('fa-eye').addClass('fa-eye-slash');
             } else {
-                // If currently masked, show original value
-                input.val(input.data('original'));
-                icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                // Hide the value again
+                const original = target.data('original');
+                if ($(this).data('target') === '#name') {
+                    target.val('•'.repeat(original.length));
+                } else if ($(this).data('target') === '#ic' || $(this).data('target') === '#contact') {
+                    const prefix = original.substring(0, 3);
+                    const suffix = original.substring(original.length - ($(this).data('target') === '#ic' ? 3 : 2));
+                    const middle = $(this).data('target') === '#ic' ? '*'.repeat(Math.max(0, original.length - 6)) : '*'.repeat(Math.max(0, original.length - 5));
+                    target.val(prefix + middle + suffix);
+                }
+                $(this).find('i').removeClass('fa-eye-slash').addClass('fa-eye');
             }
         });
-        
-        // Helper function to repeat a string
-        function str_repeat(str, count) {
-            return str.repeat(count);
-        }
         
         // Load consultants when specialty is selected
         $('#specialty_id').on('change', function() {
@@ -658,103 +714,83 @@
                 $('#consultant_id').append('<option value="">Select Consultant</option>');
             }
         });
-
-        let scheduleForm = $('#scheduleMovementForm');
-        let confirmModal = $('#confirmScheduleModal');
-        let confirmBtn = $('#confirmScheduleBtn');
-        let formData = null;
-
-        scheduleForm.on('submit', function(e) {
-            e.preventDefault();
-            formData = scheduleForm.serialize();
-            confirmModal.modal('show');
-        });
-
-        confirmBtn.on('click', function() {
-            confirmModal.modal('hide');
-            // Remove previous error highlights/messages
-            scheduleForm.find('.is-invalid').removeClass('is-invalid');
-            scheduleForm.find('.invalid-feedback').remove();
-            $.ajax({
-                url: scheduleForm.attr('action'),
-                method: 'POST',
-                data: formData,
-                headers: {'X-CSRF-TOKEN': $('input[name="_token"]').val()},
-                success: function(response) {
-                    if(response && response.movement_history_html) {
-                        $('.card .card-body .table-responsive').html(response.movement_history_html);
-                    } else {
-                        location.reload();
-                    }
-                },
-                error: function(xhr) {
-                    if(xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.errors) {
-                        let errors = xhr.responseJSON.errors;
-                        let firstErrorField = null;
-                        for (let field in errors) {
-                            let input = scheduleForm.find('[name="' + field + '"]');
-                            input.addClass('is-invalid');
-                            input.after('<div class="invalid-feedback">' + errors[field][0] + '</div>');
-                            if (!firstErrorField) firstErrorField = input;
-                        }
-                        if (firstErrorField) firstErrorField.focus();
-                    } else {
-                        alert('Failed to schedule movement. Please check your input.');
-                    }
-                }
-            });
-        });
-
-        // Handle movement form submissions
-        $('.movement-form').on('submit', function(e) {
-            e.preventDefault();
-            const form = $(this);
-            const action = form.data('action');
-            const url = form.attr('action');
-            
-            $.ajax({
-                url: url,
-                method: 'POST',
-                data: form.serialize(),
-                success: function(response) {
-                    if(response && response.movement_history_html) {
-                        // Update the movement history table
-                        $('.card .card-body .table-responsive').html(response.movement_history_html);
-                        // Show success message
-                        toastr.success('Patient movement updated successfully');
-                    } else {
-                        // Fallback to page reload if no HTML response
-                        location.reload();
-                    }
-                },
-                error: function(xhr) {
-                    toastr.error('Failed to update patient movement');
-                }
-            });
-        });
-
-        // AJAX for Risk Factors
+        
+        // Submit risk factors form via AJAX
         $('#riskFactorsForm').on('submit', function(e) {
             e.preventDefault();
-            var $form = $(this);
-            var $btn = $form.find('button[type=submit]');
-            $btn.prop('disabled', true);
-
+            
             $.ajax({
-                url: $form.attr('action'),
-                method: 'POST',
-                data: $form.serialize(),
-                headers: {'X-CSRF-TOKEN': $('input[name="_token"]').val()},
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
                 success: function(response) {
-                    $btn.prop('disabled', false);
-                    toastr.success('Risk factors updated successfully!');
-                    // Optionally, update risk factor icons in the UI here
+                    // Show success message
+                    const successAlert = $('<div class="alert alert-success alert-dismissible fade show">' +
+                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                        'Risk factors updated successfully.' +
+                        '</div>');
+                    
+                    // Append it before the form and auto-remove after 3 seconds
+                    successAlert.insertBefore('#riskFactorsForm');
+                    setTimeout(function() {
+                        successAlert.alert('close');
+                    }, 3000);
                 },
                 error: function(xhr) {
-                    $btn.prop('disabled', false);
-                    toastr.error('Failed to update risk factors.');
+                    // Show error message
+                    const errorMessage = xhr.responseJSON && xhr.responseJSON.error 
+                        ? xhr.responseJSON.error 
+                        : 'An error occurred while updating risk factors.';
+                    
+                    const errorAlert = $('<div class="alert alert-danger alert-dismissible fade show">' +
+                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                        errorMessage +
+                        '</div>');
+                    
+                    // Append it before the form
+                    errorAlert.insertBefore('#riskFactorsForm');
+                    setTimeout(function() {
+                        errorAlert.alert('close');
+                    }, 3000);
                 }
             });
+        });
+        
+        // Handle movement actions via AJAX
+        $('.movement-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const form = $(this);
+            const action = form.data('action');
+            let confirmMessage = '';
+            
+            if (action === 'send') {
+                confirmMessage = 'Are you sure you want to send this patient out of the ward?';
+            } else if (action === 'return') {
+                confirmMessage = 'Are you sure you want to mark this patient as returned to the ward?';
+            } else if (action === 'cancel') {
+                confirmMessage = 'Are you sure you want to cancel this scheduled movement?';
+            }
+            
+            if (confirm(confirmMessage)) {
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function(response) {
+                        // Reload the page to show updated status
+                        window.location.reload();
+                    },
+                    error: function(xhr) {
+                        // Show error message
+                        const errorMessage = xhr.responseJSON && xhr.responseJSON.error 
+                            ? xhr.responseJSON.error 
+                            : 'An error occurred while processing your request.';
+                        
+                        alert(errorMessage);
+                    }
+                });
+            }
         });
     });
 </script>

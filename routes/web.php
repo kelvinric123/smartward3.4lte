@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\VitalSignController;
 use App\Http\Controllers\Admin\PatientDischargeController;
 use App\Http\Controllers\Admin\PatientMovementController;
 use App\Http\Controllers\Admin\PatientReferralController;
+use App\Http\Controllers\Admin\PatientPanelController;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +54,7 @@ Route::prefix('admin')->group(function () {
     // Patient Discharge Routes
     Route::get('patients/{patientId}/discharge', [PatientDischargeController::class, 'create'])->name('admin.patients.discharge');
     Route::post('patients/{patientId}/discharge', [PatientDischargeController::class, 'store'])->name('admin.patients.discharge.store');
+    Route::post('patients/{patientId}/discharge/quick', [PatientDischargeController::class, 'quickDischarge'])->name('admin.patients.discharge.quick');
     Route::get('patients/{patientId}/discharge-history', [PatientDischargeController::class, 'history'])->name('admin.patients.discharge.history');
     Route::get('admission-history', [PatientDischargeController::class, 'admissionHistory'])->name('admin.admission.history');
     
@@ -80,6 +82,7 @@ Route::prefix('admin')->group(function () {
     // Vital Signs Routes
     Route::get('/vital-signs', [VitalSignController::class, 'index'])->name('admin.vital-signs.index');
     Route::get('/vital-signs/create', [VitalSignController::class, 'create'])->name('admin.vital-signs.create');
+    Route::get('/vital-signs/{vitalSign}', [VitalSignController::class, 'show'])->name('admin.vital-signs.show');
     Route::post('/vital-signs', [VitalSignController::class, 'store'])->name('admin.vital-signs.store');
     Route::get('/vital-signs/{vitalSign}/edit', [VitalSignController::class, 'edit'])->name('admin.vital-signs.edit');
     Route::put('/vital-signs/{vitalSign}', [VitalSignController::class, 'update'])->name('admin.vital-signs.update');
@@ -124,6 +127,9 @@ Route::prefix('admin')->group(function () {
         $ward = \App\Models\Ward::findOrFail($ward);
         return view('admin.beds.wards.notification_demo', compact('ward'));
     })->name('admin.beds.wards.notification.demo');
+    
+    // Patient Panel Route
+    Route::get('patients/{patient}/panel', [PatientPanelController::class, 'showPanel'])->name('admin.patients.panel');
 });
 
 // Hospital Admin Routes

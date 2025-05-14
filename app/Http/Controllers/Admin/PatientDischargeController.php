@@ -69,6 +69,66 @@ class PatientDischargeController extends Controller
     }
     
     /**
+     * Quick discharge patient from bed dashboard
+     */
+    public function quickDischarge(Request $request, $patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
+        $bed = Bed::where('patient_id', $patientId)->where('status', 'occupied')->first();
+        
+        if (!$bed) {
+            return redirect()->route('admin.patients.show', $patientId)
+                ->with('error', 'This patient is not currently admitted to any bed.');
+        }
+        
+        $request->validate([
+            'discharge_type' => 'required|string',
+            'discharge_notes' => 'nullable|string',
+        ]);
+        
+        // Create discharge record
+        PatientDischarge::create([
+            'patient_id' => $patientId,
+            'ward_id' => $bed->ward_id,
+            'bed_number' => $bed->bed_number,
+            'discharge_date' => now()->setTimezone('Asia/Kuala_Lumpur'),
+            'discharge_type' => $request->discharge_type,
+            'discharged_by' => Auth::id(),
+            'discharge_notes' => $request->discharge_notes ?? 'Quick discharge from bed dashboard',
+        ]);
+        
+        // Update bed to available status and remove patient
+        $bed->update([
+            'status' => 'available',
+            'patient_id' => null,
+            'consultant_id' => null,
+            'nurse_id' => null,
+        ]);
+        
+        // Mark any active admissions as inactive
+        \App\Models\PatientAdmission::where('patient_id', $patientId)
+            ->where('is_active', true)
+            ->update(['is_active' => false]);
+        
+        // Check if this is an iframe request
+        if ($request->has('is_iframe')) {
+            // Return a response that will refresh the parent window
+            return response()->view('admin.beds.wards.iframe_discharge_success', [
+                'ward_id' => $request->ward_id
+            ]);
+        }
+        
+        // Redirect back to ward dashboard if requested
+        if ($request->has('redirect_to_ward') && $request->ward_id) {
+            return redirect()->route('admin.beds.wards.dashboard', $request->ward_id)
+                ->with('success', 'Patient discharged successfully.');
+        }
+        
+        return redirect()->route('admin.patients.show', $patientId)
+            ->with('success', 'Patient discharged successfully.');
+    }
+    
+    /**
      * List discharge history for a patient
      */
     public function history($patientId)
