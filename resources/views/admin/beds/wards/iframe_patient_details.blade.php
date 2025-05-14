@@ -141,6 +141,24 @@
         .bg-teal {
             background-color: #20c997 !important;
         }
+        
+        /* Vital Signs tab styles */
+        .vital-signs-container {
+            position: relative;
+            height: calc(100vh - 200px);
+            min-height: 500px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            background-color: #f8f9fa;
+        }
+        
+        .vital-signs-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
     </style>
 @endsection
 
@@ -163,6 +181,11 @@
                 <li class="nav-item">
                     <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab" aria-controls="details" aria-selected="true">
                         <i class="fas fa-user"></i> Patient Details
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="vitals-tab" data-toggle="tab" href="#vitals" role="tab" aria-controls="vitals" aria-selected="false">
+                        <i class="fas fa-heartbeat"></i> Vital Signs
                     </a>
                 </li>
                 <li class="nav-item">
@@ -292,6 +315,23 @@
                                     </div>
                                     <button type="submit" class="btn btn-primary btn-sm">Update Risk Factors</button>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vital Signs Tab -->
+                <div class="tab-pane fade" id="vitals" role="tabpanel" aria-labelledby="vitals-tab">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="text-right mb-3">
+                                <a href="{{ route('admin.vital-signs.create', ['patient_id' => $patient->id]) }}" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add New Vital Signs
+                                </a>
+                            </div>
+                            
+                            <div class="vital-signs-container">
+                                <iframe src="{{ route('admin.vital-signs.iframe-trend', $patient->id) }}" style="width: 100%; height: 100%; border: none;"></iframe>
                             </div>
                         </div>
                     </div>
@@ -669,107 +709,79 @@
 @section('js')
 <script>
     $(document).ready(function() {
-        // Toggle visibility of sensitive fields
+        // Toggle sensitive information visibility
         $('.toggle-visibility').on('click', function() {
             const target = $($(this).data('target'));
-            const isHidden = target.val().includes('•') || target.val().includes('*');
+            const icon = $(this).find('i');
             
-            if (isHidden) {
-                // Show the original value
+            if (icon.hasClass('fa-eye')) {
+                // Show the original text
                 target.val(target.data('original'));
-                $(this).find('i').removeClass('fa-eye').addClass('fa-eye-slash');
+                icon.removeClass('fa-eye').addClass('fa-eye-slash');
             } else {
-                // Hide the value again
-                const original = target.data('original');
-                if ($(this).data('target') === '#name') {
-                    target.val('•'.repeat(original.length));
-                } else if ($(this).data('target') === '#ic' || $(this).data('target') === '#contact') {
-                    const prefix = original.substring(0, 3);
-                    const suffix = original.substring(original.length - ($(this).data('target') === '#ic' ? 3 : 2));
-                    const middle = $(this).data('target') === '#ic' ? '*'.repeat(Math.max(0, original.length - 6)) : '*'.repeat(Math.max(0, original.length - 5));
-                    target.val(prefix + middle + suffix);
+                // Hide the text
+                if (target.attr('id') === 'ic') {
+                    const original = target.data('original');
+                    target.val(original.substr(0, 3) + '*'.repeat(Math.max(0, original.length - 6)) + original.substr(-3));
+                } else if (target.attr('id') === 'contact') {
+                    const original = target.data('original');
+                    target.val(original.substr(0, 3) + '*'.repeat(Math.max(0, original.length - 5)) + original.substr(-2));
+                } else {
+                    target.val('•'.repeat(target.data('original').length));
                 }
-                $(this).find('i').removeClass('fa-eye-slash').addClass('fa-eye');
-            }
-        });
-        
-        // Load consultants when specialty is selected
-        $('#specialty_id').on('change', function() {
-            var specialtyId = $(this).val();
-            if (specialtyId) {
-                $.ajax({
-                    url: '{{ route("admin.referrals.consultants-by-specialty.direct") }}',
-                    type: 'GET',
-                    data: { specialty_id: specialtyId },
-                    success: function(data) {
-                        $('#consultant_id').empty().prop('disabled', false);
-                        $('#consultant_id').append('<option value="">Select Consultant</option>');
-                        $.each(data, function(key, value) {
-                            $('#consultant_id').append('<option value="' + value.id + '">' + value.name + '</option>');
-                        });
-                    }
-                });
-            } else {
-                $('#consultant_id').empty().prop('disabled', true);
-                $('#consultant_id').append('<option value="">Select Consultant</option>');
+                icon.removeClass('fa-eye-slash').addClass('fa-eye');
             }
         });
         
         // Submit risk factors form via AJAX
         $('#riskFactorsForm').on('submit', function(e) {
             e.preventDefault();
+            const form = $(this);
             
             $.ajax({
-                url: $(this).attr('action'),
+                url: form.attr('action'),
                 type: 'POST',
-                data: $(this).serialize(),
+                data: form.serialize(),
                 success: function(response) {
                     // Show success message
-                    const successAlert = $('<div class="alert alert-success alert-dismissible fade show">' +
-                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-                        'Risk factors updated successfully.' +
-                        '</div>');
-                    
-                    // Append it before the form and auto-remove after 3 seconds
-                    successAlert.insertBefore('#riskFactorsForm');
-                    setTimeout(function() {
-                        successAlert.alert('close');
-                    }, 3000);
+                    $('<div class="alert alert-success">Risk factors updated successfully!</div>')
+                        .insertBefore(form)
+                        .delay(3000)
+                        .fadeOut(function() {
+                            $(this).remove();
+                        });
                 },
                 error: function(xhr) {
                     // Show error message
-                    const errorMessage = xhr.responseJSON && xhr.responseJSON.error 
-                        ? xhr.responseJSON.error 
-                        : 'An error occurred while updating risk factors.';
+                    let errorMessage = 'An error occurred. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
                     
-                    const errorAlert = $('<div class="alert alert-danger alert-dismissible fade show">' +
-                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
-                        errorMessage +
-                        '</div>');
-                    
-                    // Append it before the form
-                    errorAlert.insertBefore('#riskFactorsForm');
-                    setTimeout(function() {
-                        errorAlert.alert('close');
-                    }, 3000);
+                    $('<div class="alert alert-danger">' + errorMessage + '</div>')
+                        .insertBefore(form)
+                        .delay(3000)
+                        .fadeOut(function() {
+                            $(this).remove();
+                        });
                 }
             });
         });
         
-        // Handle movement actions via AJAX
+        // Handle movement actions
         $('.movement-form').on('submit', function(e) {
             e.preventDefault();
-            
             const form = $(this);
             const action = form.data('action');
-            let confirmMessage = '';
             
+            // Confirm action
+            let confirmMessage = 'Are you sure?';
             if (action === 'send') {
-                confirmMessage = 'Are you sure you want to send this patient out of the ward?';
+                confirmMessage = 'Confirm patient has been sent to destination?';
             } else if (action === 'return') {
-                confirmMessage = 'Are you sure you want to mark this patient as returned to the ward?';
+                confirmMessage = 'Confirm patient has returned to ward?';
             } else if (action === 'cancel') {
-                confirmMessage = 'Are you sure you want to cancel this scheduled movement?';
+                confirmMessage = 'Cancel this scheduled movement?';
             }
             
             if (confirm(confirmMessage)) {
@@ -778,18 +790,61 @@
                     type: 'POST',
                     data: form.serialize(),
                     success: function(response) {
-                        // Reload the page to show updated status
+                        // Reload the page to reflect changes
                         window.location.reload();
                     },
                     error: function(xhr) {
                         // Show error message
-                        const errorMessage = xhr.responseJSON && xhr.responseJSON.error 
-                            ? xhr.responseJSON.error 
-                            : 'An error occurred while processing your request.';
+                        let errorMessage = 'An error occurred. Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
                         
                         alert(errorMessage);
                     }
                 });
+            }
+        });
+        
+        // Handle loading iframe content when tab is clicked
+        $('#vitals-tab').on('click', function() {
+            // Get the iframe
+            const iframe = $('#vitals iframe');
+            
+            // Only reload if the iframe hasn't been loaded yet or is empty
+            if (!iframe.attr('data-loaded')) {
+                // Show loading spinner
+                const container = iframe.parent();
+                container.html('<div class="d-flex justify-content-center align-items-center" style="height: 100%;">' +
+                    '<div class="spinner-border text-primary" role="status">' +
+                    '<span class="sr-only">Loading...</span>' +
+                    '</div>' +
+                    '</div>');
+                
+                // Create new iframe with the source
+                const newIframe = $('<iframe>', {
+                    src: '{{ route('admin.vital-signs.iframe-trend', $patient->id) }}',
+                    css: {
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                        display: 'block'
+                    },
+                    attr: {
+                        'data-loaded': 'true'
+                    },
+                    on: {
+                        load: function() {
+                            // Remove any loading indicators
+                            $(this).show();
+                        }
+                    }
+                });
+                
+                // Add the iframe back to the container
+                setTimeout(function() {
+                    container.html(newIframe);
+                }, 500);
             }
         });
     });

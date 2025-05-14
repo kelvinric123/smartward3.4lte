@@ -58,8 +58,13 @@
                         <div class="d-flex justify-content-between">
                             <h3 class="card-title">Beds Layout</h3>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#notificationModal">
-                                    <i class="fas fa-bell"></i> Notification
+                                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#notificationModal" id="notification-btn">
+                                    <i class="fas fa-bell"></i> Notifications 
+                                    @if(isset($patientAlerts) && $patientAlerts->where('status', 'new')->count() > 0)
+                                        <span class="badge badge-light" id="new-alerts-count">{{ $patientAlerts->where('status', 'new')->count() }}</span>
+                                    @else
+                                        <span class="badge badge-light d-none" id="new-alerts-count">0</span>
+                                    @endif
                                 </button>
                             </div>
                         </div>
@@ -618,6 +623,28 @@
             $('#patientDetailsModal').on('hidden.bs.modal', function () {
                 $('#patientDetailsFrame').attr('src', '');
             });
+            
+            // Function for handling new alerts
+            window.newAlertReceived = function(count) {
+                // Update the notification badge count
+                const countBadge = $('#new-alerts-count');
+                
+                // If there are new alerts, show the badge with count
+                if (count > 0) {
+                    countBadge.text(count).removeClass('d-none');
+                    
+                    // Flash the notification button to draw attention
+                    const notificationBtn = $('#notification-btn');
+                    notificationBtn.addClass('btn-danger').removeClass('btn-warning');
+                    
+                    // Reset button color after 2 seconds
+                    setTimeout(function() {
+                        notificationBtn.addClass('btn-warning').removeClass('btn-danger');
+                    }, 2000);
+                } else {
+                    countBadge.text('0').addClass('d-none');
+                }
+            };
         });
 
         function openAdmitPatientModal(url) {

@@ -101,6 +101,11 @@ Route::prefix('admin')->group(function () {
         // Ward Dashboard
         Route::get('wards/{ward}/dashboard', [App\Http\Controllers\Admin\WardController::class, 'dashboard'])->name('wards.dashboard');
         
+        // Ward Patient Alerts
+        Route::get('wards/{ward}/alerts', [App\Http\Controllers\Admin\WardController::class, 'getPatientAlerts'])->name('wards.alerts');
+        Route::put('wards/alerts/{alertId}/seen', [App\Http\Controllers\Admin\WardController::class, 'markAlertAsSeen'])->name('wards.alerts.seen');
+        Route::put('wards/alerts/{alertId}/resolve', [App\Http\Controllers\Admin\WardController::class, 'resolveAlert'])->name('wards.alerts.resolve');
+        
         // Ward Dashboard - Admit Patient
         Route::get('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'admitPatient'])->name('wards.admit');
         Route::get('wards/{ward}/admit/{bedId}/iframe', [App\Http\Controllers\Admin\WardController::class, 'iframeAdmitPatient'])->name('wards.admit.iframe');
@@ -127,7 +132,16 @@ Route::prefix('admin')->group(function () {
     // Notification Demo Page for Ward (moved out of nested group)
     Route::get('beds/wards/{ward}/notification-demo', function($ward) {
         $ward = \App\Models\Ward::findOrFail($ward);
-        return view('admin.beds.wards.notification_demo', compact('ward'));
+        
+        // Get recent unresolved patient alerts for this ward
+        $patientAlerts = \App\Models\PatientAlert::where('ward_id', $ward->id)
+            ->whereIn('status', ['new', 'seen'])
+            ->with(['patient', 'bed'])
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+        
+        return view('admin.beds.wards.notification_demo', compact('ward', 'patientAlerts'));
     })->name('admin.beds.wards.notification.demo');
     
     // Food Ordering Routes
@@ -146,6 +160,9 @@ Route::prefix('admin')->group(function () {
     
     // Patient Panel Route
     Route::get('patients/{patient}/panel', [PatientPanelController::class, 'showPanel'])->name('admin.patients.panel');
+    
+    // Patient Alert Route
+    Route::post('patients/{patient}/alert', [PatientPanelController::class, 'sendAlert'])->name('admin.patients.alert.send');
     
     // Patient Food Ordering Routes
     Route::post('patients/{patient}/food-order', [PatientPanelController::class, 'storeOrder'])->name('admin.patients.food-order.store');

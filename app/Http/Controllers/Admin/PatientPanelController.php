@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\FoodMenu;
 use App\Models\FoodOrder;
+use App\Models\PatientAlert;
 use Illuminate\Http\Request;
 
 class PatientPanelController extends Controller
@@ -127,5 +128,78 @@ class PatientPanelController extends Controller
             'success' => false,
             'message' => 'This order cannot be cancelled'
         ], 400);
+    }
+    
+    /**
+     * Send an alert from patient panel
+     *
+     * @param Request $request
+     * @param Patient $patient
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function sendAlert(Request $request, Patient $patient)
+    {
+        try {
+            $validated = $request->validate([
+                'alert_type' => 'required|string|in:emergency,pain,assistance,water,bathroom,food',
+                'message' => 'nullable|string',
+                'is_urgent' => 'nullable|boolean',
+            ]);
+            
+            // Get the active admission
+            $activeAdmission = $patient->activeAdmission;
+            
+            if (!$activeAdmission) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Patient does not have an active admission.'
+                ], 400);
+            }
+            
+            // Determine urgency based on alert type if not explicitly provided
+            $isUrgent = $request->has('is_urgent') ? $validated['is_urgent'] : ($validated['alert_type'] === 'emergency');
+            
+            // Create the alert
+            $alert = PatientAlert::create([
+                'patient_id' => $patient->id,
+                'ward_id' => $activeAdmission->ward_id,
+                'bed_id' => $activeAdmission->bed_id,
+                'alert_type' => $validated['alert_type'],
+                'message' => $validated['message'] ?? $this->getDefaultMessage($validated['alert_type']),
+                'status' => 'new',
+                'is_urgent' => $isUrgent,
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Alert sent successfully',
+                'alert' => $alert
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error sending alert: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get default message based on alert type
+     *
+     * @param string $alertType
+     * @return string
+     */
+    private function getDefaultMessage($alertType)
+    {
+        $messages = [
+            'emergency' => 'Emergency assistance needed!',
+            'pain' => 'Patient is experiencing pain and needs assistance',
+            'assistance' => 'Patient requests general assistance',
+            'water' => 'Patient requests water',
+            'bathroom' => 'Patient needs assistance to bathroom',
+            'food' => 'Patient requests food or snack',
+        ];
+        
+        return $messages[$alertType] ?? 'Patient requires assistance';
     }
 } 

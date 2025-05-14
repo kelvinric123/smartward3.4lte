@@ -934,6 +934,153 @@
             justify-content: center;
         }
         
+        .vital-signs-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .vital-signs-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 800px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .vital-signs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #00a99d;
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .vital-signs-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .close-vital-signs-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .vital-signs-body {
+            padding: 20px;
+        }
+        
+        .vital-record {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .vital-record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .vital-date {
+            font-weight: 600;
+            color: #00a99d;
+            font-size: 16px;
+        }
+        
+        .vital-ews {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 600;
+            min-width: 32px;
+            text-align: center;
+        }
+        
+        .ews-normal {
+            background-color: #28a745;
+        }
+        
+        .ews-low {
+            background-color: #17a2b8;
+        }
+        
+        .ews-medium {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .ews-high {
+            background-color: #dc3545;
+        }
+        
+        .vital-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .vital-item {
+            padding: 10px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .vital-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .vital-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .vital-notes {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e0f2f1;
+            border-radius: 6px;
+            font-style: italic;
+            color: #555;
+        }
+        
+        @media (max-width: 768px) {
+            .vital-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .vital-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         .food-content {
             background-color: white;
             border-radius: 8px;
@@ -1188,6 +1335,12 @@
             margin-top: 8px;
             margin-bottom: 15px;
         }
+        
+        @media (max-width: 576px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1267,22 +1420,34 @@
                 </div>
                 
     <!-- Alert Nurse Modal -->
-    <div class="alert-nurse-modal" id="alertNurseModal">
+    <div class="alert-nurse-modal" id="alertModal">
         <div class="alert-nurse-content">
             <div class="alert-nurse-header">
-                <h5>Alert Nurse</h5>
-                <span class="close-modal">&times;</span>
+                <h5>Alert Nursing Station</h5>
+                <div class="close-modal" onclick="closeAlertModal()">&times;</div>
             </div>
             <div class="alert-nurse-body">
                 <div class="alert-buttons">
-                    <button class="alert-btn emergency-btn" data-alert-type="emergency">Emergency</button>
-                    <button class="alert-btn pain-btn" data-alert-type="pain">Pain</button>
-                    <button class="alert-btn assistance-btn" data-alert-type="assistance">Need Assistance</button>
-                    <button class="alert-btn water-btn" data-alert-type="water">Water</button>
-                    <button class="alert-btn bathroom-btn" data-alert-type="bathroom">Bathroom</button>
-                    <button class="alert-btn food-btn" data-alert-type="food">Food</button>
+                    <button class="alert-btn emergency-btn" onclick="sendAlert('emergency')">
+                        <i class="fas fa-exclamation-triangle"></i><br>Emergency
+                    </button>
+                    <button class="alert-btn pain-btn" onclick="sendAlert('pain')">
+                        <i class="fas fa-heartbeat"></i><br>Pain
+                    </button>
+                    <button class="alert-btn assistance-btn" onclick="sendAlert('assistance')">
+                        <i class="fas fa-hands-helping"></i><br>Assistance
+                    </button>
+                    <button class="alert-btn water-btn" onclick="sendAlert('water')">
+                        <i class="fas fa-tint"></i><br>Water
+                    </button>
+                    <button class="alert-btn bathroom-btn" onclick="sendAlert('bathroom')">
+                        <i class="fas fa-toilet"></i><br>Bathroom
+                    </button>
+                    <button class="alert-btn food-btn" onclick="sendAlert('food')">
+                        <i class="fas fa-utensils"></i><br>Food
+                    </button>
                 </div>
-                <iframe id="notification-iframe" style="display: none;" width="0" height="0" frameborder="0"></iframe>
+                <div class="alert-status mt-3" id="alertStatus" style="display: none;"></div>
             </div>
                     </div>
                 </div>
@@ -1809,664 +1974,568 @@
             <i class="fa fa-heartbeat"></i>
             <span>Health Education</span>
         </div>
-        <div class="nav-item">
+        <div class="nav-item" id="vital-sign-info-btn">
             <i class="fa fa-chart-line"></i>
             <span>Vital Sign Info</span>
         </div>
     </div>
     
     <script>
-        // Update current time
-        function updateTime() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the current time and update every second
+            function updateClock() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('current-time').textContent = `${hours}:${minutes}:${seconds}`;
-            
-            // Update date in format: WED, 05/14/2024
-            const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            const day = days[now.getDay()];
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const date = String(now.getDate()).padStart(2, '0');
-            const year = now.getFullYear();
-            document.getElementById('current-date').textContent = `${day}, ${month}/${date}/${year}`;
-        }
-        
-        // Update time every second
-        setInterval(updateTime, 1000);
-        updateTime(); // Initial call
-        
-        // YouTube video handling
-        let player;
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('youtube-video', {
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange,
-                    'onError': handleVideoError
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            event.target.playVideo();
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                event.target.playVideo();
+                let hours = now.getHours();
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                document.getElementById('current-time').textContent = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
             }
-        }
-        
-        function handleVideoError() {
-            const videoContainer = document.querySelector('.video-container');
-            if (videoContainer) {
-                videoContainer.innerHTML = '<div class="video-fallback">Video is temporarily unavailable</div>';
-            }
-        }
-        
-        // Load YouTube API
-        let tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        let firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        
-        window.addEventListener('load', function() {
-            // Fallback for direct iframe playing if API fails
-            setTimeout(() => {
-                if (!player || !player.playVideo) {
-                    const iframe = document.getElementById('youtube-video');
-                    if (iframe) {
-                        iframe.src = iframe.src.replace('enablejsapi=1', 'enablejsapi=0');
-                    }
-                }
-            }, 3000);
-        });
+            setInterval(updateClock, 1000);
+            updateClock();
         
         // Alert Nurse functionality
         const alertNurseBtn = document.getElementById('alert-nurse-btn');
-        const alertNurseModal = document.getElementById('alertNurseModal');
-        const closeModal = document.querySelector('.close-modal');
-        const alertButtons = document.querySelectorAll('.alert-btn');
-        const notificationIframe = document.getElementById('notification-iframe');
+            const alertModal = document.getElementById('alertModal');
         
-        // Show alert nurse modal
+            if (alertNurseBtn) {
         alertNurseBtn.addEventListener('click', function() {
-            alertNurseModal.style.display = 'flex';
-        });
-        
-        // Close modal when clicking X
-        closeModal.addEventListener('click', function() {
-            alertNurseModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === alertNurseModal) {
-                alertNurseModal.style.display = 'none';
+                    alertModal.style.display = 'flex';
+                });
+            }
+
+            // Food Ordering button
+            const foodOrderingBtn = document.getElementById('food-ordering-btn');
+            const foodOrderingModal = document.getElementById('foodOrderingModal');
+            if (foodOrderingBtn && foodOrderingModal) {
+                foodOrderingBtn.addEventListener('click', function() {
+                    foodOrderingModal.style.display = 'flex';
+                });
+            }
+
+            // Environmental Control button
+            const environmentalControlBtn = document.getElementById('environmental-control-btn');
+            const environmentalModal = document.getElementById('environmentalModal');
+            if (environmentalControlBtn && environmentalModal) {
+                environmentalControlBtn.addEventListener('click', function() {
+                    environmentalModal.style.display = 'flex';
+                });
+            }
+
+            // Medical Team button
+            const medicalTeamBtn = document.getElementById('medical-team-btn');
+            const medicalTeamModal = document.getElementById('medicalTeamModal');
+            if (medicalTeamBtn && medicalTeamModal) {
+                medicalTeamBtn.addEventListener('click', function() {
+                    medicalTeamModal.style.display = 'flex';
+                });
+            }
+
+            // Satisfaction Survey button
+            const satisfactionSurveyBtn = document.getElementById('satisfaction-survey-btn');
+            const surveyModal = document.getElementById('surveyModal');
+            if (satisfactionSurveyBtn && surveyModal) {
+                satisfactionSurveyBtn.addEventListener('click', function() {
+                    surveyModal.style.display = 'flex';
+                });
+            }
+
+            // Admission Info button
+            const admissionInfoBtn = document.getElementById('admission-info-btn');
+            const admissionModal = document.getElementById('admissionModal');
+            if (admissionInfoBtn && admissionModal) {
+                admissionInfoBtn.addEventListener('click', function() {
+                    admissionModal.style.display = 'flex';
+                });
+            }
+
+            // Add close button event listeners
+            const closeMedicalModalBtn = document.querySelector('.close-medical-modal');
+            if (closeMedicalModalBtn) {
+                closeMedicalModalBtn.addEventListener('click', closeMedicalTeamModal);
+            }
+
+            const closeEnvironmentalModalBtn = document.querySelector('.close-environmental-modal');
+            if (closeEnvironmentalModalBtn) {
+                closeEnvironmentalModalBtn.addEventListener('click', closeEnvironmentalModal);
+            }
+
+            const closeSurveyModalBtn = document.querySelector('.close-survey-modal');
+            if (closeSurveyModalBtn) {
+                closeSurveyModalBtn.addEventListener('click', closeSurveyModal);
+            }
+
+            const closeAdmissionModalBtn = document.querySelector('.close-admission-modal');
+            if (closeAdmissionModalBtn) {
+                closeAdmissionModalBtn.addEventListener('click', closeAdmissionModal);
+            }
+
+            const closeFoodModalBtn = document.querySelector('.close-food-modal');
+            if (closeFoodModalBtn) {
+                closeFoodModalBtn.addEventListener('click', closeFoodOrderingModal);
+            }
+
+            // Vital Sign Info button
+            const vitalSignInfoBtn = document.getElementById('vital-sign-info-btn');
+            const vitalSignsModal = document.getElementById('vitalSignsModal');
+            if (vitalSignInfoBtn && vitalSignsModal) {
+                vitalSignInfoBtn.addEventListener('click', function() {
+                    vitalSignsModal.style.display = 'flex';
+                    loadVitalSigns();
+                });
+            }
+
+            // Close Vital Signs modal
+            const closeVitalSignsModalBtn = document.querySelector('.close-vital-signs-modal');
+            if (closeVitalSignsModalBtn) {
+                closeVitalSignsModalBtn.addEventListener('click', closeVitalSignsModal);
             }
         });
         
-        // Handle alert button clicks
-        alertButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const alertType = this.getAttribute('data-alert-type');
-                const patientId = {{ $patient->id }};
-                const patientName = "{{ $patient->name }}";
-                const bedNumber = "{{ $bed->bed_number }}";
-                
-                // Show confirmation
-                alert(`${alertType.charAt(0).toUpperCase() + alertType.slice(1)} alert sent for patient ${patientName} in bed ${bedNumber}`);
-                
-                // Send notification to dashboard via iframe
-                notificationIframe.src = `http://localhost:8000/admin/beds/wards/1/dashboard?notification=true&type=${alertType}&patient=${patientId}&bed=${bedNumber}`;
-                
-                // Close the modal
-                alertNurseModal.style.display = 'none';
-            });
-        });
-        
-        // Medical Team functionality
-        const medicalTeamBtn = document.getElementById('medical-team-btn');
-        const medicalTeamModal = document.getElementById('medicalTeamModal');
-        const closeMedicalModal = document.querySelector('.close-medical-modal');
-        
-        // Show medical team modal
-        medicalTeamBtn.addEventListener('click', function() {
-            medicalTeamModal.style.display = 'flex';
-        });
-        
-        // Close modal when clicking X
-        closeMedicalModal.addEventListener('click', function() {
-            medicalTeamModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === medicalTeamModal) {
-                medicalTeamModal.style.display = 'none';
-            }
-        });
-        
-        // Button click handlers for other buttons
-        document.querySelectorAll('.panel-button').forEach(button => {
-            button.addEventListener('click', function() {
-                // Skip buttons that have their own handlers
-                if (this.id === 'alert-nurse-btn' || this.id === 'medical-team-btn' || 
-                    this.id === 'environmental-control-btn' || this.id === 'satisfaction-survey-btn' ||
-                    this.id === 'food-ordering-btn') {
-                    return;
-                }
-                
-                // For other buttons, just get the text - no alert needed
-                const buttonText = this.querySelector('div').textContent;
-                console.log(`Button clicked: ${buttonText}`);
-                // Link to appropriate page or show relevant modal when implemented
-            });
-        });
-        
-        // Navigation item click handlers - no alerts
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // Skip buttons that have their own handlers
-                if (this.id === 'admission-info-btn') return;
-                
-                const itemText = this.querySelector('span').textContent;
-                console.log(`Navigation item clicked: ${itemText}`);
-                // Link to appropriate page or show relevant modal when implemented
-            });
-        });
-        
-        // Admission Information functionality
-        const admissionInfoBtn = document.getElementById('admission-info-btn');
-        const admissionModal = document.getElementById('admissionModal');
-        const closeAdmissionModal = document.querySelector('.close-admission-modal');
-        
-        // Show admission information modal
-        admissionInfoBtn.addEventListener('click', function() {
-            admissionModal.style.display = 'flex';
-            
-            // Calculate and update admission duration in real-time
-            updateAdmissionDuration();
-        });
-        
-        // Close modal when clicking X
-        closeAdmissionModal.addEventListener('click', function() {
-            admissionModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === admissionModal) {
-                admissionModal.style.display = 'none';
-            }
-        });
-        
-        // Function to calculate and display admission duration
-        function updateAdmissionDuration() {
-            const admissionDate = new Date('{{ $activeAdmission->admission_date->toISOString() }}');
-            const now = new Date();
-            
-            // Calculate difference in milliseconds
-            const diff = now - admissionDate;
-            
-            // Calculate days, hours, minutes
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            // Format the duration string
-            let durationStr = '';
-            if (days > 0) {
-                durationStr += `${days} day${days > 1 ? 's' : ''} `;
-            }
-            if (hours > 0 || days > 0) {
-                durationStr += `${hours} hour${hours > 1 ? 's' : ''} `;
-            }
-            durationStr += `${minutes} minute${minutes > 1 ? 's' : ''}`;
-            
-            // Update the element
-            const durationElement = document.getElementById('admissionDuration');
-            if (durationElement) {
-                durationElement.textContent = durationStr;
-            }
+        // Close alert modal
+        function closeAlertModal() {
+            document.getElementById('alertModal').style.display = 'none';
+            document.getElementById('alertStatus').style.display = 'none';
         }
         
-        // Environmental Control functionality
-        const environmentalBtn = document.getElementById('environmental-control-btn');
-        const environmentalModal = document.getElementById('environmentalModal');
-        const closeEnvironmentalModal = document.querySelector('.close-environmental-modal');
+        // Close functions for other modals
+        function closeMedicalTeamModal() {
+            document.getElementById('medicalTeamModal').style.display = 'none';
+        }
         
-        // Temperature control
-        const currentTemp = document.getElementById('current-temp');
-        const decreaseTemp = document.getElementById('decreaseTemp');
-        const increaseTemp = document.getElementById('increaseTemp');
+        function closeEnvironmentalModal() {
+            document.getElementById('environmentalModal').style.display = 'none';
+        }
         
-        // Lighting control
-        const lightButtons = document.querySelectorAll('.light-btn');
+        function closeSurveyModal() {
+            document.getElementById('surveyModal').style.display = 'none';
+        }
         
-        // Curtain control
-        const curtainButtons = document.querySelectorAll('.curtain-btn');
+        function closeAdmissionModal() {
+            document.getElementById('admissionModal').style.display = 'none';
+        }
         
-        // Nurse call
-        const nurseCallBtn = document.getElementById('nurseCallBtn');
+        function closeFoodOrderingModal() {
+            document.getElementById('foodOrderingModal').style.display = 'none';
+        }
+
+        function closeVitalSignsModal() {
+            document.getElementById('vitalSignsModal').style.display = 'none';
+        }
         
-        // Show environmental control modal
-        environmentalBtn.addEventListener('click', function() {
-            environmentalModal.style.display = 'flex';
-        });
-        
-        // Close modal when clicking X
-        closeEnvironmentalModal.addEventListener('click', function() {
-            environmentalModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === environmentalModal) {
-                environmentalModal.style.display = 'none';
-            }
-        });
-        
-        // Temperature control handlers
-        decreaseTemp.addEventListener('click', function() {
-            let temp = parseInt(currentTemp.textContent);
-            if (temp > 18) {
-                temp--;
-                currentTemp.textContent = temp;
-                showToast(`Temperature set to ${temp}°C`);
-            }
-        });
-        
-        increaseTemp.addEventListener('click', function() {
-            let temp = parseInt(currentTemp.textContent);
-            if (temp < 30) {
-                temp++;
-                currentTemp.textContent = temp;
-                showToast(`Temperature set to ${temp}°C`);
-            }
-        });
-        
-        // Lighting control handlers
-        lightButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                lightButtons.forEach(btn => btn.classList.remove('active'));
+        // Load patient vital signs data
+        function loadVitalSigns() {
+            const vitalLoading = document.getElementById('vital-loading');
+            const vitalData = document.getElementById('vital-data');
+            const vitalEmpty = document.getElementById('vital-empty');
+            
+            // Show loading, hide others
+            vitalLoading.style.display = 'block';
+            vitalData.style.display = 'none';
+            vitalEmpty.style.display = 'none';
+            
+            // Simulate a delay to show loading (in a real app, this would be a fetch request)
+            setTimeout(() => {
+                // Hide loading
+                vitalLoading.style.display = 'none';
                 
-                // Add active class to clicked button
-                this.classList.add('active');
+                // Check if patient has vital signs
+                @if(isset($patient) && method_exists($patient, 'vitalSigns') && $patient->vitalSigns()->count() > 0)
+                    // Get vital signs data
+                    const vitalSigns = @json($patient->vitalSigns()->with('recorder')->latest('recorded_at')->get());
+                    
+                    // Show data container
+                    vitalData.style.display = 'block';
+                    
+                    // Render the vital signs
+                    renderVitalSigns(vitalSigns);
+                @else
+                    // Show empty message
+                    vitalEmpty.style.display = 'block';
+                @endif
+            }, 500);
+        }
+        
+        // Render vital signs data
+        function renderVitalSigns(vitalSigns) {
+            const vitalData = document.getElementById('vital-data');
+            let html = '';
+            
+            // Sort vital signs by recorded_at in descending order (most recent first)
+            vitalSigns.sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
+            
+            vitalSigns.forEach(vital => {
+                // Determine EWS class based on total score
+                let ewsClass = 'ews-normal';
+                if (vital.total_ews >= 7) {
+                    ewsClass = 'ews-high';
+                } else if (vital.total_ews >= 5) {
+                    ewsClass = 'ews-medium';
+                } else if (vital.total_ews >= 3) {
+                    ewsClass = 'ews-low';
+                }
                 
-                // Show toast message
-                const mode = this.querySelector('span').textContent;
-                showToast(`Lighting set to ${mode} mode`);
+                // Format date
+                const recordedDate = new Date(vital.recorded_at);
+                const formattedDate = recordedDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                html += `
+                    <div class="vital-record">
+                        <div class="vital-record-header">
+                            <div class="vital-date">${formattedDate}</div>
+                            <div>
+                                EWS Score: <span class="vital-ews ${ewsClass}">${vital.total_ews}</span>
+                            </div>
+                        </div>
+                        <div class="vital-grid">
+                            ${vital.temperature ? `
+                                <div class="vital-item">
+                                    <div class="vital-label">Temperature</div>
+                                    <div class="vital-value">${vital.temperature} °C</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${vital.heart_rate ? `
+                                <div class="vital-item">
+                                    <div class="vital-label">Heart Rate</div>
+                                    <div class="vital-value">${vital.heart_rate} bpm</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${vital.respiratory_rate ? `
+                                <div class="vital-item">
+                                    <div class="vital-label">Respiratory Rate</div>
+                                    <div class="vital-value">${vital.respiratory_rate} breaths/min</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${vital.systolic_bp && vital.diastolic_bp ? `
+                                <div class="vital-item">
+                                    <div class="vital-label">Blood Pressure</div>
+                                    <div class="vital-value">${vital.systolic_bp}/${vital.diastolic_bp} mmHg</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${vital.oxygen_saturation ? `
+                                <div class="vital-item">
+                                    <div class="vital-label">Oxygen Saturation</div>
+                                    <div class="vital-value">${vital.oxygen_saturation}%</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${vital.consciousness ? `
+                                <div class="vital-item">
+                                    <div class="vital-label">Consciousness</div>
+                                    <div class="vital-value">${vital.consciousness}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${vital.notes ? `
+                            <div class="vital-notes">
+                                <strong>Notes:</strong> ${vital.notes}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
             });
-        });
+            
+            vitalData.innerHTML = html;
+        }
         
-        // Curtain control handlers
-        curtainButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Remove active class from all buttons
-                curtainButtons.forEach(btn => btn.classList.remove('active'));
+        // Environmental controls functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Temperature controls
+            const decreaseTempBtn = document.getElementById('decreaseTemp');
+            const increaseTempBtn = document.getElementById('increaseTemp');
+            const tempDisplay = document.getElementById('current-temp');
+            
+            if (decreaseTempBtn && increaseTempBtn && tempDisplay) {
+                decreaseTempBtn.addEventListener('click', function() {
+                    let currentTemp = parseInt(tempDisplay.textContent);
+                    if (currentTemp > 18) {
+                        currentTemp--;
+                        tempDisplay.textContent = currentTemp;
+                        showToast(`Temperature set to ${currentTemp}°C`);
+                    }
+                });
                 
-                // Add active class to clicked button
-                this.classList.add('active');
-                
-                // Show toast message
-                const action = this.querySelector('span').textContent;
-                showToast(`Curtains ${action.toLowerCase()}`);
-            });
-        });
-        
-        // Nurse call handler
-        nurseCallBtn.addEventListener('click', function() {
-            // Reuse the alert nurse functionality
-            const patientId = {{ $patient->id }};
-            const patientName = "{{ $patient->name }}";
-            const bedNumber = "{{ $bed->bed_number }}";
+                increaseTempBtn.addEventListener('click', function() {
+                    let currentTemp = parseInt(tempDisplay.textContent);
+                    if (currentTemp < 30) {
+                        currentTemp++;
+                        tempDisplay.textContent = currentTemp;
+                        showToast(`Temperature set to ${currentTemp}°C`);
+                    }
+                });
+            }
             
-            // Show confirmation
-            showToast('Nurse has been called for assistance');
+            // Lighting controls
+            const lightButtons = document.querySelectorAll('.light-btn');
+            if (lightButtons.length > 0) {
+                lightButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        lightButtons.forEach(b => b.classList.remove('active'));
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        showToast(`Lighting set to ${this.querySelector('span').textContent}`);
+                    });
+                });
+            }
             
-            // Send notification to dashboard via iframe
-            notificationIframe.src = `http://localhost:8000/admin/beds/wards/1/dashboard?notification=true&type=assistance&patient=${patientId}&bed=${bedNumber}`;
+            // Curtain controls
+            const curtainButtons = document.querySelectorAll('.curtain-btn');
+            if (curtainButtons.length > 0) {
+                curtainButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        curtainButtons.forEach(b => b.classList.remove('active'));
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        showToast(`Curtains ${this.querySelector('span').textContent}`);
+                    });
+                });
+            }
             
-            // Close the modal
-            environmentalModal.style.display = 'none';
+            // Nurse call button in environmental controls
+            const nurseCallBtn = document.getElementById('nurseCallBtn');
+            if (nurseCallBtn) {
+                nurseCallBtn.addEventListener('click', function() {
+                    // Show the alert nurse modal
+                    document.getElementById('environmentalModal').style.display = 'none';
+                    document.getElementById('alertModal').style.display = 'flex';
+                });
+            }
+            
+            // Meal tab functionality
+            const mealTabs = document.querySelectorAll('.meal-tab');
+            if (mealTabs.length > 0) {
+                mealTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        // Remove active class from all tabs
+                        mealTabs.forEach(t => t.classList.remove('active'));
+                        // Add active class to clicked tab
+                        this.classList.add('active');
+                        
+                        // Hide all meal option sections
+                        const mealSections = document.querySelectorAll('.meal-options');
+                        mealSections.forEach(section => {
+                            section.style.display = 'none';
+                        });
+                        
+                        // Show the selected meal section
+                        const mealType = this.getAttribute('data-meal');
+                        const selectedSection = document.getElementById(`${mealType}-options`);
+                        if (selectedSection) {
+                            selectedSection.style.display = 'block';
+                        }
+                    });
+                });
+            }
+            
+            // Food order button functionality
+            const orderButtons = document.querySelectorAll('.order-btn');
+            if (orderButtons.length > 0) {
+                orderButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const mealType = this.getAttribute('data-meal');
+                        const itemName = this.getAttribute('data-item');
+                        const dietaryRestriction = document.getElementById('dietaryRestrictions') ? 
+                            document.getElementById('dietaryRestrictions').value : '';
+                        
+                        // Set selected status for the button
+                        orderButtons.forEach(b => {
+                            if (b.getAttribute('data-meal') === mealType) {
+                                b.classList.remove('selected');
+                                b.textContent = 'Order';
+                            }
+                        });
+                        this.classList.add('selected');
+                        this.textContent = 'Selected';
+                        
+                        // Show confirmation toast
+                        let message = `${itemName} ordered for ${mealType}`;
+                        if (dietaryRestriction) {
+                            message += ` (${dietaryRestriction})`;
+                        }
+                        showToast(message);
+                    });
+                });
+            }
         });
         
         // Toast notification function
         function showToast(message) {
-            // Create toast element if it doesn't exist
-            let toast = document.getElementById('toast-notification');
-            if (!toast) {
-                toast = document.createElement('div');
-                toast.id = 'toast-notification';
-                document.body.appendChild(toast);
-            }
-            
-            // Set message and show toast
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
             toast.textContent = message;
-            toast.className = 'toast-notification show';
+            document.body.appendChild(toast);
             
-            // Hide toast after 3 seconds
-            setTimeout(() => {
-                toast.className = 'toast-notification';
+            // Show the toast
+            setTimeout(function() {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Hide the toast after 3 seconds
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() {
+                    document.body.removeChild(toast);
+                }, 500);
             }, 3000);
         }
-        
-        // Satisfaction Survey functionality
-        const satisfactionBtn = document.getElementById('satisfaction-survey-btn');
-        const surveyModal = document.getElementById('surveyModal');
-        const closeSurveyModal = document.querySelector('.close-survey-modal');
-        const satisfactionForm = document.getElementById('satisfactionForm');
-        
-        // Show satisfaction survey modal
-        satisfactionBtn.addEventListener('click', function() {
-            surveyModal.style.display = 'flex';
-        });
-        
-        // Close modal when clicking X
-        closeSurveyModal.addEventListener('click', function() {
-            surveyModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === surveyModal) {
-                surveyModal.style.display = 'none';
-            }
-        });
-        
-        // Form submission
-        satisfactionForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            // Get form data
-            const careRating = document.querySelector('input[name="care_rating"]:checked')?.value || '0';
-            const staffRating = document.querySelector('input[name="staff_rating"]:checked')?.value || '0';
-            const cleanRating = document.querySelector('input[name="clean_rating"]:checked')?.value || '0';
-            const commRating = document.querySelector('input[name="comm_rating"]:checked')?.value || '0';
-            const comments = document.getElementById('comments').value;
-            
-            // Create survey data
-            const surveyData = {
-                patient_id: {{ $patient->id }},
-                care_rating: careRating,
-                staff_rating: staffRating,
-                clean_rating: cleanRating,
-                comm_rating: commRating,
-                comments: comments,
-                submission_date: new Date().toISOString()
-            };
-            
-            // Log the data (would normally be sent to server)
-            console.log('Survey Submission:', surveyData);
-            
-            // Show success message
-            showToast('Thank you for your feedback!');
-            
-            // Close the modal
-            surveyModal.style.display = 'none';
-            
-            // Reset the form
-            satisfactionForm.reset();
-        });
-        
-        // Food Ordering functionality
-        const foodOrderingBtn = document.getElementById('food-ordering-btn');
-        const foodModal = document.getElementById('foodOrderingModal');
-        const closeFoodModal = document.querySelector('.close-food-modal');
-        const mealTabs = document.querySelectorAll('.meal-tab');
-        const orderButtons = document.querySelectorAll('.order-btn');
-        const ordersList = document.getElementById('orders-list');
-        
-        // Show food ordering modal
-        foodOrderingBtn.addEventListener('click', function() {
-            foodModal.style.display = 'flex';
-        });
-        
-        // Close modal when clicking X
-        closeFoodModal.addEventListener('click', function() {
-            foodModal.style.display = 'none';
-        });
-        
-        // Close modal when clicking outside
-        window.addEventListener('click', function(event) {
-            if (event.target === foodModal) {
-                foodModal.style.display = 'none';
-            }
-        });
-        
-        // Handle meal tab switching
-        mealTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs
-                mealTabs.forEach(t => t.classList.remove('active'));
-                
-                // Add active class to clicked tab
-                this.classList.add('active');
-                
-                // Hide all meal options
-                document.querySelectorAll('.meal-options').forEach(option => {
-                    option.style.display = 'none';
-                });
-                
-                // Show selected meal options
-                const mealType = this.getAttribute('data-meal');
-                document.getElementById(`${mealType}-options`).style.display = 'block';
-            });
-        });
-        
-        // Mark currently selected items for each meal type
-        function updateSelectedButtons() {
-            // Remove selected class from all buttons
-            document.querySelectorAll('.order-btn').forEach(btn => {
-                btn.classList.remove('selected');
-                btn.textContent = 'Order';
-            });
-            
-            // Get all active orders
-            const orderItems = document.querySelectorAll('.order-item');
-            
-            orderItems.forEach(item => {
-                const mealType = item.querySelector('.order-meal').textContent.split(' ')[0];
-                const itemName = item.querySelector('.order-name').textContent;
-                
-                // Find and mark the corresponding button as selected
-                document.querySelectorAll('.order-btn').forEach(btn => {
-                    if (btn.getAttribute('data-meal') === mealType && 
-                        btn.getAttribute('data-item') === itemName) {
-                        btn.classList.add('selected');
-                        btn.textContent = 'Selected';
-                    }
-                });
-            });
-        }
-        
-        // Update selected buttons on page load
-        updateSelectedButtons();
-        
-        // Handle ordering food items
-        orderButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const itemName = this.getAttribute('data-item');
-                const mealType = this.getAttribute('data-meal');
-                const dietaryRestriction = document.getElementById('dietaryRestrictions').value;
-                
-                // Check if button is already selected (indicating an existing order)
-                if (this.classList.contains('selected')) {
-                    showToast('This item is already ordered');
-                    return;
+
+        // Send alert to nursing station
+        function sendAlert(alertType) {
+            // Show loading state
+            const buttons = document.querySelectorAll('.alert-btn');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.toLowerCase().includes(alertType)) {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i><br>Sending...`;
                 }
-                
-                // Show processing state
-                this.disabled = true;
-                this.textContent = 'Processing...';
-                
-                // Send order to server using AJAX
-                fetch('{{ route('admin.patients.food-order.store', $patient->id) }}', {
+            });
+            
+            // Get the status div
+            const statusDiv = document.getElementById('alertStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'alert-status mt-3 text-center';
+            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending alert...';
+            
+            // Send AJAX request
+            fetch(`{{ route('admin.patients.alert.send', $patient->id) }}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                     },
                     body: JSON.stringify({
-                        item_name: itemName,
-                        meal_type: mealType,
-                        dietary_restriction: dietaryRestriction
-                    })
+                    alert_type: alertType
                 })
-                .then(response => response.json())
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
                 .then(data => {
-                    // Re-enable button
-                    this.disabled = false;
-                    
                     if (data.success) {
-                        // Handle success
-                        showToast(`Your ${itemName} order has been placed`);
-                        
-                        // Remove any existing order for this meal type from the UI
-                        document.querySelectorAll('.order-item').forEach(item => {
-                            const itemMealType = item.querySelector('.order-meal').textContent.split(' ')[0];
-                            if (itemMealType === mealType) {
-                                item.remove();
-                            }
+                    statusDiv.className = 'alert-status mt-3 text-center text-success';
+                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Alert sent successfully!';
+                    
+                    // Reset button texts after 2 seconds
+                    setTimeout(() => {
+                        buttons.forEach(btn => {
+                            btn.disabled = false;
                         });
                         
-                        // Add new order to UI
-                        const order = data.order;
-                        addOrderToList(order);
+                        // Reset emergency button
+                        document.querySelector('.emergency-btn').innerHTML = `<i class="fas fa-exclamation-triangle"></i><br>Emergency`;
                         
-                        // Update selected buttons
-                        updateSelectedButtons();
-                    } else {
-                        // Handle error
-                        showToast('Error: ' + (data.message || 'Failed to place order'));
-                        this.textContent = 'Order';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error placing order:', error);
-                    showToast('Error: Failed to place order');
-                    this.disabled = false;
-                    this.textContent = 'Order';
-                });
-            });
-        });
-        
-        // Function to add an order to the current orders list
-        function addOrderToList(order) {
-            // Remove "no orders" message if it exists
-            const noOrders = document.querySelector('.no-orders');
-            if (noOrders) {
-                noOrders.remove();
-            }
-            
-            // Create order item element
-            const orderItem = document.createElement('div');
-            orderItem.className = 'order-item';
-            orderItem.id = `order-${order.id}`;
-            
-            // Create order information
-            const orderInfo = document.createElement('div');
-            orderInfo.className = 'order-info';
-            
-            const orderName = document.createElement('div');
-            orderName.className = 'order-name';
-            orderName.textContent = order.item_name;
-            
-            const orderMeal = document.createElement('div');
-            orderMeal.className = 'order-meal';
-            orderMeal.textContent = `${order.meal_type}${order.dietary_restriction ? ' (' + order.dietary_restriction + ')' : ''}`;
-            
-            const orderTime = document.createElement('div');
-            orderTime.className = 'order-time';
-            orderTime.textContent = `Ordered: ${new Date(order.order_time).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'})} ${new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            
-            const orderStatus = document.createElement('div');
-            orderStatus.className = `order-status status-${order.status}`;
-            orderStatus.textContent = order.status.charAt(0).toUpperCase() + order.status.slice(1);
-            
-            orderInfo.appendChild(orderName);
-            orderInfo.appendChild(orderMeal);
-            orderInfo.appendChild(orderTime);
-            orderInfo.appendChild(orderStatus);
-            
-            orderItem.appendChild(orderInfo);
-            
-            // Only add cancel button if status is pending or preparing
-            if (['pending', 'preparing'].includes(order.status)) {
-                // Create cancel button
-                const cancelButton = document.createElement('button');
-                cancelButton.className = 'cancel-order';
-                cancelButton.textContent = 'Cancel';
-                cancelButton.setAttribute('data-order-id', order.id);
-                
-                // Add event listener to cancel button
-                cancelButton.addEventListener('click', function() {
-                    cancelOrder(order.id);
-                });
-                
-                orderItem.appendChild(cancelButton);
-            }
-            
-            // Add to orders list
-            ordersList.prepend(orderItem);
-        }
-        
-        // Function to cancel an order
-        function cancelOrder(orderId) {
-            fetch(`{{ url('admin/food-order') }}/${orderId}/cancel`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Find the order item
-                    const orderItem = document.getElementById(`order-${orderId}`);
-                    if (orderItem) {
-                        // Get the item name for the toast
-                        const itemName = orderItem.querySelector('.order-name').textContent;
+                        // Reset pain button
+                        document.querySelector('.pain-btn').innerHTML = `<i class="fas fa-heartbeat"></i><br>Pain`;
                         
-                        // Remove from UI
-                        orderItem.remove();
+                        // Reset assistance button
+                        document.querySelector('.assistance-btn').innerHTML = `<i class="fas fa-hands-helping"></i><br>Assistance`;
                         
-                        // Show toast
-                        showToast(`${itemName} order has been cancelled`);
+                        // Reset water button
+                        document.querySelector('.water-btn').innerHTML = `<i class="fas fa-tint"></i><br>Water`;
                         
-                        // If no orders left, show no orders message
-                        if (ordersList.children.length === 0) {
-                            const noOrdersMessage = document.createElement('div');
-                            noOrdersMessage.className = 'no-orders';
-                            noOrdersMessage.textContent = 'No meals ordered yet';
-                            ordersList.appendChild(noOrdersMessage);
-                        }
+                        // Reset bathroom button
+                        document.querySelector('.bathroom-btn').innerHTML = `<i class="fas fa-toilet"></i><br>Bathroom`;
                         
-                        // Update selected buttons
-                        updateSelectedButtons();
-                    }
+                        // Reset food button
+                        document.querySelector('.food-btn').innerHTML = `<i class="fas fa-utensils"></i><br>Food`;
+                        
+                        // Close modal after 3 seconds
+                        setTimeout(() => {
+                            closeAlertModal();
+                        }, 1000);
+                    }, 2000);
                 } else {
-                    showToast('Error: ' + (data.message || 'Failed to cancel order'));
+                    statusDiv.className = 'alert-status mt-3 text-center text-danger';
+                    statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Failed to send alert. Please try again.';
+                    
+                    // Reset buttons
+                    buttons.forEach(btn => {
+                        btn.disabled = false;
+                    });
                 }
             })
             .catch(error => {
-                console.error('Error cancelling order:', error);
-                showToast('Error: Failed to cancel order');
-            });
-        }
-        
-        // Add click handler for cancel buttons
-        document.querySelectorAll('.cancel-order').forEach(button => {
-            button.addEventListener('click', function() {
-                const orderId = this.getAttribute('data-order-id');
-                cancelOrder(orderId);
+                console.error('Error:', error);
+                statusDiv.className = 'alert-status mt-3 text-center text-danger';
+                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> An error occurred. Please try again.';
+                
+                // Reset buttons
+                buttons.forEach(btn => {
+                    btn.disabled = false;
             });
         });
+        }
+
+        // Handle satisfaction survey submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const satisfactionForm = document.getElementById('satisfactionForm');
+            if (satisfactionForm) {
+                satisfactionForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Get all the rating values
+                    const careRating = document.querySelector('input[name="care_rating"]:checked')?.value || 0;
+                    const staffRating = document.querySelector('input[name="staff_rating"]:checked')?.value || 0;
+                    const cleanRating = document.querySelector('input[name="clean_rating"]:checked')?.value || 0;
+                    const commRating = document.querySelector('input[name="comm_rating"]:checked')?.value || 0;
+                    const comments = document.getElementById('comments')?.value || '';
+                    
+                    // Show thank you message
+                    showToast('Thank you for your feedback!');
+                    
+                    // Close the survey modal
+                    closeSurveyModal();
+                    
+                    // Reset the form
+                    satisfactionForm.reset();
+                });
+            }
+        });
     </script>
+
+    <!-- Vital Signs Modal -->
+    <div class="vital-signs-modal" id="vitalSignsModal">
+        <div class="vital-signs-content">
+            <div class="vital-signs-header">
+                <h5>Vital Signs Information</h5>
+                <span class="close-vital-signs-modal">&times;</span>
+            </div>
+            <div class="vital-signs-body">
+                <div class="vital-loading text-center py-5" id="vital-loading">
+                    <i class="fas fa-spinner fa-spin fa-3x"></i>
+                    <p class="mt-3">Loading vital signs data...</p>
+                </div>
+                
+                <div class="vital-data" id="vital-data" style="display: none;">
+                    <!-- This will be populated with vital signs data via JavaScript -->
+                </div>
+                
+                <div class="vital-empty text-center py-5" id="vital-empty" style="display: none;">
+                    <i class="fas fa-heartbeat fa-3x text-muted"></i>
+                    <p class="mt-3">No vital signs recorded yet.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
-</html> 
+</html>

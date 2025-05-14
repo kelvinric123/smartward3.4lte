@@ -6,12 +6,12 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-12">
-                <div class="row mb-3">
+                <div class="row mb-2">
                     <div class="col-md-5">
-                        <div class="form-group">
+                        <div class="form-group mb-2">
                             <label>Start Date:</label>
                             <div class="input-group">
-                                <input type="date" class="form-control" id="startDate" value="{{ now()->subWeek()->format('Y-m-d') }}">
+                                <input type="date" class="form-control form-control-sm" id="startDate" value="{{ now()->subWeek()->format('Y-m-d') }}">
                                 <div class="input-group-append">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                 </div>
@@ -19,10 +19,10 @@
                         </div>
                     </div>
                     <div class="col-md-5">
-                        <div class="form-group">
+                        <div class="form-group mb-2">
                             <label>End Date:</label>
                             <div class="input-group">
-                                <input type="date" class="form-control" id="endDate" value="{{ now()->format('Y-m-d') }}">
+                                <input type="date" class="form-control form-control-sm" id="endDate" value="{{ now()->format('Y-m-d') }}">
                                 <div class="input-group-append">
                                     <span class="input-group-text"><i class="fas fa-calendar"></i></span>
                                 </div>
@@ -30,18 +30,17 @@
                         </div>
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <button type="button" class="btn btn-primary w-100" id="updateBtn">Update</button>
+                        <button type="button" class="btn btn-primary btn-sm w-100" id="updateBtn">Update</button>
                     </div>
                 </div>
                 
                 <!-- Blood Pressure Chart -->
                 <div class="card card-navy chart-card" id="bpChartCard">
-                    <div class="card-header">
+                    <div class="card-header py-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">
                                 <i class="fas fa-heartbeat mr-1"></i> Blood Pressure
                                 <small class="text-muted ml-2">(← →)</small>
-                                <small class="text-muted ml-2">Swipe or use arrows to view more charts</small>
                             </h3>
                             <div>
                                 <button class="btn btn-sm btn-outline-light mr-1 prev-chart">Previous</button>
@@ -50,9 +49,9 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="card-body p-2">
                         <div class="chart">
-                            <div class="d-flex justify-content-center mb-3">
+                            <div class="d-flex justify-content-center mb-2">
                                 <div class="mr-4">
                                     <span class="badge badge-pill badge-light">
                                         <i class="fas fa-circle text-danger"></i> Systolic BP
@@ -64,7 +63,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="chart-container" style="position: relative; height:300px;">
+                            <div class="chart-container" style="position: relative; height:250px;">
                                 <canvas id="bpChart"></canvas>
                             </div>
                         </div>
@@ -73,12 +72,11 @@
 
                 <!-- Heart Rate Chart -->
                 <div class="card card-navy chart-card" id="hrChartCard" style="display: none;">
-                    <div class="card-header">
+                    <div class="card-header py-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">
                                 <i class="fas fa-heartbeat mr-1"></i> Heart Rate
                                 <small class="text-muted ml-2">(← →)</small>
-                                <small class="text-muted ml-2">Swipe or use arrows to view more charts</small>
                             </h3>
                             <div>
                                 <button class="btn btn-sm btn-outline-light mr-1 prev-chart">Previous</button>
@@ -87,16 +85,16 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="card-body p-2">
                         <div class="chart">
-                            <div class="d-flex justify-content-center mb-3">
+                            <div class="d-flex justify-content-center mb-2">
                                 <div>
                                     <span class="badge badge-pill badge-light">
                                         <i class="fas fa-circle text-primary"></i> Heart Rate (bpm)
                                     </span>
                                 </div>
                             </div>
-                            <div class="chart-container" style="position: relative; height:300px;">
+                            <div class="chart-container" style="position: relative; height:250px;">
                                 <canvas id="hrChart"></canvas>
                             </div>
                         </div>
@@ -105,12 +103,11 @@
 
                 <!-- Temperature Chart -->
                 <div class="card card-navy chart-card" id="tempChartCard" style="display: none;">
-                    <div class="card-header">
+                    <div class="card-header py-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">
                                 <i class="fas fa-thermometer-half mr-1"></i> Temperature
                                 <small class="text-muted ml-2">(← →)</small>
-                                <small class="text-muted ml-2">Swipe or use arrows to view more charts</small>
                             </h3>
                             <div>
                                 <button class="btn btn-sm btn-outline-light mr-1 prev-chart">Previous</button>
@@ -119,16 +116,16 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="card-body p-2">
                         <div class="chart">
-                            <div class="d-flex justify-content-center mb-3">
+                            <div class="d-flex justify-content-center mb-2">
                                 <div>
                                     <span class="badge badge-pill badge-light">
                                         <i class="fas fa-circle text-danger"></i> Temperature (°C)
                                     </span>
                                 </div>
                             </div>
-                            <div class="chart-container" style="position: relative; height:300px;">
+                            <div class="chart-container" style="position: relative; height:250px;">
                                 <canvas id="tempChart"></canvas>
                             </div>
                         </div>
@@ -137,12 +134,11 @@
 
                 <!-- SPO2 Chart -->
                 <div class="card card-navy chart-card" id="spo2ChartCard" style="display: none;">
-                    <div class="card-header">
+                    <div class="card-header py-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">
                                 <i class="fas fa-lungs mr-1"></i> Oxygen Saturation
                                 <small class="text-muted ml-2">(← →)</small>
-                                <small class="text-muted ml-2">Swipe or use arrows to view more charts</small>
                             </h3>
                             <div>
                                 <button class="btn btn-sm btn-outline-light mr-1 prev-chart">Previous</button>
@@ -151,16 +147,16 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="card-body p-2">
                         <div class="chart">
-                            <div class="d-flex justify-content-center mb-3">
+                            <div class="d-flex justify-content-center mb-2">
                                 <div>
                                     <span class="badge badge-pill badge-light">
                                         <i class="fas fa-circle text-warning"></i> SpO2 (%)
                                     </span>
                                 </div>
                             </div>
-                            <div class="chart-container" style="position: relative; height:300px;">
+                            <div class="chart-container" style="position: relative; height:250px;">
                                 <canvas id="spo2Chart"></canvas>
                             </div>
                         </div>
@@ -169,12 +165,11 @@
 
                 <!-- Respiratory Rate Chart -->
                 <div class="card card-navy chart-card" id="rrChartCard" style="display: none;">
-                    <div class="card-header">
+                    <div class="card-header py-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">
                                 <i class="fas fa-wind mr-1"></i> Respiratory Rate
                                 <small class="text-muted ml-2">(← →)</small>
-                                <small class="text-muted ml-2">Swipe or use arrows to view more charts</small>
                             </h3>
                             <div>
                                 <button class="btn btn-sm btn-outline-light mr-1 prev-chart">Previous</button>
@@ -183,16 +178,16 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="card-body p-2">
                         <div class="chart">
-                            <div class="d-flex justify-content-center mb-3">
+                            <div class="d-flex justify-content-center mb-2">
                                 <div>
                                     <span class="badge badge-pill badge-light">
                                         <i class="fas fa-circle text-purple"></i> Respiratory Rate (breaths/min)
                                     </span>
                                 </div>
                             </div>
-                            <div class="chart-container" style="position: relative; height:300px;">
+                            <div class="chart-container" style="position: relative; height:250px;">
                                 <canvas id="rrChart"></canvas>
                             </div>
                         </div>
@@ -201,12 +196,11 @@
 
                 <!-- EWS Chart -->
                 <div class="card card-navy chart-card" id="ewsChartCard" style="display: none;">
-                    <div class="card-header">
+                    <div class="card-header py-1">
                         <div class="d-flex justify-content-between align-items-center">
                             <h3 class="card-title">
                                 <i class="fas fa-chart-bar mr-1"></i> Early Warning Score
                                 <small class="text-muted ml-2">(← →)</small>
-                                <small class="text-muted ml-2">Swipe or use arrows to view more charts</small>
                             </h3>
                             <div>
                                 <button class="btn btn-sm btn-outline-light mr-1 prev-chart">Previous</button>
@@ -215,9 +209,9 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="card-body p-2">
                         <div class="chart">
-                            <div class="d-flex justify-content-center mb-3">
+                            <div class="d-flex justify-content-center mb-2">
                                 <div class="mr-2">
                                     <span class="badge badge-pill badge-success">0-2: Low Risk</span>
                                 </div>
@@ -231,7 +225,7 @@
                                     <span class="badge badge-pill badge-danger">7+: Critical</span>
                                 </div>
                             </div>
-                            <div class="chart-container" style="position: relative; height:300px;">
+                            <div class="chart-container" style="position: relative; height:250px;">
                                 <canvas id="ewsChart"></canvas>
                             </div>
                         </div>
@@ -245,39 +239,80 @@
 @section('css')
 <style>
     .chart-card {
-        margin-bottom: 20px;
+        margin-bottom: 12px;
     }
     
-    .card-navy {
-        border-top: 3px solid #001f3f;
+    .chart-card .card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
     }
     
-    .card-navy .card-header {
-        background-color: #001f3f;
-        color: white;
+    .chart-card .card-header {
+        padding: 0.5rem 1rem;
     }
     
-    .drag-indicator {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 24px;
-        color: #ddd;
-        opacity: 0;
-        transition: opacity 0.3s;
-        z-index: 1000;
+    .chart-card .card-body {
+        padding: 0.5rem;
     }
     
-    .drag-indicator.left {
-        left: 10px;
+    .badge-pill {
+        font-size: 0.75rem;
     }
     
-    .drag-indicator.right {
-        right: 10px;
+    .form-control-sm {
+        height: calc(1.5em + 0.5rem + 2px);
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
     
-    .container-fluid.dragging .drag-indicator {
-        opacity: 1;
+    .input-group-text {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    label {
+        margin-bottom: 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    /* Responsive charts */
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 200px !important;
+        }
+    }
+    
+    /* Custom colors */
+    .text-purple {
+        color: #6f42c1;
+    }
+    
+    /* Swipe animations */
+    .chart-card.animated {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Tooltip styles */
+    .tooltip-inner {
+        max-width: 200px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
 </style>
 @endsection

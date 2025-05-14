@@ -152,6 +152,14 @@ class WardController extends Controller
             ->get()
             ->keyBy('patient_id');
         
+        // Get recent unresolved patient alerts for this ward
+        $patientAlerts = \App\Models\PatientAlert::where('ward_id', $ward->id)
+            ->whereIn('status', ['new', 'seen'])
+            ->with(['patient', 'bed'])
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+        
         return view('admin.beds.wards.dashboard', compact(
             'ward', 
             'allWards',
@@ -160,7 +168,8 @@ class WardController extends Controller
             'occupiedBeds',
             'nursePatientRatio',
             'occupancyRate',
-            'activeMovements'
+            'activeMovements',
+            'patientAlerts'
         ));
     }
     
@@ -450,6 +459,81 @@ class WardController extends Controller
             return response()->view('layouts.iframe_error', [
                 'message' => 'An error occurred while loading patient details: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Get patient alerts for a ward
+     * Used for AJAX polling to update the notification display
+     */
+    public function getPatientAlerts(Ward $ward)
+    {
+        try {
+            // Get recent unresolved patient alerts for this ward
+            $patientAlerts = \App\Models\PatientAlert::where('ward_id', $ward->id)
+                ->whereIn('status', ['new', 'seen'])
+                ->with(['patient', 'bed'])
+                ->orderBy('created_at', 'desc')
+                ->take(20)
+                ->get();
+                
+            // Count new alerts
+            $newAlertsCount = $patientAlerts->where('status', 'new')->count();
+            
+            return response()->json([
+                'success' => true,
+                'alerts' => $patientAlerts,
+                'newAlertsCount' => $newAlertsCount
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching alerts: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Mark an alert as seen
+     */
+    public function markAlertAsSeen($alertId)
+    {
+        try {
+            $alert = \App\Models\PatientAlert::findOrFail($alertId);
+            $alert->status = 'seen';
+            $alert->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Alert marked as seen'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error marking alert as seen: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Mark an alert as resolved
+     */
+    public function resolveAlert($alertId)
+    {
+        try {
+            $alert = \App\Models\PatientAlert::findOrFail($alertId);
+            $alert->status = 'resolved';
+            $alert->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Alert resolved'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error resolving alert: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
