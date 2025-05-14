@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             NurseSeeder::class,
             BedSeeder::class,
             LeeChongWeiVitalSignsSeeder::class,
+            FoodMenuSeeder::class,
         ]);
     }
 }

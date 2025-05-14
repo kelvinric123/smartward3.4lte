@@ -920,6 +920,274 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        .food-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .food-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 700px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .food-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #00a99d;
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .food-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .close-food-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .food-body {
+            padding: 20px;
+        }
+        
+        .food-patient-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .meal-selection {
+            margin-top: 20px;
+        }
+        
+        .meal-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        
+        .meal-tab {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .meal-tab.active {
+            background-color: #00a99d;
+            color: white;
+        }
+        
+        .meal-category {
+            margin-bottom: 15px;
+            color: #343a40;
+            font-weight: 600;
+        }
+        
+        .menu-items {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 15px;
+        }
+        
+        .menu-item {
+            display: flex;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+        
+        .menu-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .menu-item-image {
+            width: 80px;
+            height: 80px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .menu-item-details {
+            flex: 1;
+            padding: 12px;
+        }
+        
+        .menu-item-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .menu-item-description {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+        
+        .menu-item-nutritional {
+            font-size: 12px;
+            color: #00a99d;
+        }
+        
+        .menu-item-action {
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+        }
+        
+        .order-btn {
+            background-color: #00a99d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .order-btn:hover {
+            background-color: #008f85;
+        }
+        
+        .order-btn.selected {
+            background-color: #28a745;
+        }
+        
+        .orders-section {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .orders-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #343a40;
+        }
+        
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .order-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .order-meal {
+            font-size: 13px;
+            color: #00a99d;
+            margin-bottom: 3px;
+        }
+        
+        .order-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .order-status {
+            font-size: 12px;
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: white;
+            margin-top: 3px;
+        }
+        
+        .status-pending {
+            background-color: #ffc107;
+            color: #343a40;
+        }
+        
+        .status-preparing {
+            background-color: #17a2b8;
+        }
+        
+        .status-ready {
+            background-color: #007bff;
+        }
+        
+        .status-delivered {
+            background-color: #28a745;
+        }
+        
+        .status-cancelled {
+            background-color: #dc3545;
+        }
+        
+        .cancel-order {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .cancel-order:hover {
+            background-color: #c82333;
+        }
+        
+        .no-orders {
+            text-align: center;
+            color: #6c757d;
+            padding: 15px;
+        }
+        
+        .meal-note {
+            color: #6c757d;
+            font-size: 13px;
+            font-style: italic;
+            margin-top: 8px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -935,11 +1203,11 @@
             <span class="mx-2"><i class="fa fa-thermometer-half"></i> 25°C</span>
             <span class="mx-2"><i class="fa fa-user"></i></span>
             <span class="mx-2"><i class="fa fa-power-off"></i></span>
-        </div>
-    </div>
-    
+                </div>
+            </div>
+            
     <!-- Main Content Area -->
-    <div class="main-content">
+            <div class="main-content">
         <!-- Patient bed visual/video content -->
         <div class="video-container">
             <iframe 
@@ -949,7 +1217,7 @@
                 allowfullscreen
                 frameborder="0">
             </iframe>
-        </div>
+            </div>
         
         <!-- Right Side Panel -->
         <div class="panel-right">
@@ -958,17 +1226,17 @@
                 <h4>{{ $bed->bed_number }}</h4>
                 <div>{{ strtoupper($patient->name) }}</div>
                 <div><i class="fa fa-user-circle"></i> MRN: {{ $patient->mrn }}</div>
-            </div>
-            
+        </div>
+        
             <!-- First row of buttons -->
             <div class="button-row">
                 <div class="panel-button">
                     <i class="fa fa-pills"></i>
                     <div>Medication Information</div>
                 </div>
-                <div class="panel-button">
-                    <i class="fa fa-clipboard-list"></i>
-                    <div>Treatment Plan</div>
+                <div class="panel-button" id="food-ordering-btn">
+                    <i class="fa fa-utensils"></i>
+                    <div>Food Ordering</div>
                 </div>
             </div>
             
@@ -981,9 +1249,9 @@
                 <div class="panel-button" id="medical-team-btn">
                     <i class="fa fa-user-md"></i>
                     <div>Medical Team</div>
+                    </div>
                 </div>
-            </div>
-            
+                
             <!-- Third row of buttons -->
             <div class="button-row">
                 <div class="panel-button" id="satisfaction-survey-btn">
@@ -995,9 +1263,9 @@
                     <div>Alert Nurse</div>
                 </div>
             </div>
-        </div>
-    </div>
-    
+                    </div>
+                </div>
+                
     <!-- Alert Nurse Modal -->
     <div class="alert-nurse-modal" id="alertNurseModal">
         <div class="alert-nurse-content">
@@ -1016,9 +1284,9 @@
                 </div>
                 <iframe id="notification-iframe" style="display: none;" width="0" height="0" frameborder="0"></iframe>
             </div>
-        </div>
-    </div>
-    
+                    </div>
+                </div>
+                
     <!-- Medical Team Modal -->
     <div class="medical-team-modal" id="medicalTeamModal">
         <div class="medical-team-content">
@@ -1054,7 +1322,7 @@
                     <div class="team-member-card">
                         <div class="team-member-avatar nurse-avatar">
                             <i class="fa fa-user-nurse"></i>
-                        </div>
+                    </div>
                         <div class="team-member-info">
                             <div class="member-name">{{ $activeAdmission->nurse->name ?? 'Not Assigned' }}</div>
                             <div class="member-role">Registered Nurse</div>
@@ -1075,12 +1343,12 @@
                         <div><strong>Ward:</strong> {{ $ward->name }}</div>
                         <div><strong>Bed Number:</strong> {{ $bed->bed_number }}</div>
                         <div><strong>Admitted On:</strong> {{ $activeAdmission->admission_date->format('d M Y') }}</div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+</div>
+
     <!-- Environmental Control Modal -->
     <div class="environmental-modal" id="environmentalModal">
         <div class="environmental-content">
@@ -1370,6 +1638,163 @@
         </div>
     </div>
     
+    <!-- Food Ordering Modal -->
+    <div class="food-modal" id="foodOrderingModal">
+        <div class="food-content">
+            <div class="food-header">
+                <h5>Meal Ordering System</h5>
+                <span class="close-food-modal">&times;</span>
+            </div>
+            <div class="food-body">
+                <!-- Patient Info for Meal -->
+                <div class="food-patient-info">
+                    <div class="patient-meal-details">
+                        <div><strong>Patient:</strong> {{ $patient->name }}</div>
+                        <div><strong>MRN:</strong> {{ $patient->mrn }}</div>
+                        <div><strong>Ward:</strong> {{ $ward->name }}</div>
+                        <div><strong>Bed:</strong> {{ $bed->bed_number }}</div>
+                    </div>
+                    
+                    <div class="dietary-restrictions">
+                        <label for="dietaryRestrictions">Dietary Restrictions:</label>
+                        <select id="dietaryRestrictions" class="form-select">
+                            <option value="">None</option>
+                            <option value="Vegetarian">Vegetarian</option>
+                            <option value="Vegan">Vegan</option>
+                            <option value="Gluten-Free">Gluten Free</option>
+                            <option value="Diabetic">Diabetic</option>
+                            <option value="Low-Sodium">Low Sodium</option>
+                            <option value="Halal">Halal</option>
+                            <option value="Kosher">Kosher</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <p class="meal-note">Select one meal from each category. Your most recent selection will replace any previous order.</p>
+                
+                <!-- Meal Selection Tabs -->
+                <div class="meal-selection">
+                    <div class="meal-tabs">
+                        <button class="meal-tab active" data-meal="Breakfast">Breakfast</button>
+                        <button class="meal-tab" data-meal="Lunch">Lunch</button>
+                        <button class="meal-tab" data-meal="Dinner">Dinner</button>
+                        <button class="meal-tab" data-meal="Snack">Snacks</button>
+                    </div>
+                    
+                    <!-- Breakfast Options -->
+                    <div class="meal-options" id="Breakfast-options">
+                        <h6 class="meal-category">Breakfast Options</h6>
+                        <div class="menu-items">
+                            @forelse($menuItems['Breakfast'] as $item)
+                                <div class="menu-item">
+                                    <div class="menu-item-image" style="background-image: url('https://via.placeholder.com/100?text={{ urlencode($item->name) }}')"></div>
+                                    <div class="menu-item-details">
+                                        <div class="menu-item-title">{{ $item->name }}</div>
+                                        <div class="menu-item-description">{{ $item->description ?? 'No description available' }}</div>
+                                        <div class="menu-item-nutritional">{{ $item->dietary_tags ?? 'No nutritional info available' }}</div>
+                                    </div>
+                                    <div class="menu-item-action">
+                                        <button class="order-btn" data-item="{{ $item->name }}" data-meal="Breakfast">Order</button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div>No breakfast options available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                    
+                    <!-- Lunch Options -->
+                    <div class="meal-options" id="Lunch-options" style="display: none;">
+                        <h6 class="meal-category">Lunch Options</h6>
+                        <div class="menu-items">
+                            @forelse($menuItems['Lunch'] as $item)
+                                <div class="menu-item">
+                                    <div class="menu-item-image" style="background-image: url('https://via.placeholder.com/100?text={{ urlencode($item->name) }}')"></div>
+                                    <div class="menu-item-details">
+                                        <div class="menu-item-title">{{ $item->name }}</div>
+                                        <div class="menu-item-description">{{ $item->description ?? 'No description available' }}</div>
+                                        <div class="menu-item-nutritional">{{ $item->dietary_tags ?? 'No nutritional info available' }}</div>
+                                    </div>
+                                    <div class="menu-item-action">
+                                        <button class="order-btn" data-item="{{ $item->name }}" data-meal="Lunch">Order</button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div>No lunch options available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                    
+                    <!-- Dinner Options -->
+                    <div class="meal-options" id="Dinner-options" style="display: none;">
+                        <h6 class="meal-category">Dinner Options</h6>
+                        <div class="menu-items">
+                            @forelse($menuItems['Dinner'] as $item)
+                                <div class="menu-item">
+                                    <div class="menu-item-image" style="background-image: url('https://via.placeholder.com/100?text={{ urlencode($item->name) }}')"></div>
+                                    <div class="menu-item-details">
+                                        <div class="menu-item-title">{{ $item->name }}</div>
+                                        <div class="menu-item-description">{{ $item->description ?? 'No description available' }}</div>
+                                        <div class="menu-item-nutritional">{{ $item->dietary_tags ?? 'No nutritional info available' }}</div>
+                                    </div>
+                                    <div class="menu-item-action">
+                                        <button class="order-btn" data-item="{{ $item->name }}" data-meal="Dinner">Order</button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div>No dinner options available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                    
+                    <!-- Snack Options -->
+                    <div class="meal-options" id="Snack-options" style="display: none;">
+                        <h6 class="meal-category">Snack Options</h6>
+                        <div class="menu-items">
+                            @forelse($menuItems['Snack'] as $item)
+                                <div class="menu-item">
+                                    <div class="menu-item-image" style="background-image: url('https://via.placeholder.com/100?text={{ urlencode($item->name) }}')"></div>
+                                    <div class="menu-item-details">
+                                        <div class="menu-item-title">{{ $item->name }}</div>
+                                        <div class="menu-item-description">{{ $item->description ?? 'No description available' }}</div>
+                                        <div class="menu-item-nutritional">{{ $item->dietary_tags ?? 'No nutritional info available' }}</div>
+                                    </div>
+                                    <div class="menu-item-action">
+                                        <button class="order-btn" data-item="{{ $item->name }}" data-meal="Snack">Order</button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div>No snack options available.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Orders Section -->
+                <div class="orders-section">
+                    <h6 class="orders-title">Your Current Orders</h6>
+                    <div class="orders-list" id="orders-list">
+                        @forelse($activeOrders as $order)
+                            <div class="order-item" id="order-{{ $order->id }}">
+                                <div class="order-info">
+                                    <div class="order-name">{{ $order->item_name }}</div>
+                                    <div class="order-meal">{{ $order->meal_type }} {{ $order->dietary_restriction ? "({$order->dietary_restriction})" : '' }}</div>
+                                    <div class="order-time">Ordered: {{ $order->order_time->format('d M Y, h:i A') }}</div>
+                                    <div class="order-status status-{{ $order->status }}">{{ ucfirst($order->status) }}</div>
+                                </div>
+                                @if(in_array($order->status, ['pending', 'preparing']))
+                                    <button class="cancel-order" data-order-id="{{ $order->id }}">Cancel</button>
+                                @endif
+                            </div>
+                        @empty
+                            <div class="no-orders">No meals ordered yet</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <div class="nav-item">
@@ -1528,8 +1953,13 @@
         document.querySelectorAll('.panel-button').forEach(button => {
             button.addEventListener('click', function() {
                 // Skip buttons that have their own handlers
-                if (this.id === 'alert-nurse-btn' || this.id === 'medical-team-btn') return;
+                if (this.id === 'alert-nurse-btn' || this.id === 'medical-team-btn' || 
+                    this.id === 'environmental-control-btn' || this.id === 'satisfaction-survey-btn' ||
+                    this.id === 'food-ordering-btn') {
+                    return;
+                }
                 
+                // For other buttons, just get the text - no alert needed
                 const buttonText = this.querySelector('div').textContent;
                 console.log(`Button clicked: ${buttonText}`);
                 // Link to appropriate page or show relevant modal when implemented
@@ -1783,19 +2213,258 @@
             satisfactionForm.reset();
         });
         
-        // Update the button click handler to skip all buttons that have their own functionality
-        document.querySelectorAll('.panel-button').forEach(button => {
+        // Food Ordering functionality
+        const foodOrderingBtn = document.getElementById('food-ordering-btn');
+        const foodModal = document.getElementById('foodOrderingModal');
+        const closeFoodModal = document.querySelector('.close-food-modal');
+        const mealTabs = document.querySelectorAll('.meal-tab');
+        const orderButtons = document.querySelectorAll('.order-btn');
+        const ordersList = document.getElementById('orders-list');
+        
+        // Show food ordering modal
+        foodOrderingBtn.addEventListener('click', function() {
+            foodModal.style.display = 'flex';
+        });
+        
+        // Close modal when clicking X
+        closeFoodModal.addEventListener('click', function() {
+            foodModal.style.display = 'none';
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            if (event.target === foodModal) {
+                foodModal.style.display = 'none';
+            }
+        });
+        
+        // Handle meal tab switching
+        mealTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                mealTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Hide all meal options
+                document.querySelectorAll('.meal-options').forEach(option => {
+                    option.style.display = 'none';
+                });
+                
+                // Show selected meal options
+                const mealType = this.getAttribute('data-meal');
+                document.getElementById(`${mealType}-options`).style.display = 'block';
+            });
+        });
+        
+        // Mark currently selected items for each meal type
+        function updateSelectedButtons() {
+            // Remove selected class from all buttons
+            document.querySelectorAll('.order-btn').forEach(btn => {
+                btn.classList.remove('selected');
+                btn.textContent = 'Order';
+            });
+            
+            // Get all active orders
+            const orderItems = document.querySelectorAll('.order-item');
+            
+            orderItems.forEach(item => {
+                const mealType = item.querySelector('.order-meal').textContent.split(' ')[0];
+                const itemName = item.querySelector('.order-name').textContent;
+                
+                // Find and mark the corresponding button as selected
+                document.querySelectorAll('.order-btn').forEach(btn => {
+                    if (btn.getAttribute('data-meal') === mealType && 
+                        btn.getAttribute('data-item') === itemName) {
+                        btn.classList.add('selected');
+                        btn.textContent = 'Selected';
+                    }
+                });
+            });
+        }
+        
+        // Update selected buttons on page load
+        updateSelectedButtons();
+        
+        // Handle ordering food items
+        orderButtons.forEach(button => {
             button.addEventListener('click', function() {
-                // Skip buttons that have their own handlers
-                if (this.id === 'alert-nurse-btn' || this.id === 'medical-team-btn' || 
-                    this.id === 'environmental-control-btn' || this.id === 'satisfaction-survey-btn') {
+                const itemName = this.getAttribute('data-item');
+                const mealType = this.getAttribute('data-meal');
+                const dietaryRestriction = document.getElementById('dietaryRestrictions').value;
+                
+                // Check if button is already selected (indicating an existing order)
+                if (this.classList.contains('selected')) {
+                    showToast('This item is already ordered');
                     return;
                 }
                 
-                // For other buttons, just get the text - no alert needed
-                const buttonText = this.querySelector('div').textContent;
-                console.log(`Button clicked: ${buttonText}`);
-                // Link to appropriate page or show relevant modal when implemented
+                // Show processing state
+                this.disabled = true;
+                this.textContent = 'Processing...';
+                
+                // Send order to server using AJAX
+                fetch('{{ route('admin.patients.food-order.store', $patient->id) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        item_name: itemName,
+                        meal_type: mealType,
+                        dietary_restriction: dietaryRestriction
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Re-enable button
+                    this.disabled = false;
+                    
+                    if (data.success) {
+                        // Handle success
+                        showToast(`Your ${itemName} order has been placed`);
+                        
+                        // Remove any existing order for this meal type from the UI
+                        document.querySelectorAll('.order-item').forEach(item => {
+                            const itemMealType = item.querySelector('.order-meal').textContent.split(' ')[0];
+                            if (itemMealType === mealType) {
+                                item.remove();
+                            }
+                        });
+                        
+                        // Add new order to UI
+                        const order = data.order;
+                        addOrderToList(order);
+                        
+                        // Update selected buttons
+                        updateSelectedButtons();
+                    } else {
+                        // Handle error
+                        showToast('Error: ' + (data.message || 'Failed to place order'));
+                        this.textContent = 'Order';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error placing order:', error);
+                    showToast('Error: Failed to place order');
+                    this.disabled = false;
+                    this.textContent = 'Order';
+                });
+            });
+        });
+        
+        // Function to add an order to the current orders list
+        function addOrderToList(order) {
+            // Remove "no orders" message if it exists
+            const noOrders = document.querySelector('.no-orders');
+            if (noOrders) {
+                noOrders.remove();
+            }
+            
+            // Create order item element
+            const orderItem = document.createElement('div');
+            orderItem.className = 'order-item';
+            orderItem.id = `order-${order.id}`;
+            
+            // Create order information
+            const orderInfo = document.createElement('div');
+            orderInfo.className = 'order-info';
+            
+            const orderName = document.createElement('div');
+            orderName.className = 'order-name';
+            orderName.textContent = order.item_name;
+            
+            const orderMeal = document.createElement('div');
+            orderMeal.className = 'order-meal';
+            orderMeal.textContent = `${order.meal_type}${order.dietary_restriction ? ' (' + order.dietary_restriction + ')' : ''}`;
+            
+            const orderTime = document.createElement('div');
+            orderTime.className = 'order-time';
+            orderTime.textContent = `Ordered: ${new Date(order.order_time).toLocaleDateString('en-GB', {day: '2-digit', month: 'short', year: 'numeric'})} ${new Date(order.order_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            
+            const orderStatus = document.createElement('div');
+            orderStatus.className = `order-status status-${order.status}`;
+            orderStatus.textContent = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+            
+            orderInfo.appendChild(orderName);
+            orderInfo.appendChild(orderMeal);
+            orderInfo.appendChild(orderTime);
+            orderInfo.appendChild(orderStatus);
+            
+            orderItem.appendChild(orderInfo);
+            
+            // Only add cancel button if status is pending or preparing
+            if (['pending', 'preparing'].includes(order.status)) {
+                // Create cancel button
+                const cancelButton = document.createElement('button');
+                cancelButton.className = 'cancel-order';
+                cancelButton.textContent = 'Cancel';
+                cancelButton.setAttribute('data-order-id', order.id);
+                
+                // Add event listener to cancel button
+                cancelButton.addEventListener('click', function() {
+                    cancelOrder(order.id);
+                });
+                
+                orderItem.appendChild(cancelButton);
+            }
+            
+            // Add to orders list
+            ordersList.prepend(orderItem);
+        }
+        
+        // Function to cancel an order
+        function cancelOrder(orderId) {
+            fetch(`{{ url('admin/food-order') }}/${orderId}/cancel`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Find the order item
+                    const orderItem = document.getElementById(`order-${orderId}`);
+                    if (orderItem) {
+                        // Get the item name for the toast
+                        const itemName = orderItem.querySelector('.order-name').textContent;
+                        
+                        // Remove from UI
+                        orderItem.remove();
+                        
+                        // Show toast
+                        showToast(`${itemName} order has been cancelled`);
+                        
+                        // If no orders left, show no orders message
+                        if (ordersList.children.length === 0) {
+                            const noOrdersMessage = document.createElement('div');
+                            noOrdersMessage.className = 'no-orders';
+                            noOrdersMessage.textContent = 'No meals ordered yet';
+                            ordersList.appendChild(noOrdersMessage);
+                        }
+                        
+                        // Update selected buttons
+                        updateSelectedButtons();
+                    }
+                } else {
+                    showToast('Error: ' + (data.message || 'Failed to cancel order'));
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling order:', error);
+                showToast('Error: Failed to cancel order');
+            });
+        }
+        
+        // Add click handler for cancel buttons
+        document.querySelectorAll('.cancel-order').forEach(button => {
+            button.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-order-id');
+                cancelOrder(orderId);
             });
         });
     </script>

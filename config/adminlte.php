@@ -384,6 +384,42 @@ return [
                 ],
             ],
         ],
+        [
+            'text' => 'Food Ordering',
+            'icon' => 'fas fa-fw fa-utensils',
+            'submenu' => [
+                [
+                    'text' => 'All Orders',
+                    'url' => 'admin/food-orders',
+                    'icon' => 'fas fa-fw fa-list',
+                ],
+                [
+                    'text' => 'Breakfast Orders',
+                    'url' => 'admin/food-orders/breakfast',
+                    'icon' => 'fas fa-fw fa-coffee',
+                ],
+                [
+                    'text' => 'Lunch Orders',
+                    'url' => 'admin/food-orders/lunch',
+                    'icon' => 'fas fa-fw fa-hamburger',
+                ],
+                [
+                    'text' => 'Dinner Orders',
+                    'url' => 'admin/food-orders/dinner',
+                    'icon' => 'fas fa-fw fa-drumstick-bite',
+                ],
+                [
+                    'text' => 'Snack Orders',
+                    'url' => 'admin/food-orders/snacks',
+                    'icon' => 'fas fa-fw fa-apple-alt',
+                ],
+                [
+                    'text' => 'Menu Management',
+                    'url' => 'admin/food-menu',
+                    'icon' => 'fas fa-fw fa-clipboard-list',
+                ],
+            ],
+        ],
     ],
 
     /*

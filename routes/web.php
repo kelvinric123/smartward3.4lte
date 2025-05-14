@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\PatientDischargeController;
 use App\Http\Controllers\Admin\PatientMovementController;
 use App\Http\Controllers\Admin\PatientReferralController;
 use App\Http\Controllers\Admin\PatientPanelController;
+use App\Http\Controllers\Admin\FoodOrderController;
+use App\Http\Controllers\Admin\FoodMenuController;
 
 /*
 |--------------------------------------------------------------------------
@@ -128,8 +130,26 @@ Route::prefix('admin')->group(function () {
         return view('admin.beds.wards.notification_demo', compact('ward'));
     })->name('admin.beds.wards.notification.demo');
     
+    // Food Ordering Routes
+    Route::prefix('food-orders')->name('admin.food-orders.')->group(function () {
+        Route::get('/', [FoodOrderController::class, 'index'])->name('index');
+        Route::get('/breakfast', [FoodOrderController::class, 'breakfastOrders'])->name('breakfast');
+        Route::get('/lunch', [FoodOrderController::class, 'lunchOrders'])->name('lunch');
+        Route::get('/dinner', [FoodOrderController::class, 'dinnerOrders'])->name('dinner');
+        Route::get('/snacks', [FoodOrderController::class, 'snackOrders'])->name('snacks');
+        Route::put('/{id}/status', [FoodOrderController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/{id}', [FoodOrderController::class, 'destroy'])->name('destroy');
+    });
+    
+    // Food Menu Management
+    Route::resource('food-menu', FoodMenuController::class)->names('admin.food-menu');
+    
     // Patient Panel Route
     Route::get('patients/{patient}/panel', [PatientPanelController::class, 'showPanel'])->name('admin.patients.panel');
+    
+    // Patient Food Ordering Routes
+    Route::post('patients/{patient}/food-order', [PatientPanelController::class, 'storeOrder'])->name('admin.patients.food-order.store');
+    Route::delete('food-order/{orderId}/cancel', [PatientPanelController::class, 'cancelOrder'])->name('admin.food-order.cancel');
 });
 
 // Hospital Admin Routes
