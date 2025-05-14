@@ -1428,6 +1428,14 @@
                     <div>Alert Nurse</div>
                 </div>
             </div>
+            
+            <!-- Fourth row of buttons -->
+            <div class="button-row">
+                <div class="panel-button" id="vital-sign-btn" onclick="openVitalSignsModal()">
+                    <i class="fa fa-heart"></i>
+                    <div>Vital Sign</div>
+                </div>
+            </div>
                     </div>
                 </div>
                 
@@ -2059,10 +2067,6 @@
         <div class="nav-item">
             <i class="fa fa-heartbeat"></i>
             <span>Health Education</span>
-        </div>
-        <div class="nav-item" id="vital-sign-btn" style="cursor: pointer; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: all 0.3s; padding: 8px 12px; margin: 0 5px; min-width: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <i class="fa fa-heart" style="font-size: 24px; margin-bottom: 5px;"></i>
-            <span style="font-weight: bold;">Vital Sign</span>
         </div>
     </div>
     
