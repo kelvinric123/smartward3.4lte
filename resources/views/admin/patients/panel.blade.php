@@ -1341,6 +1341,18 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Vital sign button hover effect */
+        #vital-sign-btn:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        #vital-sign-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -2048,9 +2060,9 @@
             <i class="fa fa-heartbeat"></i>
             <span>Health Education</span>
         </div>
-        <div class="nav-item" id="vital-sign-btn" style="cursor: pointer; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: all 0.3s;" onclick="openVitalSignsModal()">
-            <i class="fa fa-heart"></i>
-            <span>Vital Sign</span>
+        <div class="nav-item" id="vital-sign-btn" style="cursor: pointer; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: all 0.3s; padding: 8px 12px; margin: 0 5px; min-width: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;" onclick="openVitalSignsModal()">
+            <i class="fa fa-heart" style="font-size: 24px; margin-bottom: 5px;"></i>
+            <span style="font-weight: bold;">Vital Sign</span>
         </div>
     </div>
     
