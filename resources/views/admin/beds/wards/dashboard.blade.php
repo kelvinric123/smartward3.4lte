@@ -94,104 +94,117 @@
                                                 @endif
                                             </h5>
                                             @if($bed->patient)
-                                                <span>
-                                                    MRN: {{ $bed->patient->mrn ?: 'Not available' }}
-                                                </span>
+                                                @if(!isset($activeMovements[$bed->patient_id]))
+                                                    <span>
+                                                        MRN: {{ $bed->patient->mrn ?: 'Not available' }}
+                                                    </span>
+                                                @else
+                                                    <span style="color: #20B2AA;">
+                                                        <i class="fas fa-external-link-alt"></i> At service location
+                                                    </span>
+                                                @endif
                                             @else
                                                 <span class="text-muted">No Patient</span>
                                             @endif
                                         </div>
                                         <div class="card-body p-3">
                                             @if($bed->patient)
-                                                <p class="mb-1 d-flex align-items-center justify-content-between">
-                                                    <span>
-                                                        <i class="fas fa-user"></i> 
-                                                        @php
-                                                            if ($bed->patient->name) {
-                                                                $fullName = $bed->patient->name;
-                                                                $nameLength = mb_strlen($fullName);
-                                                                $halfLength = intval($nameLength / 2);
-                                                                $visiblePart = mb_substr($fullName, 0, $halfLength);
-                                                                $hiddenPart = str_repeat('*', $nameLength - $halfLength);
-                                                                echo $visiblePart . $hiddenPart;
-                                                            } else {
-                                                                echo 'No name';
-                                                            }
-                                                        @endphp
-                                                    </span>
-                                                    @if($bed->patient->activeAdmission && !empty($bed->patient->activeAdmission->risk_factors))
-                                                        <span class="risk-factor-grid">
-                                                            @foreach($bed->patient->activeAdmission->risk_factors as $risk)
-                                                                @if($risk === 'fallrisk')
-                                                                    <span class="risk-icon" title="Fall Risk">
-                                                                        <i class="fas fa-exclamation-triangle text-warning"></i>
-                                                                    </span>
-                                                                @elseif($risk === 'dnr')
-                                                                    <span class="risk-icon" title="DNR">
-                                                                        <i class="fas fa-heart text-danger"></i>
-                                                                    </span>
-                                                                @elseif($risk === 'intubated')
-                                                                    <span class="risk-icon" title="Intubated">
-                                                                        <i class="fas fa-lungs text-primary"></i>
-                                                                    </span>
-                                                                @elseif($risk === 'isolation')
-                                                                    <span class="risk-icon" title="Isolation">
-                                                                        <i class="fas fa-shield-virus text-info"></i>
-                                                                    </span>
-                                                                @endif
-                                                            @endforeach
+                                                @if(!isset($activeMovements[$bed->patient_id]))
+                                                    <p class="mb-1 d-flex align-items-center justify-content-between">
+                                                        <span>
+                                                            <i class="fas fa-user"></i> 
+                                                            @php
+                                                                if ($bed->patient->name) {
+                                                                    $fullName = $bed->patient->name;
+                                                                    $nameLength = mb_strlen($fullName);
+                                                                    $halfLength = intval($nameLength / 2);
+                                                                    $visiblePart = mb_substr($fullName, 0, $halfLength);
+                                                                    $hiddenPart = str_repeat('*', $nameLength - $halfLength);
+                                                                    echo $visiblePart . $hiddenPart;
+                                                                } else {
+                                                                    echo 'No name';
+                                                                }
+                                                            @endphp
                                                         </span>
+                                                        @if($bed->patient->activeAdmission && !empty($bed->patient->activeAdmission->risk_factors))
+                                                            <span class="risk-factor-grid">
+                                                                @foreach($bed->patient->activeAdmission->risk_factors as $risk)
+                                                                    @if($risk === 'fallrisk')
+                                                                        <span class="risk-icon" title="Fall Risk">
+                                                                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                                                                        </span>
+                                                                    @elseif($risk === 'dnr')
+                                                                        <span class="risk-icon" title="DNR">
+                                                                            <i class="fas fa-heart text-danger"></i>
+                                                                        </span>
+                                                                    @elseif($risk === 'intubated')
+                                                                        <span class="risk-icon" title="Intubated">
+                                                                            <i class="fas fa-lungs text-primary"></i>
+                                                                        </span>
+                                                                    @elseif($risk === 'isolation')
+                                                                        <span class="risk-icon" title="Isolation">
+                                                                            <i class="fas fa-shield-virus text-info"></i>
+                                                                        </span>
+                                                                    @endif
+                                                                @endforeach
+                                                            </span>
+                                                        @endif
+                                                    </p>
+                                                    
+                                                    @if($bed->consultant)
+                                                        <p class="mb-1">
+                                                            <i class="fas fa-user-md"></i> {{ $bed->consultant->name }}
+                                                        </p>
+                                                    @else
+                                                        <p class="mb-1">
+                                                            <i class="fas fa-user-md"></i> Not assigned
+                                                        </p>
                                                     @endif
-                                                </p>
-                                            @endif
-                                            
-                                            @if($bed->consultant)
-                                                <p class="mb-1">
-                                                    <i class="fas fa-user-md"></i> {{ $bed->consultant->name }}
-                                                </p>
-                                            @else
-                                                <p class="mb-1">
-                                                    <i class="fas fa-user-md"></i> Not assigned
-                                                </p>
+                                                @endif
                                             @endif
                                             
                                             @if($bed->status == 'occupied' && $bed->patient)
-                                                <p class="text-muted mb-1">
-                                                    <i class="fas fa-clock"></i> 
-                                                    @php
-                                                        // Get actual admission duration from the patient's active admission
-                                                        $activeAdmission = $bed->patient->activeAdmission;
-                                                        echo $activeAdmission ? $activeAdmission->getStayDurationAttribute() : 'Just admitted';
-                                                    @endphp
-                                                </p>
-                                                
-                                                @if($bed->patient && $bed->patient->latestVitalSigns && $bed->patient->latestVitalSigns->total_ews >= 3)
-                                                    <p class="mb-1">
-                                                        <i class="fas fa-heartbeat"></i> 
-                                                        <span class="badge badge-{{ $bed->patient->latestVitalSigns->status_color }}">
-                                                            EWS: {{ $bed->patient->latestVitalSigns->total_ews }}
-                                                        </span>
-                                                    </p>
-                                                @elseif($bed->patient && $bed->patient->latestVitalSigns)
-                                                    <p class="mb-1">
-                                                        <i class="fas fa-heartbeat"></i> 
-                                                        <span class="badge badge-success">
-                                                            EWS: {{ $bed->patient->latestVitalSigns->total_ews }}
-                                                        </span>
-                                                    </p>
-                                                @elseif($bed->patient)
-                                                    <p class="mb-1">
-                                                        <i class="fas fa-heartbeat"></i> 
-                                                        <span class="badge badge-secondary">
-                                                            No vital signs
-                                                        </span>
-                                                    </p>
-                                                @endif
-                                                
                                                 @if(isset($activeMovements[$bed->patient_id]))
-                                                    <div class="alert alert-info p-1 mb-2 text-center">
-                                                        <small><i class="fas fa-external-link-alt"></i> At {{ $activeMovements[$bed->patient_id]->to_service_location }}</small>
+                                                    <div class="alert p-0 mb-3">
+                                                        <div class="btn btn-info btn-block mb-0 text-left" style="cursor: default; background-color: #20B2AA; border-color: #20B2AA;">
+                                                            <i class="fas fa-external-link-alt"></i> At {{ $activeMovements[$bed->patient_id]->to_service_location }}
+                                                        </div>
                                                     </div>
+                                                    
+                                                    <!-- Add empty space to push buttons to bottom, mimicking the layout of other beds -->
+                                                    <div style="min-height: 80px;"></div>
+                                                @else
+                                                    <p class="text-muted mb-1">
+                                                        <i class="fas fa-clock"></i> 
+                                                        @php
+                                                            // Get actual admission duration from the patient's active admission
+                                                            $activeAdmission = $bed->patient->activeAdmission;
+                                                            echo $activeAdmission ? $activeAdmission->getStayDurationAttribute() : 'Just admitted';
+                                                        @endphp
+                                                    </p>
+                                                    
+                                                    @if($bed->patient && $bed->patient->latestVitalSigns && $bed->patient->latestVitalSigns->total_ews >= 3)
+                                                        <p class="mb-1">
+                                                            <i class="fas fa-heartbeat"></i> 
+                                                            <span class="badge badge-{{ $bed->patient->latestVitalSigns->status_color }}">
+                                                                EWS: {{ $bed->patient->latestVitalSigns->total_ews }}
+                                                            </span>
+                                                        </p>
+                                                    @elseif($bed->patient && $bed->patient->latestVitalSigns)
+                                                        <p class="mb-1">
+                                                            <i class="fas fa-heartbeat"></i> 
+                                                            <span class="badge badge-success">
+                                                                EWS: {{ $bed->patient->latestVitalSigns->total_ews }}
+                                                            </span>
+                                                        </p>
+                                                    @elseif($bed->patient)
+                                                        <p class="mb-1">
+                                                            <i class="fas fa-heartbeat"></i> 
+                                                            <span class="badge badge-secondary">
+                                                                No vital signs
+                                                            </span>
+                                                        </p>
+                                                    @endif
                                                 @endif
                                                 
                                                 <div class="btn-group btn-group-sm w-100 mt-2">
