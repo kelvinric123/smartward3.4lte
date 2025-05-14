@@ -1835,7 +1835,24 @@
                     </div>
                 </div>
                 
-                <p class="meal-note">Select one meal from each category. Your most recent selection will replace any previous order.</p>
+                <div class="alert alert-info" style="border-left: 4px solid #00a99d; padding: 10px 15px; margin-bottom: 15px; background-color: #e0f2f1; border-radius: 4px;">
+                    <i class="fas fa-info-circle mr-2"></i> <strong>How to order:</strong> Select one meal from each category (Breakfast, Lunch, Dinner, and Snacks). Your most recent selection will replace any previous order for that meal type. Orders for today must be placed before 7:00 AM.
+                </div>
+                
+                <!-- Date selection for ordering -->
+                <div class="date-selection" style="margin-bottom: 15px;">
+                    <label for="orderDate"><strong>Order for date:</strong></label>
+                    <select id="orderDate" class="form-select" style="width: auto; display: inline-block; margin-left: 10px;">
+                        @php
+                            $today = \Carbon\Carbon::now();
+                            $tomorrow = \Carbon\Carbon::tomorrow();
+                            $dayAfterTomorrow = \Carbon\Carbon::tomorrow()->addDay();
+                        @endphp
+                        <option value="{{ $today->format('Y-m-d') }}">Today ({{ $today->format('D, M j') }})</option>
+                        <option value="{{ $tomorrow->format('Y-m-d') }}" selected>Tomorrow ({{ $tomorrow->format('D, M j') }})</option>
+                        <option value="{{ $dayAfterTomorrow->format('Y-m-d') }}">{{ $dayAfterTomorrow->format('D, M j') }}</option>
+                    </select>
+                </div>
                 
                 <!-- Meal Selection Tabs -->
                 <div class="meal-selection">
@@ -1845,7 +1862,30 @@
                         <button class="meal-tab" data-meal="Dinner">Dinner</button>
                         <button class="meal-tab" data-meal="Snack">Snacks</button>
                     </div>
-                    
+                </div>
+                
+                <!-- Meal Options -->
+                <div class="meal-options" id="Breakfast-options">
+                    <h6 class="meal-category">Breakfast Options</h6>
+                    <div class="menu-items">
+                        @forelse($menuItems['Breakfast'] as $item)
+                            <div class="menu-item">
+                                <div class="menu-item-image" style="background-image: url('https://via.placeholder.com/100?text={{ urlencode($item->name) }}')"></div>
+                                <div class="menu-item-details">
+                                    <div class="menu-item-title">{{ $item->name }}</div>
+                                    <div class="menu-item-description">{{ $item->description ?? 'No description available' }}</div>
+                                    <div class="menu-item-nutritional">{{ $item->dietary_tags ?? 'No nutritional info available' }}</div>
+                                </div>
+                                <div class="menu-item-action">
+                                    <button class="order-btn" data-item="{{ $item->name }}" data-meal="Breakfast">Order</button>
+                                </div>
+                            </div>
+                        @empty
+                            <div>No breakfast options available.</div>
+                        @endforelse
+                    </div>
+                </div>
+                
                     <!-- Breakfast Options -->
                     <div class="meal-options" id="Breakfast-options">
                         <h6 class="meal-category">Breakfast Options</h6>
@@ -1938,13 +1978,47 @@
                 <!-- Current Orders Section -->
                 <div class="orders-section">
                     <h6 class="orders-title">Your Current Orders</h6>
+                    
+                    <!-- Summary of current selections -->
+                    <div class="current-selections" style="margin-bottom: 15px; background-color: #f8f9fa; border-radius: 6px; padding: 12px; border-left: 4px solid #00a99d;">
+                        <h6 style="margin-bottom: 10px; color: #00a99d;">Your meal selections for <span id="selected-date"></span>:</h6>
+                        <div class="meal-summary-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <div class="meal-summary" id="breakfast-summary">
+                                <strong>Breakfast:</strong> <span class="meal-choice">None selected</span>
+                            </div>
+                            <div class="meal-summary" id="lunch-summary">
+                                <strong>Lunch:</strong> <span class="meal-choice">None selected</span>
+                            </div>
+                            <div class="meal-summary" id="dinner-summary">
+                                <strong>Dinner:</strong> <span class="meal-choice">None selected</span>
+                            </div>
+                            <div class="meal-summary" id="snack-summary">
+                                <strong>Snack:</strong> <span class="meal-choice">None selected</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit order button -->
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button id="submit-order-btn" class="btn btn-primary" style="background-color: #00a99d; border-color: #00a99d; padding: 8px 20px; font-weight: bold;">
+                                <i class="fas fa-check-circle"></i> Submit Order
+                            </button>
+                            <p style="margin-top: 8px; font-size: 12px; color: #6c757d;">
+                                <i class="fas fa-info-circle"></i> Click submit to finalize your meal selections
+                            </p>
+                        </div>
+                    </div>
+                    
                     <div class="orders-list" id="orders-list">
+                        <h6 style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 15px;">Pending & Upcoming Orders</h6>
                         @forelse($activeOrders as $order)
                             <div class="order-item" id="order-{{ $order->id }}">
                                 <div class="order-info">
                                     <div class="order-name">{{ $order->item_name }}</div>
                                     <div class="order-meal">{{ $order->meal_type }} {{ $order->dietary_restriction ? "({$order->dietary_restriction})" : '' }}</div>
-                                    <div class="order-time">Ordered: {{ $order->order_time->format('d M Y, h:i A') }}</div>
+                                    <div class="order-time">
+                                        <div><strong>Delivery date:</strong> {{ $order->delivery_date->format('D, M j, Y') }}</div>
+                                        <div><strong>Ordered:</strong> {{ $order->order_time->format('d M Y, h:i A') }}</div>
+                                    </div>
                                     <div class="order-status status-{{ $order->status }}">{{ ucfirst($order->status) }}</div>
                                 </div>
                                 @if(in_array($order->status, ['pending', 'preparing']))
@@ -1974,9 +2048,9 @@
             <i class="fa fa-heartbeat"></i>
             <span>Health Education</span>
         </div>
-        <div class="nav-item" id="vital-sign-info-btn">
-            <i class="fa fa-chart-line"></i>
-            <span>Vital Sign Info</span>
+        <div class="nav-item" id="vital-sign-btn" style="cursor: pointer; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: all 0.3s;" onclick="openVitalSignsModal()">
+            <i class="fa fa-heart"></i>
+            <span>Vital Sign</span>
         </div>
     </div>
     
@@ -2077,20 +2151,37 @@
                 closeFoodModalBtn.addEventListener('click', closeFoodOrderingModal);
             }
 
-            // Vital Sign Info button
-            const vitalSignInfoBtn = document.getElementById('vital-sign-info-btn');
+            // Vital Sign button - add debugging
+            console.log('Looking for vital sign button with ID: vital-sign-btn');
+            const vitalSignBtn = document.getElementById('vital-sign-btn');
+            console.log('Found vital sign button:', vitalSignBtn);
+            
             const vitalSignsModal = document.getElementById('vitalSignsModal');
-            if (vitalSignInfoBtn && vitalSignsModal) {
-                vitalSignInfoBtn.addEventListener('click', function() {
+            console.log('Found vital signs modal:', vitalSignsModal);
+            
+            if (vitalSignBtn && vitalSignsModal) {
+                console.log('Adding click event listener to vital sign button');
+                vitalSignBtn.addEventListener('click', function() {
+                    console.log('Vital sign button clicked!');
                     vitalSignsModal.style.display = 'flex';
                     loadVitalSigns();
                 });
+            } else {
+                console.error('Could not set up vital signs button - button or modal not found');
             }
 
             // Close Vital Signs modal
             const closeVitalSignsModalBtn = document.querySelector('.close-vital-signs-modal');
+            console.log('Found close vital signs modal button:', closeVitalSignsModalBtn);
+            
             if (closeVitalSignsModalBtn) {
-                closeVitalSignsModalBtn.addEventListener('click', closeVitalSignsModal);
+                console.log('Adding click event listener to close vital signs modal button');
+                closeVitalSignsModalBtn.addEventListener('click', function() {
+                    console.log('Close vital signs modal button clicked');
+                    closeVitalSignsModal();
+                });
+            } else {
+                console.error('Could not set up close vital signs modal button - button not found');
             }
         });
         
@@ -2122,51 +2213,97 @@
         }
 
         function closeVitalSignsModal() {
-            document.getElementById('vitalSignsModal').style.display = 'none';
+            console.log('Closing vital signs modal');
+            const modal = document.getElementById('vitalSignsModal');
+            console.log('Found vital signs modal for closing:', modal);
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('Vital signs modal hidden');
+            } else {
+                console.error('Could not close vital signs modal - modal not found');
+            }
+        }
+        
+        function openVitalSignsModal() {
+            console.log('openVitalSignsModal function called directly via onclick');
+            const modal = document.getElementById('vitalSignsModal');
+            console.log('Found vital signs modal for opening:', modal);
+            if (modal) {
+                modal.style.display = 'flex';
+                console.log('Vital signs modal displayed');
+                loadVitalSigns();
+            } else {
+                console.error('Could not open vital signs modal - modal not found');
+            }
         }
         
         // Load patient vital signs data
         function loadVitalSigns() {
+            console.log('loadVitalSigns function called');
             const vitalLoading = document.getElementById('vital-loading');
             const vitalData = document.getElementById('vital-data');
             const vitalEmpty = document.getElementById('vital-empty');
             
+            console.log('Found vital elements:', {
+                loading: vitalLoading,
+                data: vitalData,
+                empty: vitalEmpty
+            });
+            
             // Show loading, hide others
-            vitalLoading.style.display = 'block';
-            vitalData.style.display = 'none';
-            vitalEmpty.style.display = 'none';
+            if (vitalLoading) vitalLoading.style.display = 'block';
+            if (vitalData) vitalData.style.display = 'none';
+            if (vitalEmpty) vitalEmpty.style.display = 'none';
+            
+            console.log('Set loading state, waiting for timeout');
             
             // Simulate a delay to show loading (in a real app, this would be a fetch request)
             setTimeout(() => {
+                console.log('Timeout completed, checking for vital signs data');
+                
                 // Hide loading
-                vitalLoading.style.display = 'none';
+                if (vitalLoading) vitalLoading.style.display = 'none';
                 
                 // Check if patient has vital signs
                 @if(isset($patient) && method_exists($patient, 'vitalSigns') && $patient->vitalSigns()->count() > 0)
+                    console.log('Patient has vital signs, rendering data');
                     // Get vital signs data
                     const vitalSigns = @json($patient->vitalSigns()->with('recorder')->latest('recorded_at')->get());
+                    console.log('Vital signs data:', vitalSigns);
                     
                     // Show data container
-                    vitalData.style.display = 'block';
+                    if (vitalData) vitalData.style.display = 'block';
                     
                     // Render the vital signs
                     renderVitalSigns(vitalSigns);
                 @else
+                    console.log('Patient has no vital signs, showing empty message');
                     // Show empty message
-                    vitalEmpty.style.display = 'block';
+                    if (vitalEmpty) vitalEmpty.style.display = 'block';
                 @endif
             }, 500);
         }
         
         // Render vital signs data
         function renderVitalSigns(vitalSigns) {
+            console.log('renderVitalSigns function called with data:', vitalSigns);
             const vitalData = document.getElementById('vital-data');
+            console.log('Found vital-data element:', vitalData);
+            
+            if (!vitalData) {
+                console.error('vital-data element not found, cannot render vital signs');
+                return;
+            }
+            
             let html = '';
             
             // Sort vital signs by recorded_at in descending order (most recent first)
             vitalSigns.sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
+            console.log('Sorted vital signs data:', vitalSigns);
             
-            vitalSigns.forEach(vital => {
+            vitalSigns.forEach((vital, index) => {
+                console.log(`Processing vital sign #${index+1}:`, vital);
+                
                 // Determine EWS class based on total score
                 let ewsClass = 'ews-normal';
                 if (vital.total_ews >= 7) {
@@ -2176,6 +2313,7 @@
                 } else if (vital.total_ews >= 3) {
                     ewsClass = 'ews-low';
                 }
+                console.log(`EWS class for vital #${index+1}: ${ewsClass}`);
                 
                 // Format date
                 const recordedDate = new Date(vital.recorded_at);
@@ -2186,7 +2324,9 @@
                     hour: '2-digit',
                     minute: '2-digit'
                 });
+                console.log(`Formatted date for vital #${index+1}: ${formattedDate}`);
                 
+                // Add HTML for this vital sign record
                 html += `
                     <div class="vital-record">
                         <div class="vital-record-header">
@@ -2248,7 +2388,9 @@
                 `;
             });
             
+            console.log('Setting vital-data innerHTML with HTML of length:', html.length);
             vitalData.innerHTML = html;
+            console.log('Vital signs rendering complete');
         }
         
         // Environmental controls functionality
@@ -2345,10 +2487,43 @@
             // Food order button functionality
             const orderButtons = document.querySelectorAll('.order-btn');
             if (orderButtons.length > 0) {
+                // Function to update the meal summary
+                function updateMealSummary(mealType, itemName) {
+                    const summaryElement = document.getElementById(`${mealType.toLowerCase()}-summary`);
+                    if (summaryElement) {
+                        const choiceElement = summaryElement.querySelector('.meal-choice');
+                        if (choiceElement) {
+                            choiceElement.textContent = itemName || 'None selected';
+                            choiceElement.style.color = itemName ? '#28a745' : '#6c757d';
+                        }
+                    }
+                }
+                
+                // Update the selected date in the summary
+                function updateSelectedDate() {
+                    const dateSelect = document.getElementById('orderDate');
+                    const selectedDateElement = document.getElementById('selected-date');
+                    
+                    if (dateSelect && selectedDateElement) {
+                        const selectedOption = dateSelect.options[dateSelect.selectedIndex];
+                        selectedDateElement.textContent = selectedOption.text.replace('(', '').replace(')', '');
+                    }
+                }
+                
+                // Initialize the date display
+                updateSelectedDate();
+                
+                // Add event listener to date select
+                const dateSelect = document.getElementById('orderDate');
+                if (dateSelect) {
+                    dateSelect.addEventListener('change', updateSelectedDate);
+                }
+                
                 orderButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
                         const mealType = this.getAttribute('data-meal');
                         const itemName = this.getAttribute('data-item');
+                        const dateSelect = document.getElementById('orderDate');
                         const dietaryRestriction = document.getElementById('dietaryRestrictions') ? 
                             document.getElementById('dietaryRestrictions').value : '';
                         
@@ -2362,128 +2537,109 @@
                         this.classList.add('selected');
                         this.textContent = 'Selected';
                         
+                        // Update the meal summary display
+                        updateMealSummary(mealType, itemName);
+                        
                         // Show confirmation toast
-                        let message = `${itemName} ordered for ${mealType}`;
+                        let message = `${itemName} selected for ${mealType}`;
+                        if (dateSelect) {
+                            const selectedOption = dateSelect.options[dateSelect.selectedIndex];
+                            message += ` on ${selectedOption.text.replace('(', '').replace(')', '')}`;
+                        }
                         if (dietaryRestriction) {
                             message += ` (${dietaryRestriction})`;
                         }
                         showToast(message);
                     });
                 });
-            }
-        });
-        
-        // Toast notification function
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast-notification';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            // Show the toast
-            setTimeout(function() {
-                toast.classList.add('show');
-            }, 100);
-            
-            // Hide the toast after 3 seconds
-            setTimeout(function() {
-                toast.classList.remove('show');
-                setTimeout(function() {
-                    document.body.removeChild(toast);
-                }, 500);
-            }, 3000);
-        }
-
-        // Send alert to nursing station
-        function sendAlert(alertType) {
-            // Show loading state
-            const buttons = document.querySelectorAll('.alert-btn');
-            buttons.forEach(btn => {
-                btn.disabled = true;
-                if (btn.textContent.toLowerCase().includes(alertType)) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i><br>Sending...`;
-                }
-            });
-            
-            // Get the status div
-            const statusDiv = document.getElementById('alertStatus');
-            statusDiv.style.display = 'block';
-            statusDiv.className = 'alert-status mt-3 text-center';
-            statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending alert...';
-            
-            // Send AJAX request
-            fetch(`{{ route('admin.patients.alert.send', $patient->id) }}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                    alert_type: alertType
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-                .then(data => {
-                    if (data.success) {
-                    statusDiv.className = 'alert-status mt-3 text-center text-success';
-                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Alert sent successfully!';
-                    
-                    // Reset button texts after 2 seconds
-                    setTimeout(() => {
-                        buttons.forEach(btn => {
-                            btn.disabled = false;
+                
+                // Handle submit order button click
+                const submitOrderBtn = document.getElementById('submit-order-btn');
+                if (submitOrderBtn) {
+                    submitOrderBtn.addEventListener('click', function() {
+                        // Get all selected meals
+                        const mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
+                        const selections = {};
+                        let hasSelections = false;
+                        
+                        mealTypes.forEach(mealType => {
+                            const selected = document.querySelector(`.order-btn[data-meal="${mealType}"].selected`);
+                            if (selected) {
+                                hasSelections = true;
+                                selections[mealType] = {
+                                    item: selected.getAttribute('data-item'),
+                                    mealType
+                                };
+                            }
                         });
                         
-                        // Reset emergency button
-                        document.querySelector('.emergency-btn').innerHTML = `<i class="fas fa-exclamation-triangle"></i><br>Emergency`;
+                        if (!hasSelections) {
+                            showToast('Please select at least one meal before submitting');
+                            return;
+                        }
                         
-                        // Reset pain button
-                        document.querySelector('.pain-btn').innerHTML = `<i class="fas fa-heartbeat"></i><br>Pain`;
+                        // Get order info
+                        const dietaryRestriction = document.getElementById('dietaryRestrictions')?.value || '';
+                        const dateSelect = document.getElementById('orderDate');
+                        const orderDate = dateSelect?.value || '';
                         
-                        // Reset assistance button
-                        document.querySelector('.assistance-btn').innerHTML = `<i class="fas fa-hands-helping"></i><br>Assistance`;
+                        // Get formatted date text for display
+                        let dateText = '';
+                        if (dateSelect) {
+                            const selectedOption = dateSelect.options[dateSelect.selectedIndex];
+                            dateText = selectedOption.text.replace('(', '').replace(')', '');
+                        }
                         
-                        // Reset water button
-                        document.querySelector('.water-btn').innerHTML = `<i class="fas fa-tint"></i><br>Water`;
+                        // In a real app, this would send data to the server via AJAX
+                        // For demo purposes, just log and show a confirmation
+                        console.log('Order submitted:', { selections, dietaryRestriction, orderDate });
                         
-                        // Reset bathroom button
-                        document.querySelector('.bathroom-btn').innerHTML = `<i class="fas fa-toilet"></i><br>Bathroom`;
+                        // Show confirmation
+                        showToast(`Your meal order for ${dateText} has been submitted!`);
                         
-                        // Reset food button
-                        document.querySelector('.food-btn').innerHTML = `<i class="fas fa-utensils"></i><br>Food`;
-                        
-                        // Close modal after 3 seconds
-                        setTimeout(() => {
-                            closeAlertModal();
-                        }, 1000);
-                    }, 2000);
-                } else {
-                    statusDiv.className = 'alert-status mt-3 text-center text-danger';
-                    statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> Failed to send alert. Please try again.';
-                    
-                    // Reset buttons
-                    buttons.forEach(btn => {
-                        btn.disabled = false;
+                        // In a real app, you would refresh the orders list after successful submission
+                        // For demo purposes, add a simulated entry
+                        const ordersList = document.getElementById('orders-list');
+                        if (ordersList) {
+                            // Hide "no orders" message if present
+                            const noOrders = ordersList.querySelector('.no-orders');
+                            if (noOrders) {
+                                noOrders.style.display = 'none';
+                            }
+                            
+                            // Get the heading element (for inserting after it)
+                            const heading = ordersList.querySelector('h6');
+                            
+                            // Add each selected meal as an order
+                            Object.keys(selections).forEach(mealType => {
+                                const selection = selections[mealType];
+                                const orderItem = document.createElement('div');
+                                orderItem.className = 'order-item';
+                                orderItem.innerHTML = `
+                                    <div class="order-info">
+                                        <div class="order-name">${selection.item}</div>
+                                        <div class="order-meal">${mealType} ${dietaryRestriction ? `(${dietaryRestriction})` : ''}</div>
+                                        <div class="order-time">
+                                            <div><strong>Delivery date:</strong> ${dateText}</div>
+                                            <div><strong>Ordered:</strong> Just now</div>
+                                        </div>
+                                        <div class="order-status status-pending">Pending</div>
+                                    </div>
+                                    <button class="cancel-order">Cancel</button>
+                                `;
+                                
+                                // Insert after the heading
+                                if (heading && heading.nextSibling) {
+                                    ordersList.insertBefore(orderItem, heading.nextSibling);
+                                } else {
+                                    ordersList.appendChild(orderItem);
+                                }
+                            });
+                        }
                     });
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                statusDiv.className = 'alert-status mt-3 text-center text-danger';
-                statusDiv.innerHTML = '<i class="fas fa-times-circle"></i> An error occurred. Please try again.';
-                
-                // Reset buttons
-                buttons.forEach(btn => {
-                    btn.disabled = false;
-            });
+            }
         });
-        }
 
         // Handle satisfaction survey submission
         document.addEventListener('DOMContentLoaded', function() {
@@ -2510,28 +2666,49 @@
                 });
             }
         });
-    </script>
 
+        // Toast notification function
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Show the toast
+            setTimeout(function() {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Hide the toast after 3 seconds
+            setTimeout(function() {
+                toast.classList.remove('show');
+                setTimeout(function() {
+                    document.body.removeChild(toast);
+                }, 500);
+            }, 3000);
+        }
+    </script>
+    
     <!-- Vital Signs Modal -->
-    <div class="vital-signs-modal" id="vitalSignsModal">
-        <div class="vital-signs-content">
-            <div class="vital-signs-header">
-                <h5>Vital Signs Information</h5>
-                <span class="close-vital-signs-modal">&times;</span>
+    <div class="vital-signs-modal" id="vitalSignsModal" style="z-index: 2000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center;">
+        <div class="vital-signs-content" style="background-color: white; border-radius: 8px; width: 95%; max-width: 800px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;">
+            <div class="vital-signs-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #00a99d; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; position: sticky; top: 0; z-index: 10;">
+                <h5 style="margin: 0; font-size: 18px;">Vital Signs Information</h5>
+                <span class="close-vital-signs-modal" style="cursor: pointer; font-size: 24px;" onclick="closeVitalSignsModal()">&times;</span>
             </div>
-            <div class="vital-signs-body">
-                <div class="vital-loading text-center py-5" id="vital-loading">
+            <div class="vital-signs-body" style="padding: 20px;">
+                <div class="vital-loading text-center py-5" id="vital-loading" style="text-align: center; padding: 3rem 0;">
                     <i class="fas fa-spinner fa-spin fa-3x"></i>
-                    <p class="mt-3">Loading vital signs data...</p>
+                    <p class="mt-3" style="margin-top: 1rem;">Loading vital signs data...</p>
                 </div>
                 
                 <div class="vital-data" id="vital-data" style="display: none;">
                     <!-- This will be populated with vital signs data via JavaScript -->
                 </div>
                 
-                <div class="vital-empty text-center py-5" id="vital-empty" style="display: none;">
-                    <i class="fas fa-heartbeat fa-3x text-muted"></i>
-                    <p class="mt-3">No vital signs recorded yet.</p>
+                <div class="vital-empty text-center py-5" id="vital-empty" style="display: none; text-align: center; padding: 3rem 0;">
+                    <i class="fas fa-heartbeat fa-3x text-muted" style="color: #6c757d;"></i>
+                    <p class="mt-3" style="margin-top: 1rem;">No vital signs recorded yet.</p>
                 </div>
             </div>
         </div>
