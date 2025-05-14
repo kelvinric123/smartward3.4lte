@@ -2060,7 +2060,7 @@
             <i class="fa fa-heartbeat"></i>
             <span>Health Education</span>
         </div>
-        <div class="nav-item" id="vital-sign-btn" style="cursor: pointer; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: all 0.3s; padding: 8px 12px; margin: 0 5px; min-width: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;" onclick="openVitalSignsModal()">
+        <div class="nav-item" id="vital-sign-btn" style="cursor: pointer; background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: all 0.3s; padding: 8px 12px; margin: 0 5px; min-width: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <i class="fa fa-heart" style="font-size: 24px; margin-bottom: 5px;"></i>
             <span style="font-weight: bold;">Vital Sign</span>
         </div>
@@ -2163,37 +2163,20 @@
                 closeFoodModalBtn.addEventListener('click', closeFoodOrderingModal);
             }
 
-            // Vital Sign button - add debugging
-            console.log('Looking for vital sign button with ID: vital-sign-btn');
+            // Vital Sign button
             const vitalSignBtn = document.getElementById('vital-sign-btn');
-            console.log('Found vital sign button:', vitalSignBtn);
-            
             const vitalSignsModal = document.getElementById('vitalSignsModal');
-            console.log('Found vital signs modal:', vitalSignsModal);
-            
             if (vitalSignBtn && vitalSignsModal) {
-                console.log('Adding click event listener to vital sign button');
                 vitalSignBtn.addEventListener('click', function() {
-                    console.log('Vital sign button clicked!');
                     vitalSignsModal.style.display = 'flex';
                     loadVitalSigns();
                 });
-            } else {
-                console.error('Could not set up vital signs button - button or modal not found');
             }
 
             // Close Vital Signs modal
             const closeVitalSignsModalBtn = document.querySelector('.close-vital-signs-modal');
-            console.log('Found close vital signs modal button:', closeVitalSignsModalBtn);
-            
             if (closeVitalSignsModalBtn) {
-                console.log('Adding click event listener to close vital signs modal button');
-                closeVitalSignsModalBtn.addEventListener('click', function() {
-                    console.log('Close vital signs modal button clicked');
-                    closeVitalSignsModal();
-                });
-            } else {
-                console.error('Could not set up close vital signs modal button - button not found');
+                closeVitalSignsModalBtn.addEventListener('click', closeVitalSignsModal);
             }
         });
         
@@ -2225,63 +2208,34 @@
         }
 
         function closeVitalSignsModal() {
-            console.log('Closing vital signs modal');
-            const modal = document.getElementById('vitalSignsModal');
-            console.log('Found vital signs modal for closing:', modal);
-            if (modal) {
-                modal.style.display = 'none';
-                console.log('Vital signs modal hidden');
-            } else {
-                console.error('Could not close vital signs modal - modal not found');
-            }
+            document.getElementById('vitalSignsModal').style.display = 'none';
         }
         
         function openVitalSignsModal() {
-            console.log('openVitalSignsModal function called directly via onclick');
-            const modal = document.getElementById('vitalSignsModal');
-            console.log('Found vital signs modal for opening:', modal);
-            if (modal) {
-                modal.style.display = 'flex';
-                console.log('Vital signs modal displayed');
-                loadVitalSigns();
-            } else {
-                console.error('Could not open vital signs modal - modal not found');
-            }
+            document.getElementById('vitalSignsModal').style.display = 'flex';
+            loadVitalSigns();
         }
         
         // Load patient vital signs data
         function loadVitalSigns() {
-            console.log('loadVitalSigns function called');
             const vitalLoading = document.getElementById('vital-loading');
             const vitalData = document.getElementById('vital-data');
             const vitalEmpty = document.getElementById('vital-empty');
-            
-            console.log('Found vital elements:', {
-                loading: vitalLoading,
-                data: vitalData,
-                empty: vitalEmpty
-            });
             
             // Show loading, hide others
             if (vitalLoading) vitalLoading.style.display = 'block';
             if (vitalData) vitalData.style.display = 'none';
             if (vitalEmpty) vitalEmpty.style.display = 'none';
             
-            console.log('Set loading state, waiting for timeout');
-            
             // Simulate a delay to show loading (in a real app, this would be a fetch request)
             setTimeout(() => {
-                console.log('Timeout completed, checking for vital signs data');
-                
                 // Hide loading
                 if (vitalLoading) vitalLoading.style.display = 'none';
                 
                 // Check if patient has vital signs
                 @if(isset($patient) && method_exists($patient, 'vitalSigns') && $patient->vitalSigns()->count() > 0)
-                    console.log('Patient has vital signs, rendering data');
                     // Get vital signs data
                     const vitalSigns = @json($patient->vitalSigns()->with('recorder')->latest('recorded_at')->get());
-                    console.log('Vital signs data:', vitalSigns);
                     
                     // Show data container
                     if (vitalData) vitalData.style.display = 'block';
@@ -2289,7 +2243,6 @@
                     // Render the vital signs
                     renderVitalSigns(vitalSigns);
                 @else
-                    console.log('Patient has no vital signs, showing empty message');
                     // Show empty message
                     if (vitalEmpty) vitalEmpty.style.display = 'block';
                 @endif
@@ -2298,12 +2251,9 @@
         
         // Render vital signs data
         function renderVitalSigns(vitalSigns) {
-            console.log('renderVitalSigns function called with data:', vitalSigns);
             const vitalData = document.getElementById('vital-data');
-            console.log('Found vital-data element:', vitalData);
             
             if (!vitalData) {
-                console.error('vital-data element not found, cannot render vital signs');
                 return;
             }
             
@@ -2311,11 +2261,8 @@
             
             // Sort vital signs by recorded_at in descending order (most recent first)
             vitalSigns.sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
-            console.log('Sorted vital signs data:', vitalSigns);
             
             vitalSigns.forEach((vital, index) => {
-                console.log(`Processing vital sign #${index+1}:`, vital);
-                
                 // Determine EWS class based on total score
                 let ewsClass = 'ews-normal';
                 if (vital.total_ews >= 7) {
@@ -2325,84 +2272,83 @@
                 } else if (vital.total_ews >= 3) {
                     ewsClass = 'ews-low';
                 }
-                console.log(`EWS class for vital #${index+1}: ${ewsClass}`);
                 
                 // Format date
                 const recordedDate = new Date(vital.recorded_at);
-                const formattedDate = recordedDate.toLocaleDateString('en-US', {
+                const formattedDate = recordedDate.toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
                     year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
                 });
-                console.log(`Formatted date for vital #${index+1}: ${formattedDate}`);
                 
-                // Add HTML for this vital sign record
                 html += `
-                    <div class="vital-record">
-                        <div class="vital-record-header">
-                            <div class="vital-date">${formattedDate}</div>
-                            <div>
-                                EWS Score: <span class="vital-ews ${ewsClass}">${vital.total_ews}</span>
+                    <div class="vital-sign-card ${index === 0 ? 'latest' : ''}">
+                        <div class="vital-sign-header">
+                            <div class="vital-time">
+                                <i class="fas fa-clock"></i> ${formattedDate}
+                            </div>
+                            <div class="vital-recorder">
+                                <i class="fas fa-user-nurse"></i> Recorded by: ${vital.recorder ? vital.recorder.name : 'Unknown'}
                             </div>
                         </div>
-                        <div class="vital-grid">
-                            ${vital.temperature ? `
-                                <div class="vital-item">
-                                    <div class="vital-label">Temperature</div>
-                                    <div class="vital-value">${vital.temperature} °C</div>
+                        <div class="vital-sign-body">
+                            <div class="vital-metrics">
+                                <div class="vital-metric">
+                                    <i class="fas fa-thermometer-half"></i>
+                                    <div class="metric-value">${vital.temperature || '-'}</div>
+                                    <div class="metric-label">Temp (°C)</div>
                                 </div>
-                            ` : ''}
+                                <div class="vital-metric">
+                                    <i class="fas fa-heartbeat"></i>
+                                    <div class="metric-value">${vital.heart_rate || '-'}</div>
+                                    <div class="metric-label">HR (bpm)</div>
+                                </div>
+                                <div class="vital-metric">
+                                    <i class="fas fa-lungs"></i>
+                                    <div class="metric-value">${vital.respiratory_rate || '-'}</div>
+                                    <div class="metric-label">RR (bpm)</div>
+                                </div>
+                                <div class="vital-metric">
+                                    <i class="fas fa-stethoscope"></i>
+                                    <div class="metric-value">
+                                        ${vital.systolic_bp ? vital.systolic_bp + '/' + (vital.diastolic_bp || '-') : '-'}
+                                    </div>
+                                    <div class="metric-label">BP (mmHg)</div>
+                                </div>
+                                <div class="vital-metric">
+                                    <i class="fas fa-percent"></i>
+                                    <div class="metric-value">${vital.oxygen_saturation || '-'}</div>
+                                    <div class="metric-label">SpO<sub>2</sub> (%)</div>
+                                </div>
+                                <div class="vital-metric">
+                                    <i class="fas fa-brain"></i>
+                                    <div class="metric-value">${vital.consciousness_level || '-'}</div>
+                                    <div class="metric-label">AVPU</div>
+                                </div>
+                            </div>
                             
-                            ${vital.heart_rate ? `
-                                <div class="vital-item">
-                                    <div class="vital-label">Heart Rate</div>
-                                    <div class="vital-value">${vital.heart_rate} bpm</div>
+                            <div class="vital-ews">
+                                <div class="ews-score ${ewsClass}">
+                                    <div class="ews-label">Total EWS</div>
+                                    <div class="ews-value">${vital.total_ews || '0'}</div>
                                 </div>
-                            ` : ''}
+                            </div>
                             
-                            ${vital.respiratory_rate ? `
-                                <div class="vital-item">
-                                    <div class="vital-label">Respiratory Rate</div>
-                                    <div class="vital-value">${vital.respiratory_rate} breaths/min</div>
-                                </div>
-                            ` : ''}
-                            
-                            ${vital.systolic_bp && vital.diastolic_bp ? `
-                                <div class="vital-item">
-                                    <div class="vital-label">Blood Pressure</div>
-                                    <div class="vital-value">${vital.systolic_bp}/${vital.diastolic_bp} mmHg</div>
-                                </div>
-                            ` : ''}
-                            
-                            ${vital.oxygen_saturation ? `
-                                <div class="vital-item">
-                                    <div class="vital-label">Oxygen Saturation</div>
-                                    <div class="vital-value">${vital.oxygen_saturation}%</div>
-                                </div>
-                            ` : ''}
-                            
-                            ${vital.consciousness ? `
-                                <div class="vital-item">
-                                    <div class="vital-label">Consciousness</div>
-                                    <div class="vital-value">${vital.consciousness}</div>
-                                </div>
-                            ` : ''}
-                        </div>
-                        
-                        ${vital.notes ? `
+                            ${vital.notes ? `
                             <div class="vital-notes">
-                                <strong>Notes:</strong> ${vital.notes}
+                                <div class="notes-label"><i class="fas fa-clipboard"></i> Notes:</div>
+                                <div class="notes-text">${vital.notes}</div>
                             </div>
-                        ` : ''}
+                            ` : ''}
+                        </div>
                     </div>
                 `;
             });
             
-            console.log('Setting vital-data innerHTML with HTML of length:', html.length);
             vitalData.innerHTML = html;
-            console.log('Vital signs rendering complete');
         }
         
         // Environmental controls functionality
@@ -2706,7 +2652,7 @@
         <div class="vital-signs-content" style="background-color: white; border-radius: 8px; width: 95%; max-width: 800px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;">
             <div class="vital-signs-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #00a99d; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; position: sticky; top: 0; z-index: 10;">
                 <h5 style="margin: 0; font-size: 18px;">Vital Signs Information</h5>
-                <span class="close-vital-signs-modal" style="cursor: pointer; font-size: 24px;" onclick="closeVitalSignsModal()">&times;</span>
+                <span class="close-vital-signs-modal" style="cursor: pointer; font-size: 24px;">&times;</span>
             </div>
             <div class="vital-signs-body" style="padding: 20px;">
                 <div class="vital-loading text-center py-5" id="vital-loading" style="text-align: center; padding: 3rem 0;">
