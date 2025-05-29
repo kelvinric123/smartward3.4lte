@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             BedSeeder::class,
             LeeChongWeiVitalSignsSeeder::class,
             FoodMenuSeeder::class,
+            PatientAlertSeeder::class,
         ]);
     }
 }

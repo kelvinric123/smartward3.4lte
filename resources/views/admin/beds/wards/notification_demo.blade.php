@@ -45,13 +45,8 @@
                             </div>
                         </div>
                         <div class="btn-group btn-group-sm w-100">
-                            @if($alert->status == 'new')
-                                <button type="button" class="btn btn-outline-primary mark-seen-btn" data-alert-id="{{ $alert->id }}">
-                                    <i class="fas fa-check"></i> Mark as Seen
-                                </button>
-                            @endif
-                            <button type="button" class="btn btn-outline-success resolve-btn" data-alert-id="{{ $alert->id }}">
-                                <i class="fas fa-check-double"></i> Resolve
+                            <button type="button" class="btn btn-outline-danger resolve-btn" data-alert-id="{{ $alert->id }}">
+                                <i class="fas fa-times"></i> Resolve
                             </button>
                         </div>
                     </div>
@@ -65,18 +60,95 @@
     </div>
     
     <div class="text-right">
+        <button type="button" class="btn btn-sm btn-success mr-2" id="create-test-alert-btn">
+            <i class="fas fa-plus"></i> Create Test Alert
+        </button>
         <button type="button" class="btn btn-sm btn-primary" id="refresh-btn">
             <i class="fas fa-sync-alt"></i> Refresh
         </button>
     </div>
 </div>
 
+<style>
+    /* Better button states */
+    .btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    /* Loading animation for buttons */
+    .fa-spin {
+        animation: fa-spin 1s infinite linear;
+    }
+    
+    /* Toast notification styles */
+    .toast-notification {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 6px;
+        animation: slideInRight 0.3s ease-out;
+    }
+    
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Enhanced card hover effects */
+    .alert-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .alert-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Better button styling */
+    .btn-group .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn-group .btn:hover {
+        transform: translateY(-1px);
+    }
+    
+    /* Fade out animation for resolved cards */
+    .alert-card.resolving {
+        opacity: 0.6;
+        transform: scale(0.95);
+        transition: all 0.5s ease;
+    }
+</style>
+
 @push('js')
 <script>
     $(document).ready(function() {
+        console.log('Document ready - initializing notification demo...');
+        console.log('jQuery version:', $.fn.jquery);
+        console.log('Initial alert cards found:', $('.alert-card').length);
+        
+        // Prevent AdminLTE iframe conflicts
+        try {
+            // Disable AdminLTE iframe handling on this page
+            if (typeof window.AdminLTE !== 'undefined' && window.AdminLTE.IFrame) {
+                console.log('Disabling AdminLTE iframe handling for notifications...');
+                window.AdminLTE.IFrame = null;
+            }
+        } catch (e) {
+            console.log('AdminLTE iframe handling already disabled or not present');
+        }
+        
         // Function to get the CSRF token
         function getCsrfToken() {
-            return '{{ csrf_token() }}';
+            const token = '{{ csrf_token() }}';
+            console.log('CSRF Token:', token);
+            return token;
         }
         
         // Function to refresh alerts
@@ -88,17 +160,37 @@
                     'Accept': 'application/json'
                 },
                 success: function(response) {
-                    updateAlertsContainer(response.alerts);
-                    
-                    // If there are new alerts, notify the parent window
-                    if (response.newAlertsCount > 0) {
+                    if (response.success) {
+                        updateAlertsContainer(response.alerts);
+                        
+                        // Update parent window notification count with current count
                         if (window.parent && window.parent.newAlertReceived) {
-                            window.parent.newAlertReceived(response.newAlertsCount);
+                            window.parent.newAlertReceived(response.new_alerts_count);
+                        }
+                        
+                        // Show refresh success feedback briefly
+                        const refreshBtn = $('#refresh-btn');
+                        const originalText = refreshBtn.html();
+                        refreshBtn.html('<i class="fas fa-check"></i> Updated').addClass('btn-success').removeClass('btn-primary');
+                        
+                        setTimeout(() => {
+                            refreshBtn.html(originalText).removeClass('btn-success').addClass('btn-primary');
+                        }, 1500);
+
+                        // Show browser notification if permission is granted
+                        if (Notification.permission === 'granted') {
+                            new Notification('🚨 New Patient Alert', {
+                                body: `${response.new_alerts_count} new patient alert(s) received - Click to view`,
+                                requireInteraction: true,
+                                tag: 'patient-alert',
+                                vibrate: [200, 100, 200] // Vibration pattern for mobile devices
+                            });
                         }
                     }
                 },
                 error: function(xhr) {
                     console.error('Failed to refresh alerts:', xhr.responseText);
+                    showToast('Failed to refresh alerts', 'error');
                 }
             });
         }
@@ -140,13 +232,8 @@
                                     </div>
                                 </div>
                                 <div class="btn-group btn-group-sm w-100">
-                                    ${alert.status === 'new' ? 
-                                        `<button type="button" class="btn btn-outline-primary mark-seen-btn" data-alert-id="${alert.id}">
-                                            <i class="fas fa-check"></i> Mark as Seen
-                                        </button>` : ''
-                                    }
-                                    <button type="button" class="btn btn-outline-success resolve-btn" data-alert-id="${alert.id}">
-                                        <i class="fas fa-check-double"></i> Resolve
+                                    <button type="button" class="btn btn-outline-danger resolve-btn" data-alert-id="${alert.id}">
+                                        <i class="fas fa-times"></i> Resolve
                                     </button>
                                 </div>
                             </div>
@@ -208,40 +295,40 @@
             }
         }
         
-        // Attach event handlers to buttons
+        // Attach event handlers to buttons using event delegation
         function attachEventHandlers() {
-            // Mark as seen button
-            $('.mark-seen-btn').on('click', function() {
-                const alertId = $(this).data('alert-id');
-                const btn = $(this);
-                
-                $.ajax({
-                    url: '{{ url("admin/beds/wards/alerts") }}/' + alertId + '/seen',
-                    method: 'PUT',
-                    headers: {
-                        'X-CSRF-TOKEN': getCsrfToken(),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    success: function(response) {
-                        // Change button appearance
-                        btn.closest('.card').find('.badge-warning').removeClass('badge-warning').addClass('badge-secondary').text('Seen');
-                        btn.remove();
-                    },
-                    error: function(xhr) {
-                        console.error('Failed to mark alert as seen:', xhr.responseText);
-                        alert('Failed to mark alert as seen. Please try again.');
-                    }
-                });
-            });
+            console.log('Attaching event handlers to buttons...');
             
-            // Resolve button
-            $('.resolve-btn').on('click', function() {
+            // Remove any existing handlers to prevent duplicates
+            $(document).off('click', '.resolve-btn');
+            
+            // Resolve button using event delegation
+            $(document).on('click', '.resolve-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 const alertId = $(this).data('alert-id');
                 const card = $(this).closest('.alert-card');
+                const btn = $(this);
+                
+                console.log('Resolve clicked for alert ID:', alertId);
+                
+                // Prevent double-clicks
+                if (btn.prop('disabled')) {
+                    return false;
+                }
+                
+                // Disable button and show loading state
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Resolving...');
+                
+                // Add resolving animation class
+                card.addClass('resolving');
+                
+                const resolveUrl = '{{ route("admin.beds.wards.alerts.resolve", ":alertId") }}'.replace(':alertId', alertId);
+                console.log('Resolve URL:', resolveUrl);
                 
                 $.ajax({
-                    url: '{{ url("admin/beds/wards/alerts") }}/' + alertId + '/resolve',
+                    url: resolveUrl,
                     method: 'PUT',
                     headers: {
                         'X-CSRF-TOKEN': getCsrfToken(),
@@ -249,38 +336,153 @@
                         'Content-Type': 'application/json'
                     },
                     success: function(response) {
-                        // Remove the card with animation
-                        card.fadeOut(500, function() {
-                            $(this).remove();
+                        console.log('Resolve response:', response);
+                        if (response.success) {
+                            // Immediate fade out and remove
+                            card.fadeOut(400, function() {
+                                $(this).remove();
+                                
+                                // If no alerts left, show message
+                                if ($('.alert-card').length === 0) {
+                                    $('#alerts-container').html(`
+                                        <div class="alert alert-info" id="no-alerts-message">
+                                            <i class="fas fa-info-circle"></i> No active alerts at this time.
+                                        </div>
+                                    `);
+                                }
+                                
+                                // Update parent window notification count
+                                updateParentNotificationCount();
+                            });
                             
-                            // If no alerts left, show message
-                            if ($('.alert-card').length === 0) {
-                                $('#alerts-container').html(`
-                                    <div class="alert alert-info" id="no-alerts-message">
-                                        <i class="fas fa-info-circle"></i> No active alerts at this time.
-                                    </div>
-                                `);
-                            }
-                        });
+                            // Show success feedback
+                            showToast('Alert resolved successfully', 'success');
+                        } else {
+                            // Remove resolving class and re-enable button on error
+                            card.removeClass('resolving');
+                            btn.prop('disabled', false).html('<i class="fas fa-times"></i> Resolve');
+                            showToast('Failed to resolve alert', 'error');
+                        }
                     },
-                    error: function(xhr) {
-                        console.error('Failed to resolve alert:', xhr.responseText);
-                        alert('Failed to resolve alert. Please try again.');
+                    error: function(xhr, status, error) {
+                        console.error('Failed to resolve alert:', {xhr, status, error});
+                        console.error('Response text:', xhr.responseText);
+                        // Remove resolving class and re-enable button on error
+                        card.removeClass('resolving');
+                        btn.prop('disabled', false).html('<i class="fas fa-times"></i> Resolve');
+                        showToast('Failed to resolve alert. Please try again.', 'error');
                     }
                 });
+                
+                return false;
             });
+            
+            console.log('Event handlers attached using delegation. Found buttons:', {
+                resolveButtons: $('.resolve-btn').length
+            });
+        }
+        
+        // Function to update parent window notification count
+        function updateParentNotificationCount() {
+            // Count remaining alerts (all alerts are now considered active)
+            const remainingAlertsCount = $('.alert-card').length;
+            
+            // Notify parent window
+            if (window.parent && window.parent.newAlertReceived) {
+                window.parent.newAlertReceived(remainingAlertsCount);
+            }
+        }
+        
+        // Function to show toast notifications
+        function showToast(message, type = 'info') {
+            // Create toast notification
+            const toastClass = type === 'success' ? 'alert-success' : (type === 'error' ? 'alert-danger' : 'alert-info');
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+            
+            const toast = $(`
+                <div class="toast-notification alert ${toastClass} alert-dismissible" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                    <i class="fas ${icon} mr-2"></i>
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            `);
+            
+            // Add to body and auto-remove after 3 seconds
+            $('body').append(toast);
+            setTimeout(() => {
+                toast.fadeOut(300, function() {
+                    $(this).remove();
+                });
+            }, 3000);
         }
         
         // Attach event handlers on page load
         attachEventHandlers();
+        
+        // Test if buttons exist after page load
+        setTimeout(function() {
+            console.log('After timeout - buttons check:', {
+                resolveButtons: $('.resolve-btn').length,
+                alertCards: $('.alert-card').length
+            });
+        }, 1000);
         
         // Refresh button click handler
         $('#refresh-btn').on('click', function() {
             refreshAlerts();
         });
         
+        // Create test alert button click handler
+        $('#create-test-alert-btn').on('click', function() {
+            const btn = $(this);
+            const originalText = btn.html();
+            
+            // Show loading state
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creating...');
+            
+            $.ajax({
+                url: '{{ route("admin.beds.wards.create-test-alert", $ward->id) }}',
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken(),
+                    'Accept': 'application/json'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        showToast('Test alert created successfully!', 'success');
+                        // Refresh alerts to show the new one
+                        refreshAlerts();
+                    } else {
+                        showToast('Failed to create test alert', 'error');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Failed to create test alert:', xhr.responseText);
+                    showToast('Failed to create test alert', 'error');
+                },
+                complete: function() {
+                    // Restore button state
+                    btn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+        
         // Poll for updates every 15 seconds
         setInterval(refreshAlerts, 15000);
+        
+        // Refresh alerts when window becomes visible (when modal is opened)
+        $(window).on('focus', function() {
+            refreshAlerts();
+        });
+        
+        // Also refresh when the document becomes visible (for tab switching)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                refreshAlerts();
+            }
+        });
     });
 </script>
 @endpush

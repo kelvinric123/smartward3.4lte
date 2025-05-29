@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PatientReferralController;
 use App\Http\Controllers\Admin\PatientPanelController;
 use App\Http\Controllers\Admin\FoodOrderController;
 use App\Http\Controllers\Admin\FoodMenuController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -164,6 +165,43 @@ Route::prefix('admin')->group(function () {
     // Patient Alert Route
     Route::post('patients/{patient}/alert', [PatientPanelController::class, 'sendAlert'])->name('admin.patients.alert.send');
     
+    // Test route for creating alerts
+    Route::post('beds/wards/{ward}/create-test-alert', function($ward) {
+        $ward = \App\Models\Ward::findOrFail($ward);
+        
+        // Get a random bed with a patient in this ward
+        $bed = $ward->beds()->where('status', 'occupied')->whereNotNull('patient_id')->inRandomOrder()->first();
+        
+        if (!$bed) {
+            return response()->json(['success' => false, 'message' => 'No patients found in ward'], 400);
+        }
+        
+        // Create a new test alert
+        $alertTypes = ['emergency', 'pain', 'assistance', 'water', 'bathroom', 'food'];
+        $alertMessages = [
+            'emergency' => 'TEST: Patient experiencing chest pain!',
+            'pain' => 'TEST: Patient requesting pain medication.',
+            'assistance' => 'TEST: Patient needs help getting to the bathroom.',
+            'water' => 'TEST: Patient requesting water.',
+            'bathroom' => 'TEST: Patient needs to use the restroom urgently.',
+            'food' => 'TEST: Patient requesting meal assistance.',
+        ];
+        
+        $alertType = $alertTypes[array_rand($alertTypes)];
+        
+        $alert = \App\Models\PatientAlert::create([
+            'patient_id' => $bed->patient_id,
+            'ward_id' => $ward->id,
+            'bed_id' => $bed->id,
+            'alert_type' => $alertType,
+            'message' => $alertMessages[$alertType],
+            'status' => 'new',
+            'is_urgent' => in_array($alertType, ['emergency', 'pain']),
+        ]);
+        
+        return response()->json(['success' => true, 'alert' => $alert, 'message' => 'Test alert created']);
+    })->name('admin.beds.wards.create-test-alert');
+    
     // Patient Food Ordering Routes
     Route::post('patients/{patient}/food-order', [PatientPanelController::class, 'storeOrder'])->name('admin.patients.food-order.store');
     Route::delete('food-order/{orderId}/cancel', [PatientPanelController::class, 'cancelOrder'])->name('admin.food-order.cancel');
@@ -203,3 +241,18 @@ Route::put('movements/{movement}/cancel', [App\Http\Controllers\Admin\PatientMov
 
 // Add a named route 'admin.movements.return' for returning a patient from movement
 Route::put('movements/{movement}/return', [App\Http\Controllers\Admin\PatientMovementController::class, 'returnPatient'])->name('admin.movements.return');
+
+// Test route for consultants by specialty (without authentication)
+Route::get('/test/consultants-by-specialty', function(Request $request) {
+    $specialtyId = $request->input('specialty_id');
+    
+    if (!$specialtyId) {
+        return response()->json(['error' => 'Specialty ID is required'], 400);
+    }
+    
+    $consultants = \App\Models\Consultant::where('specialty_id', $specialtyId)
+        ->where('is_active', true)
+        ->get(['id', 'name', 'specialty_id']);
+        
+    return response()->json($consultants);
+})->name('test.consultants-by-specialty');

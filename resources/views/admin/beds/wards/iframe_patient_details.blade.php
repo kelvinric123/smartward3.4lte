@@ -483,7 +483,7 @@
                 
                 <!-- Referral Tab -->
                 <div class="tab-pane fade" id="referral" role="tabpanel" aria-labelledby="referral-tab">
-                    <form action="{{ route('admin.patients.referral.store', $patient->id) }}" method="POST" target="_blank">
+                    <form id="referralForm" action="{{ route('admin.patients.referral.store', $patient->id) }}" method="POST">
                         @csrf
                         <div class="form-group">
                             <label for="specialty_id">Referring To Specialty</label>
@@ -533,8 +533,8 @@
                                 @forelse($patientReferrals as $referral)
                                     <tr>
                                         <td>{{ $referral->formatted_referral_date }}</td>
-                                        <td>{{ $referral->specialty->name }}</td>
-                                        <td>{{ $referral->consultant->name ?? 'Not assigned' }}</td>
+                                        <td>{{ $referral->toSpecialty->name ?? ($referral->to_specialty ?? 'N/A') }}</td>
+                                        <td>{{ $referral->toConsultant->name ?? ($referral->to_consultant ?? 'Not assigned') }}</td>
                                         <td>
                                             @if($referral->status == 'pending')
                                                 <span class="badge badge-warning">Pending</span>
@@ -570,8 +570,8 @@
                                                                     <p><strong>Clinical Question:</strong> {{ $referral->clinical_question ?? 'N/A' }}</p>
                                                                 </div>
                                                                 <div class="col-md-6">
-                                                                    <p><strong>Specialty:</strong> {{ $referral->specialty->name }}</p>
-                                                                    <p><strong>Consultant:</strong> {{ $referral->consultant->name ?? 'Not assigned' }}</p>
+                                                                    <p><strong>Specialty:</strong> {{ $referral->toSpecialty->name ?? ($referral->to_specialty ?? 'N/A') }}</p>
+                                                                    <p><strong>Consultant:</strong> {{ $referral->toConsultant->name ?? ($referral->to_consultant ?? 'Not assigned') }}</p>
                                                                     <p><strong>Status:</strong> 
                                                                         @if($referral->status == 'pending')
                                                                             <span class="badge badge-warning">Pending</span>
@@ -586,10 +586,10 @@
                                                                     <p><strong>Notes:</strong> {{ $referral->notes ?? 'No notes' }}</p>
                                                                 </div>
                                                             </div>
-                                                            @if($referral->response)
+                                                            @if($referral->response_notes)
                                                                 <hr>
                                                                 <h6>Consultant Response:</h6>
-                                                                <p>{{ $referral->response }}</p>
+                                                                <p>{{ $referral->response_notes }}</p>
                                                             @endif
                                                         </div>
                                                         <div class="modal-footer">
@@ -709,6 +709,14 @@
 @section('js')
 <script>
     $(document).ready(function() {
+        // Check for URL hash and activate appropriate tab
+        if (window.location.hash) {
+            const hash = window.location.hash;
+            if (hash === '#referral') {
+                $('#referral-tab').tab('show');
+            }
+        }
+        
         // Toggle sensitive information visibility
         $('.toggle-visibility').on('click', function() {
             const target = $($(this).data('target'));
@@ -846,6 +854,117 @@
                     container.html(newIframe);
                 }, 500);
             }
+        });
+        
+        // Handle specialty change to populate consultants
+        $('#specialty_id').on('change', function() {
+            const specialtyId = $(this).val();
+            const consultantSelect = $('#consultant_id');
+            
+            // Clear and disable consultant dropdown
+            consultantSelect.empty();
+            consultantSelect.append('<option value="">Select Consultant</option>');
+            consultantSelect.prop('disabled', true);
+            
+            if (specialtyId) {
+                // Show loading state
+                consultantSelect.append('<option value="">Loading consultants...</option>');
+                
+                // Make AJAX call to get consultants for this specialty
+                $.ajax({
+                    url: '{{ route('admin.referrals.consultants-by-specialty.direct') }}',
+                    type: 'GET',
+                    data: {
+                        specialty_id: specialtyId
+                    },
+                    success: function(response) {
+                        // Clear loading state
+                        consultantSelect.empty();
+                        consultantSelect.append('<option value="">Select Consultant</option>');
+                        
+                        // Populate consultants
+                        if (response && response.length > 0) {
+                            response.forEach(function(consultant) {
+                                consultantSelect.append(
+                                    '<option value="' + consultant.id + '">' + consultant.name + '</option>'
+                                );
+                            });
+                            consultantSelect.prop('disabled', false);
+                        } else {
+                            consultantSelect.append('<option value="">No consultants available</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching consultants:', error);
+                        consultantSelect.empty();
+                        consultantSelect.append('<option value="">Error loading consultants</option>');
+                        
+                        // Show user-friendly error message
+                        alert('Error loading consultants. Please try again.');
+                    }
+                });
+            }
+        });
+        
+        // Handle discharge button click
+        $('#dischargePatientBtn').on('click', function() {
+            $('#dischargeConfirmModal').modal('show');
+        });
+        
+        // Handle referral form submission via AJAX
+        $('#referralForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const originalText = submitBtn.text();
+            
+            // Disable submit button and show loading state
+            submitBtn.prop('disabled', true).text('Submitting...');
+            
+            // Clear any existing alerts
+            form.siblings('.alert').remove();
+            
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    // Show success message
+                    $('<div class="alert alert-success alert-dismissible fade show">' +
+                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                        'Patient referral submitted successfully!' +
+                        '</div>').insertBefore(form);
+                    
+                    // Reset form
+                    form[0].reset();
+                    $('#consultant_id').empty().append('<option value="">Select Consultant</option>').prop('disabled', true);
+                    
+                    // Reload the page to refresh referral history
+                    setTimeout(function() {
+                        window.location.hash = '#referral';
+                        window.location.reload();
+                    }, 1500);
+                },
+                error: function(xhr) {
+                    let errorMessage = 'An error occurred. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = Object.values(xhr.responseJSON.errors).flat();
+                        errorMessage = errors.join('<br>');
+                    }
+                    
+                    $('<div class="alert alert-danger alert-dismissible fade show">' +
+                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                        errorMessage +
+                        '</div>').insertBefore(form);
+                },
+                complete: function() {
+                    // Re-enable submit button
+                    submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
         });
     });
 </script>

@@ -60,12 +60,46 @@
                             <div class="btn-group">
                                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#notificationModal" id="notification-btn">
                                     <i class="fas fa-bell"></i> Notifications 
-                                    @if(isset($patientAlerts) && $patientAlerts->where('status', 'new')->count() > 0)
-                                        <span class="badge badge-light" id="new-alerts-count">{{ $patientAlerts->where('status', 'new')->count() }}</span>
+                                    @if(isset($patientAlerts) && $patientAlerts->count() > 0)
+                                        <span class="badge badge-light" id="new-alerts-count">{{ $patientAlerts->count() }}</span>
                                     @else
                                         <span class="badge badge-light d-none" id="new-alerts-count">0</span>
                                     @endif
                                 </button>
+                                <button type="button" class="btn btn-outline-secondary" id="test-sound-btn" title="Test notification sound">
+                                    <i class="fas fa-volume-up"></i> Test Sound
+                                </button>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" title="Sound Settings">
+                                        <i class="fas fa-cog"></i>
+                                        <span class="badge badge-success ml-1" id="audio-status" style="display: none;">🔊</span>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right p-3" style="min-width: 250px;">
+                                        <h6 class="dropdown-header">Sound Settings</h6>
+                                        <div class="form-group mb-2">
+                                            <label for="volume-control" class="small">Volume</label>
+                                            <input type="range" class="form-control-range" id="volume-control" min="0" max="100" value="85">
+                                            <small class="text-muted">Current: <span id="volume-display">85</span>%</small>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="enable-sound" checked>
+                                            <label class="form-check-label small" for="enable-sound">
+                                                Enable notification sounds
+                                            </label>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="text-center mb-2">
+                                            <button class="btn btn-sm btn-primary" id="simulate-alert-btn">
+                                                <i class="fas fa-bell"></i> Simulate New Alert
+                                            </button>
+                                        </div>
+                                        <div class="text-center">
+                                            <small class="text-muted">
+                                                <span id="audio-status-text">Click anywhere to enable audio</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -351,7 +385,7 @@
     </div>
     
     <!-- Notification Modal -->
-    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true" data-iframe="false">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -361,7 +395,10 @@
                     </button>
                 </div>
                 <div class="modal-body p-0">
-                    <iframe src="{{ url('/admin/beds/wards/'.$ward->id.'/notification-demo') }}" style="width: 100%; height: 500px; border: none;"></iframe>
+                    <iframe src="{{ url('/admin/beds/wards/'.$ward->id.'/notification-demo') }}" 
+                            style="width: 100%; height: 500px; border: none;" 
+                            data-auto-iframe-mode="false"
+                            id="notification-iframe"></iframe>
                 </div>
             </div>
         </div>
@@ -538,12 +575,82 @@
             width: 16px;
             height: 16px;
         }
+        
+        /* Pulse animation for notification button when sound is playing */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px rgba(220, 53, 69, 0.6); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Enhanced notification button styles */
+        #notification-btn.btn-danger {
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+        }
     </style>
 @stop
 
 @section('js')
     <script>
         $(document).ready(function() {
+            // EARLY INITIALIZATION: Prevent AdminLTE iframe conflicts before anything else
+            try {
+                // Disable AdminLTE iframe auto-initialization globally for our notification iframe
+                if (typeof window.AdminLTE !== 'undefined' && window.AdminLTE.IFrame) {
+                    console.log('Early AdminLTE iframe protection initialized');
+                    
+                    // Store the original methods immediately
+                    if (!window._originalAdminLTE) {
+                        window._originalAdminLTE = {
+                            _initFrameElement: window.AdminLTE.IFrame._initFrameElement,
+                            _jQueryInterface: window.AdminLTE.IFrame._jQueryInterface
+                        };
+                    }
+                    
+                    // Immediately override to prevent early errors
+                    const originalInitFrameElement = window.AdminLTE.IFrame._initFrameElement;
+                    window.AdminLTE.IFrame._initFrameElement = function(element) {
+                        // Safety check for null elements
+                        if (!element) {
+                            console.log('AdminLTE iframe init blocked - null element');
+                            return;
+                        }
+                        
+                        // Check if element has getAttribute method
+                        if (!element.getAttribute) {
+                            console.log('AdminLTE iframe init blocked - no getAttribute method');
+                            return;
+                        }
+                        
+                        // Check if this is our notification iframe
+                        if (element.id === 'notification-iframe' || 
+                            (element.closest && element.closest('#notificationModal'))) {
+                            console.log('AdminLTE iframe init blocked - notification iframe detected');
+                            return;
+                        }
+                        
+                        // Check for autoIframeMode attribute before accessing it
+                        try {
+                            const autoMode = element.getAttribute('data-auto-iframe-mode');
+                            if (autoMode === 'false') {
+                                console.log('AdminLTE iframe init blocked - auto mode disabled');
+                                return;
+                            }
+                        } catch (e) {
+                            console.log('Error checking autoIframeMode:', e);
+                            return;
+                        }
+                        
+                        // Call original function with safety
+                        if (originalInitFrameElement) {
+                            return originalInitFrameElement.call(this, element);
+                        }
+                    };
+                }
+            } catch (e) {
+                console.log('Early AdminLTE protection failed:', e);
+            }
+            
             // Fullscreen toggle functionality
             const fullscreenToggle = $('#fullscreen-toggle');
             const body = $('body');
@@ -645,6 +752,545 @@
                     countBadge.text('0').addClass('d-none');
                 }
             };
+
+            // Real-time alert polling
+            function pollForNewAlerts() {
+                $.ajax({
+                    url: '{{ route("admin.beds.wards.alerts", $ward->id) }}',
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            const newAlertsCount = response.new_alerts_count;
+                            
+                            // Log for debugging
+                            console.log('Polling result - New alerts count:', newAlertsCount);
+                            
+                            // Update the notification badge
+                            window.newAlertReceived(newAlertsCount);
+                            
+                            // If there are new alerts, auto-play notification sound and show browser notification
+                            if (newAlertsCount > 0) {
+                                console.log('Auto-playing notification sound for', newAlertsCount, 'new alerts');
+                                
+                                // Ensure audio is initialized
+                                initializeAudio();
+                                
+                                // Play notification sound automatically
+                                playNotificationSound();
+                                
+                                // Show browser notification if permission is granted
+                                if (Notification.permission === 'granted') {
+                                    new Notification('🚨 New Patient Alert', {
+                                        body: `${newAlertsCount} new patient alert(s) received - Click to view`,
+                                        requireInteraction: true,
+                                        tag: 'patient-alert',
+                                        vibrate: [200, 100, 200] // Vibration pattern for mobile devices
+                                    });
+                                }
+                                
+                                // Additional visual feedback - make the entire notification button more prominent
+                                const notificationBtn = $('#notification-btn');
+                                notificationBtn.addClass('btn-danger').removeClass('btn-warning');
+                                notificationBtn.css({
+                                    'animation': 'pulse 0.8s infinite',
+                                    'transform': 'scale(1.1)'
+                                });
+                                
+                                // Reset after a longer duration to ensure nurses notice
+                                setTimeout(() => {
+                                    notificationBtn.css({
+                                        'animation': '',
+                                        'transform': ''
+                                    });
+                                    notificationBtn.addClass('btn-warning').removeClass('btn-danger');
+                                }, 5000); // 5 seconds of visual emphasis
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        console.log('Error polling for alerts:', xhr);
+                    }
+                });
+            }
+
+            // Function to play notification sound
+            function playNotificationSound() {
+                try {
+                    // Check if sound is enabled
+                    if (!$('#enable-sound').is(':checked')) {
+                        return;
+                    }
+                    
+                    // Visual feedback - make notification button pulsate while sound plays
+                    const notificationBtn = $('#notification-btn');
+                    notificationBtn.addClass('btn-danger').removeClass('btn-warning');
+                    notificationBtn.css('animation', 'pulse 0.5s infinite');
+                    
+                    // Stop visual animation after sound duration (approximately 2.5 seconds)
+                    setTimeout(() => {
+                        notificationBtn.css('animation', '');
+                        notificationBtn.addClass('btn-warning').removeClass('btn-danger');
+                    }, 2500);
+                    
+                    // Get volume setting (boost it by 20% for better audibility)
+                    const volumeLevel = Math.min(($('#volume-control').val() / 100) * 1.2, 1.0);
+                    
+                    // Try Web Audio API first for the best "ding dong" sound
+                    if (window.AudioContext || window.webkitAudioContext) {
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        createDingDongChime(audioContext, volumeLevel);
+                        return;
+                    }
+                    
+                    // Fallback to external files if Web Audio API fails
+                    tryExternalSounds(volumeLevel);
+                    
+                } catch (error) {
+                    console.log('Error playing notification sound:', error);
+                    // Final fallback to system beep
+                    playSystemBeep();
+                }
+            }
+            
+            // Create a notification beep using Web Audio API and return as data URI
+            function createNotificationBeep() {
+                try {
+                    // Create a simple beep sound using Web Audio API
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const sampleRate = audioContext.sampleRate;
+                    const duration = 0.3; // 300ms
+                    const frequency = 800; // Hz
+                    
+                    const length = sampleRate * duration;
+                    const buffer = audioContext.createBuffer(1, length, sampleRate);
+                    const data = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < length; i++) {
+                        const t = i / sampleRate;
+                        data[i] = Math.sin(2 * Math.PI * frequency * t) * Math.exp(-t * 3);
+                    }
+                    
+                    // Convert buffer to data URI (simplified - we'll use a pre-made data URI instead)
+                    return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Tr'; // Short beep data URI
+                } catch (e) {
+                    // Fallback data URI for a simple beep
+                    return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Tr';
+                }
+            }
+            
+            // Try external sound files as fallback
+            function tryExternalSounds(volumeLevel) {
+                const audio = new Audio();
+                audio.volume = volumeLevel;
+                
+                // Try different audio formats for browser compatibility
+                if (audio.canPlayType('audio/mp3')) {
+                    audio.src = '/sounds/notification.mp3';
+                } else if (audio.canPlayType('audio/wav')) {
+                    audio.src = '/sounds/notification.wav';
+                } else if (audio.canPlayType('audio/ogg')) {
+                    audio.src = '/sounds/notification.ogg';
+                } else {
+                    // Fallback to system beep using Web Audio API
+                    playSystemBeep();
+                    return;
+                }
+                
+                audio.play().catch(error => {
+                    console.log('External audio file failed:', error);
+                    playSystemBeep();
+                });
+            }
+            
+            // Fallback function to create a system beep using Web Audio API
+            function playSystemBeep() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Get volume setting
+                    const volumeLevel = $('#volume-control').val() / 100;
+                    
+                    // Create a "ding dong" chime sound - two tones
+                    createDingDongChime(audioContext, volumeLevel);
+                    
+                } catch (error) {
+                    console.log('Web Audio API not supported:', error);
+                    // Final fallback - try system alert
+                    try {
+                        // Repeat the speech alert to make it more obvious
+                        const utterance = new SpeechSynthesisUtterance('Alert! Patient needs assistance!');
+                        utterance.volume = 0.8;
+                        utterance.rate = 1.2;
+                        utterance.pitch = 1.2;
+                        speechSynthesis.speak(utterance);
+                    } catch (speechError) {
+                        console.log('No audio notification available');
+                    }
+                }
+            }
+            
+            // Create a "ding dong" hospital chime using Web Audio API
+            function createDingDongChime(audioContext, volume) {
+                const masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.setValueAtTime(volume * 0.9, audioContext.currentTime); // Make it even louder
+                
+                // First tone (higher pitch "ding") - longer and more prominent
+                setTimeout(() => {
+                    const oscillator1 = audioContext.createOscillator();
+                    const gainNode1 = audioContext.createGain();
+                    
+                    oscillator1.connect(gainNode1);
+                    gainNode1.connect(masterGain);
+                    
+                    oscillator1.frequency.setValueAtTime(880, audioContext.currentTime); // Higher pitch for attention
+                    oscillator1.type = 'sine';
+                    
+                    gainNode1.gain.setValueAtTime(0.9, audioContext.currentTime);
+                    gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                    
+                    oscillator1.start(audioContext.currentTime);
+                    oscillator1.stop(audioContext.currentTime + 0.8);
+                }, 0);
+                
+                // Second tone (lower pitch "dong") - delayed, longer, and deeper
+                setTimeout(() => {
+                    const oscillator2 = audioContext.createOscillator();
+                    const gainNode2 = audioContext.createGain();
+                    
+                    oscillator2.connect(gainNode2);
+                    gainNode2.connect(masterGain);
+                    
+                    oscillator2.frequency.setValueAtTime(550, audioContext.currentTime); // Lower pitch for "dong"
+                    oscillator2.type = 'sine';
+                    
+                    gainNode2.gain.setValueAtTime(0.9, audioContext.currentTime);
+                    gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.0);
+                    
+                    oscillator2.start(audioContext.currentTime);
+                    oscillator2.stop(audioContext.currentTime + 1.0);
+                }, 500); // 500ms delay for "dong"
+                
+                // Third tone - another "ding" for urgency
+                setTimeout(() => {
+                    const oscillator3 = audioContext.createOscillator();
+                    const gainNode3 = audioContext.createGain();
+                    
+                    oscillator3.connect(gainNode3);
+                    gainNode3.connect(masterGain);
+                    
+                    oscillator3.frequency.setValueAtTime(800, audioContext.currentTime); // High attention tone
+                    oscillator3.type = 'sine';
+                    
+                    gainNode3.gain.setValueAtTime(0.7, audioContext.currentTime);
+                    gainNode3.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+                    
+                    oscillator3.start(audioContext.currentTime);
+                    oscillator3.stop(audioContext.currentTime + 0.6);
+                }, 1200); // 1.2 second delay for final urgent chime
+                
+                // Fourth tone - final emphasis (optional, can be removed if too much)
+                setTimeout(() => {
+                    const oscillator4 = audioContext.createOscillator();
+                    const gainNode4 = audioContext.createGain();
+                    
+                    oscillator4.connect(gainNode4);
+                    gainNode4.connect(masterGain);
+                    
+                    oscillator4.frequency.setValueAtTime(660, audioContext.currentTime); // Medium tone
+                    oscillator4.type = 'sine';
+                    
+                    gainNode4.gain.setValueAtTime(0.5, audioContext.currentTime);
+                    gainNode4.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+                    
+                    oscillator4.start(audioContext.currentTime);
+                    oscillator4.stop(audioContext.currentTime + 0.8);
+                }, 1700); // 1.7 second delay for final chime
+            }
+            
+            // Initialize audio on first user interaction (required by modern browsers)
+            let audioInitialized = false;
+            let audioContext = null;
+            
+            function initializeAudio() {
+                if (!audioInitialized) {
+                    try {
+                        // Create audio context
+                        if (window.AudioContext || window.webkitAudioContext) {
+                            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                            
+                            // Resume audio context if it's suspended
+                            if (audioContext.state === 'suspended') {
+                                audioContext.resume().then(() => {
+                                    console.log('Audio context resumed successfully');
+                                    updateAudioStatus(true);
+                                });
+                            } else {
+                                updateAudioStatus(true);
+                            }
+                        }
+                        
+                        // Create a silent audio to initialize the audio system
+                        const silentAudio = new Audio();
+                        silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+                        silentAudio.volume = 0;
+                        silentAudio.play().then(() => {
+                            console.log('Audio system initialized for auto-play');
+                            updateAudioStatus(true);
+                        }).catch(e => {
+                            console.log('Initial audio play failed (expected):', e.message);
+                            updateAudioStatus(false);
+                        });
+                        
+                        audioInitialized = true;
+                        console.log('Audio initialization completed');
+                    } catch (error) {
+                        console.log('Audio initialization error:', error);
+                        updateAudioStatus(false);
+                    }
+                }
+            }
+            
+            // Update audio status indicator
+            function updateAudioStatus(isReady) {
+                const statusBadge = $('#audio-status');
+                const statusText = $('#audio-status-text');
+                
+                if (isReady) {
+                    statusBadge.show();
+                    statusText.text('🔊 Audio ready for notifications');
+                    statusText.removeClass('text-muted').addClass('text-success');
+                } else {
+                    statusBadge.hide();
+                    statusText.text('⚠️ Click to enable audio notifications');
+                    statusText.removeClass('text-success').addClass('text-warning');
+                }
+            }
+            
+            // Initialize audio on any user interaction (more comprehensive)
+            $(document).one('click keydown touchstart mousedown', function() {
+                initializeAudio();
+                console.log('Audio initialized on user interaction');
+            });
+            
+            // Also try to initialize when page becomes visible (for tab switching)
+            document.addEventListener('visibilitychange', function() {
+                if (!document.hidden && !audioInitialized) {
+                    initializeAudio();
+                }
+            });
+            
+            // Test sound button functionality
+            $('#test-sound-btn').on('click', function() {
+                initializeAudio(); // Ensure audio is initialized
+                playNotificationSound();
+                
+                // Show a brief feedback message
+                const btn = $(this);
+                const originalText = btn.html();
+                btn.html('<i class="fas fa-check"></i> Sound Played').addClass('btn-success').removeClass('btn-outline-secondary');
+                
+                setTimeout(function() {
+                    btn.html(originalText).removeClass('btn-success').addClass('btn-outline-secondary');
+                }, 2000);
+            });
+            
+            // Volume control functionality
+            $('#volume-control').on('input', function() {
+                const volume = $(this).val();
+                $('#volume-display').text(volume);
+                localStorage.setItem('wardDashboard_volume', volume);
+            });
+            
+            // Sound enable/disable functionality
+            $('#enable-sound').on('change', function() {
+                const enabled = $(this).is(':checked');
+                localStorage.setItem('wardDashboard_soundEnabled', enabled);
+                
+                // Update test button state
+                if (enabled) {
+                    $('#test-sound-btn').removeClass('disabled').prop('disabled', false);
+                } else {
+                    $('#test-sound-btn').addClass('disabled').prop('disabled', true);
+                }
+            });
+            
+            // Load saved settings from localStorage
+            function loadSoundSettings() {
+                const savedVolume = localStorage.getItem('wardDashboard_volume');
+                const savedSoundEnabled = localStorage.getItem('wardDashboard_soundEnabled');
+                
+                if (savedVolume !== null) {
+                    $('#volume-control').val(savedVolume);
+                    $('#volume-display').text(savedVolume);
+                }
+                
+                if (savedSoundEnabled !== null) {
+                    const isEnabled = savedSoundEnabled === 'true';
+                    $('#enable-sound').prop('checked', isEnabled);
+                    
+                    if (!isEnabled) {
+                        $('#test-sound-btn').addClass('disabled').prop('disabled', true);
+                    }
+                }
+            }
+            
+            // Load settings on page load
+            loadSoundSettings();
+            
+            // Simulate alert button for testing auto-play
+            $('#simulate-alert-btn').on('click', function() {
+                console.log('Simulating new alert notification...');
+                
+                // Ensure audio is initialized
+                initializeAudio();
+                
+                // Simulate receiving a new alert
+                window.newAlertReceived(1);
+                
+                // Play the notification sound automatically (like a real alert)
+                playNotificationSound();
+                
+                // Show browser notification
+                if (Notification.permission === 'granted') {
+                    new Notification('🧪 Test Alert', {
+                        body: 'This is a simulated patient alert for testing',
+                        requireInteraction: false,
+                        tag: 'test-alert'
+                    });
+                }
+                
+                // Provide feedback
+                const btn = $(this);
+                const originalText = btn.html();
+                btn.html('<i class="fas fa-check"></i> Alert Simulated!').prop('disabled', true);
+                
+                setTimeout(() => {
+                    btn.html(originalText).prop('disabled', false);
+                    // Reset the alert count after test
+                    window.newAlertReceived(0);
+                }, 3000);
+            });
+            
+            // Start polling for alerts every 10 seconds (faster response)
+            setInterval(pollForNewAlerts, 10000);
+            
+            // Initial poll on page load
+            pollForNewAlerts();
+            
+            // Request notification permission on page load
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                });
+            }
+            
+            // Prevent AdminLTE iframe conflicts - Enhanced version
+            $('#notificationModal').on('show.bs.modal', function () {
+                const modal = $(this);
+                const iframe = modal.find('iframe');
+                
+                // Set iframe attributes before AdminLTE can access them
+                iframe.attr('data-auto-iframe-mode', 'false');
+                iframe.attr('data-iframe-mode', 'false');
+                
+                // Completely disable AdminLTE iframe handling for this modal
+                if (typeof window.AdminLTE !== 'undefined' && window.AdminLTE.IFrame) {
+                    console.log('Disabling AdminLTE iframe handling...');
+                    
+                    // Store original functions to restore later
+                    if (!window._originalAdminLTE) {
+                        window._originalAdminLTE = {
+                            _initFrameElement: window.AdminLTE.IFrame._initFrameElement,
+                            _jQueryInterface: window.AdminLTE.IFrame._jQueryInterface
+                        };
+                    }
+                    
+                    // Override the problematic functions to prevent null reference errors
+                    window.AdminLTE.IFrame._initFrameElement = function(element) {
+                        // Check if element exists and has the required properties
+                        if (!element || !element.getAttribute) {
+                            console.log('AdminLTE iframe init blocked - invalid element');
+                            return;
+                        }
+                        
+                        // Only process elements that are not our notification iframe
+                        if (element.id === 'notification-iframe' || element.closest('#notificationModal')) {
+                            console.log('AdminLTE iframe init blocked - notification iframe');
+                            return;
+                        }
+                        
+                        // Call original function for other iframes
+                        if (window._originalAdminLTE && window._originalAdminLTE._initFrameElement) {
+                            return window._originalAdminLTE._initFrameElement.call(this, element);
+                        }
+                    };
+                    
+                    // Override jQuery interface to prevent errors
+                    window.AdminLTE.IFrame._jQueryInterface = function(config) {
+                        const element = this[0];
+                        if (!element || element.id === 'notification-iframe' || element.closest('#notificationModal')) {
+                            console.log('AdminLTE jQuery interface blocked for notification iframe');
+                            return this;
+                        }
+                        
+                        // Call original function for other elements
+                        if (window._originalAdminLTE && window._originalAdminLTE._jQueryInterface) {
+                            return window._originalAdminLTE._jQueryInterface.call(this, config);
+                        }
+                        return this;
+                    };
+                }
+                
+                // Additional safety: remove any iframe-related classes that AdminLTE might target
+                iframe.removeClass('iframe-mode').removeClass('auto-iframe-mode');
+                
+                // Prevent any existing AdminLTE event handlers on this iframe
+                iframe.off('.adminlte');
+            });
+            
+            // Separate iframe refresh handler
+            $('#notificationModal').on('shown.bs.modal', function () {
+                // Refresh iframe to get latest alerts
+                const iframe = $(this).find('iframe');
+                const originalSrc = '{{ url('/admin/beds/wards/'.$ward->id.'/notification-demo') }}';
+                
+                // Small delay to ensure modal is fully rendered
+                setTimeout(() => {
+                    iframe.attr('src', originalSrc + '?t=' + Date.now()); // Add timestamp to force refresh
+                    console.log('Notification iframe refreshed');
+                }, 100);
+            });
+            
+            // Global error handler for iframe-related errors
+            window.addEventListener('error', function(event) {
+                if (event.message && event.message.includes('autoIframeMode')) {
+                    console.log('Caught AdminLTE iframe error, preventing it from bubbling up');
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return false;
+                }
+            });
+            
+            // Additional protection: Override problematic jQuery events
+            $(document).on('DOMContentLoaded', function() {
+                // Prevent AdminLTE from auto-initializing on our notification iframe
+                if (typeof $.fn.IFrame !== 'undefined') {
+                    const originalIFrame = $.fn.IFrame;
+                    $.fn.IFrame = function(option) {
+                        // Skip our notification iframe
+                        if (this.attr('id') === 'notification-iframe' || this.closest('#notificationModal').length > 0) {
+                            console.log('Skipping AdminLTE IFrame initialization for notification iframe');
+                            return this;
+                        }
+                        // Call original for other elements
+                        return originalIFrame.call(this, option);
+                    };
+                }
+            });
         });
 
         function openAdmitPatientModal(url) {

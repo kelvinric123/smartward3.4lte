@@ -1353,6 +1353,562 @@
             transform: translateY(1px);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        
+        .ward-info div {
+            margin-bottom: 5px;
+        }
+        
+        .medical-info-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .medical-info-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 700px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        
+        .medical-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #00a99d;
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .medical-info-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .close-medical-info-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .medical-info-body {
+            padding: 20px;
+        }
+        
+        .medical-section {
+            margin-bottom: 30px;
+        }
+        
+        .medications-list, .medical-history-list {
+            margin-top: 15px;
+        }
+        
+        .medication-item, .history-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #00a99d;
+        }
+        
+        .medication-item.discontinued {
+            opacity: 0.7;
+            border-left-color: #dc3545;
+        }
+        
+        .medication-item.paused {
+            border-left-color: #ffc107;
+        }
+        
+        .medication-header, .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .medication-name, .history-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .medication-status, .history-type {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-paused {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-discontinued {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-chronic {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-resolved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .type-condition {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .type-allergy {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .type-surgery {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .type-family_history {
+            background-color: #ffeaa7;
+            color: #6c5500;
+        }
+        
+        .medication-details, .history-details {
+            margin-top: 10px;
+        }
+        
+        .medication-row, .history-row {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .medication-row .label, .history-row .label {
+            font-weight: 600;
+            color: #6c757d;
+            width: 120px;
+            flex-shrink: 0;
+        }
+        
+        .medication-row .value, .history-row .value {
+            flex: 1;
+            color: #333;
+        }
+        
+        .severity-severe {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .severity-moderate {
+            color: #fd7e14;
+            font-weight: 600;
+        }
+        
+        .severity-mild {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .medical-history-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .history-tab {
+            padding: 8px 15px;
+            border: 1px solid #dee2e6;
+            background-color: white;
+            color: #6c757d;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .history-tab.active {
+            background-color: #00a99d;
+            color: white;
+            border-color: #00a99d;
+        }
+        
+        .history-tab:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .history-tab.active:hover {
+            background-color: #008a7e;
+        }
+        
+        .no-medications, .no-history {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .no-medications i, .no-history i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #dee2e6;
+        }
+        
+        .no-medications p, .no-history p {
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 576px) {
+            .vital-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Enhanced Vital Signs Styles */
+        .vital-sign-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vital-sign-card.latest {
+            border-left: 4px solid #00a99d;
+            background: linear-gradient(135deg, #e8f5f0 0%, #f0f9f6 100%);
+        }
+        
+        .vital-sign-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .vital-sign-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f3f4;
+            margin-bottom: 20px;
+        }
+        
+        .vital-time {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #00a99d;
+        }
+        
+        .vital-time i {
+            color: #6c757d;
+        }
+        
+        .vital-recorder {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 15px;
+        }
+        
+        .vital-sign-body {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .vital-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+        
+        .vital-metric {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f1f3f4;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .vital-metric:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .vital-metric i {
+            font-size: 20px;
+            color: #00a99d;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #212529;
+            margin: 5px 0;
+            line-height: 1;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .vital-ews {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .ews-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            min-width: 120px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ews-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+        
+        .ews-value {
+            font-size: 28px;
+            font-weight: 900;
+            line-height: 1;
+        }
+        
+        .ews-normal {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .ews-low {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+        }
+        
+        .ews-medium {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #212529;
+        }
+        
+        .ews-high {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            animation: pulse-warning 2s infinite;
+        }
+        
+        @keyframes pulse-warning {
+            0% { box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); }
+            50% { box-shadow: 0 4px 16px rgba(220, 53, 69, 0.6); }
+            100% { box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3); }
+        }
+        
+        .vital-notes {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .notes-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .notes-text {
+            color: #424242;
+            line-height: 1.5;
+            font-style: italic;
+        }
+        
+        /* Status indicators for vital values */
+        .vital-metric.critical .metric-value {
+            color: #dc3545;
+            animation: pulse-critical 1.5s infinite;
+        }
+        
+        .vital-metric.warning .metric-value {
+            color: #fd7e14;
+        }
+        
+        .vital-metric.normal .metric-value {
+            color: #28a745;
+        }
+        
+        @keyframes pulse-critical {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Latest vital signs indicator */
+        .vital-sign-card.latest::before {
+            content: "LATEST";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00a99d;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Empty state styling */
+        .vital-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .vital-empty i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .vital-empty p {
+            font-size: 16px;
+            margin: 0;
+        }
+        
+        /* Loading state */
+        .vital-loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        .vital-loading i {
+            color: #00a99d;
+            margin-bottom: 15px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .vital-metrics {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .vital-metric {
+                padding: 10px 8px;
+            }
+            
+            .metric-value {
+                font-size: 20px;
+            }
+            
+            .vital-sign-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .vital-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .ews-score {
+                min-width: 100px;
+                padding: 12px 20px;
+            }
+        }
+        
+        /* Badge styling for vital signs summary */
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 0.75em;
+            font-weight: 700;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+        }
+        
+        .badge-success {
+            background-color: #198754;
+            color: #fff;
+        }
+        
+        .badge-info {
+            background-color: #0dcaf0;
+            color: #000;
+        }
+        
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .badge-danger {
+            background-color: #dc3545;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -1368,11 +1924,11 @@
             <span class="mx-2"><i class="fa fa-thermometer-half"></i> 25°C</span>
             <span class="mx-2"><i class="fa fa-user"></i></span>
             <span class="mx-2"><i class="fa fa-power-off"></i></span>
-                </div>
-            </div>
-            
+        </div>
+    </div>
+    
     <!-- Main Content Area -->
-            <div class="main-content">
+    <div class="main-content">
         <!-- Patient bed visual/video content -->
         <div class="video-container">
             <iframe 
@@ -1395,7 +1951,7 @@
         
             <!-- First row of buttons -->
             <div class="button-row">
-                <div class="panel-button">
+                <div class="panel-button" id="medication-info-btn">
                     <i class="fa fa-pills"></i>
                     <div>Medication Information</div>
                 </div>
@@ -2167,6 +2723,21 @@
                 closeFoodModalBtn.addEventListener('click', closeFoodOrderingModal);
             }
 
+            // Medical Information button
+            const medicationInfoBtn = document.getElementById('medication-info-btn');
+            const medicalInfoModal = document.getElementById('medicalInfoModal');
+            if (medicationInfoBtn && medicalInfoModal) {
+                medicationInfoBtn.addEventListener('click', function() {
+                    medicalInfoModal.style.display = 'flex';
+                });
+            }
+
+            // Close Medical Information modal
+            const closeMedicalInfoModalBtn = document.querySelector('.close-medical-info-modal');
+            if (closeMedicalInfoModalBtn) {
+                closeMedicalInfoModalBtn.addEventListener('click', closeMedicalInfoModal);
+            }
+
             // Vital Sign button
             const vitalSignBtn = document.getElementById('vital-sign-btn');
             const vitalSignsModal = document.getElementById('vitalSignsModal');
@@ -2269,12 +2840,16 @@
             vitalSigns.forEach((vital, index) => {
                 // Determine EWS class based on total score
                 let ewsClass = 'ews-normal';
+                let ewsText = 'Normal';
                 if (vital.total_ews >= 7) {
                     ewsClass = 'ews-high';
+                    ewsText = 'High Risk';
                 } else if (vital.total_ews >= 5) {
                     ewsClass = 'ews-medium';
+                    ewsText = 'Medium Risk';
                 } else if (vital.total_ews >= 3) {
                     ewsClass = 'ews-low';
+                    ewsText = 'Low Risk';
                 }
                 
                 // Format date
@@ -2288,6 +2863,55 @@
                     hour12: true
                 });
                 
+                // Helper function to get vital status class
+                function getVitalStatus(value, type) {
+                    if (!value || value === '-') return '';
+                    
+                    const val = parseFloat(value);
+                    switch(type) {
+                        case 'temperature':
+                            if (val < 35 || val > 39) return 'critical';
+                            if (val < 36 || val > 38) return 'warning';
+                            return 'normal';
+                        case 'heart_rate':
+                            if (val < 50 || val > 120) return 'critical';
+                            if (val < 60 || val > 100) return 'warning';
+                            return 'normal';
+                        case 'respiratory_rate':
+                            if (val < 10 || val > 25) return 'critical';
+                            if (val < 12 || val > 20) return 'warning';
+                            return 'normal';
+                        case 'systolic_bp':
+                            if (val < 90 || val > 180) return 'critical';
+                            if (val < 100 || val > 140) return 'warning';
+                            return 'normal';
+                        case 'oxygen_saturation':
+                            if (val < 90) return 'critical';
+                            if (val < 95) return 'warning';
+                            return 'normal';
+                        default:
+                            return '';
+                    }
+                }
+                
+                // Helper function to format vital value with unit
+                function formatVitalValue(value, unit = '') {
+                    if (!value || value === null || value === undefined) return '-';
+                    return value + (unit ? ` ${unit}` : '');
+                }
+                
+                // Helper function to get consciousness level display
+                function getConsciousnessDisplay(level) {
+                    if (!level) return '-';
+                    const levels = {
+                        'A': 'Alert',
+                        'V': 'Verbal',
+                        'P': 'Pain',
+                        'U': 'Unresponsive'
+                    };
+                    return levels[level] || level;
+                }
+                
                 html += `
                     <div class="vital-sign-card ${index === 0 ? 'latest' : ''}">
                         <div class="vital-sign-header">
@@ -2295,55 +2919,61 @@
                                 <i class="fas fa-clock"></i> ${formattedDate}
                             </div>
                             <div class="vital-recorder">
-                                <i class="fas fa-user-nurse"></i> Recorded by: ${vital.recorder ? vital.recorder.name : 'Unknown'}
+                                <i class="fas fa-user-nurse"></i> ${vital.recorder ? vital.recorder.name : 'Unknown Staff'}
                             </div>
                         </div>
                         <div class="vital-sign-body">
                             <div class="vital-metrics">
-                                <div class="vital-metric">
+                                <div class="vital-metric ${getVitalStatus(vital.temperature, 'temperature')}">
                                     <i class="fas fa-thermometer-half"></i>
-                                    <div class="metric-value">${vital.temperature || '-'}</div>
-                                    <div class="metric-label">Temp (°C)</div>
+                                    <div class="metric-value">${formatVitalValue(vital.temperature, '°C')}</div>
+                                    <div class="metric-label">Temperature</div>
                                 </div>
-                                <div class="vital-metric">
+                                <div class="vital-metric ${getVitalStatus(vital.heart_rate, 'heart_rate')}">
                                     <i class="fas fa-heartbeat"></i>
-                                    <div class="metric-value">${vital.heart_rate || '-'}</div>
-                                    <div class="metric-label">HR (bpm)</div>
+                                    <div class="metric-value">${formatVitalValue(vital.heart_rate, 'bpm')}</div>
+                                    <div class="metric-label">Heart Rate</div>
                                 </div>
-                                <div class="vital-metric">
+                                <div class="vital-metric ${getVitalStatus(vital.respiratory_rate, 'respiratory_rate')}">
                                     <i class="fas fa-lungs"></i>
-                                    <div class="metric-value">${vital.respiratory_rate || '-'}</div>
-                                    <div class="metric-label">RR (bpm)</div>
+                                    <div class="metric-value">${formatVitalValue(vital.respiratory_rate, 'bpm')}</div>
+                                    <div class="metric-label">Respiratory Rate</div>
                                 </div>
-                                <div class="vital-metric">
+                                <div class="vital-metric ${getVitalStatus(vital.systolic_bp, 'systolic_bp')}">
                                     <i class="fas fa-stethoscope"></i>
                                     <div class="metric-value">
-                                        ${vital.systolic_bp ? vital.systolic_bp + '/' + (vital.diastolic_bp || '-') : '-'}
+                                        ${vital.systolic_bp && vital.diastolic_bp ? 
+                                            `${vital.systolic_bp}/${vital.diastolic_bp}` : 
+                                            (vital.systolic_bp ? vital.systolic_bp : '-')
+                                        }
                                     </div>
-                                    <div class="metric-label">BP (mmHg)</div>
+                                    <div class="metric-label">Blood Pressure</div>
                                 </div>
-                                <div class="vital-metric">
+                                <div class="vital-metric ${getVitalStatus(vital.oxygen_saturation, 'oxygen_saturation')}">
                                     <i class="fas fa-percent"></i>
-                                    <div class="metric-value">${vital.oxygen_saturation || '-'}</div>
-                                    <div class="metric-label">SpO<sub>2</sub> (%)</div>
+                                    <div class="metric-value">${formatVitalValue(vital.oxygen_saturation, '%')}</div>
+                                    <div class="metric-label">SpO<sub>2</sub></div>
                                 </div>
                                 <div class="vital-metric">
                                     <i class="fas fa-brain"></i>
-                                    <div class="metric-value">${vital.consciousness_level || '-'}</div>
-                                    <div class="metric-label">AVPU</div>
+                                    <div class="metric-value">${getConsciousnessDisplay(vital.consciousness)}</div>
+                                    <div class="metric-label">AVPU Score</div>
                                 </div>
                             </div>
                             
                             <div class="vital-ews">
                                 <div class="ews-score ${ewsClass}">
-                                    <div class="ews-label">Total EWS</div>
+                                    <div class="ews-label">Early Warning Score</div>
                                     <div class="ews-value">${vital.total_ews || '0'}</div>
+                                    <div class="ews-status" style="font-size: 11px; margin-top: 2px;">${ewsText}</div>
                                 </div>
                             </div>
                             
                             ${vital.notes ? `
                             <div class="vital-notes">
-                                <div class="notes-label"><i class="fas fa-clipboard"></i> Notes:</div>
+                                <div class="notes-label">
+                                    <i class="fas fa-clipboard"></i> Clinical Notes
+                                </div>
                                 <div class="notes-text">${vital.notes}</div>
                             </div>
                             ` : ''}
@@ -2351,6 +2981,25 @@
                     </div>
                 `;
             });
+            
+            // Add summary statistics if there are multiple records
+            if (vitalSigns.length > 1) {
+                const latest = vitalSigns[0];
+                const previous = vitalSigns[1];
+                
+                html = `
+                    <div class="vital-summary-card" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                        <h6 style="color: #00a99d; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-chart-line"></i> Quick Overview
+                        </h6>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 13px;">
+                            <div><strong>Latest EWS:</strong> <span class="badge ${latest.total_ews >= 7 ? 'badge-danger' : latest.total_ews >= 5 ? 'badge-warning' : latest.total_ews >= 3 ? 'badge-info' : 'badge-success'}">${latest.total_ews || 0}</span></div>
+                            <div><strong>Total Records:</strong> ${vitalSigns.length}</div>
+                            <div><strong>Last Updated:</strong> ${new Date(latest.recorded_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                ` + html;
+            }
             
             vitalData.innerHTML = html;
         }
@@ -2649,6 +3298,120 @@
                 }, 500);
             }, 3000);
         }
+        
+        // Close medical information modal
+        function closeMedicalInfoModal() {
+            document.getElementById('medicalInfoModal').style.display = 'none';
+        }
+        
+        // Medical information modal functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const medicalInfoModal = document.getElementById('medicalInfoModal');
+            
+            // Click outside to close modal
+            if (medicalInfoModal) {
+                medicalInfoModal.addEventListener('click', function(e) {
+                    if (e.target === medicalInfoModal) {
+                        closeMedicalInfoModal();
+                    }
+                });
+                
+                // Prevent modal from closing when clicking on content
+                const medicalInfoContent = medicalInfoModal.querySelector('.medical-info-content');
+                if (medicalInfoContent) {
+                    medicalInfoContent.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+            }
+            
+            // Medical history tab functionality
+            const historyTabs = document.querySelectorAll('.history-tab');
+            const historyItems = document.querySelectorAll('.history-item');
+            
+            if (historyTabs.length > 0) {
+                historyTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        // Remove active class from all tabs
+                        historyTabs.forEach(t => t.classList.remove('active'));
+                        // Add active class to clicked tab
+                        this.classList.add('active');
+                        
+                        const filterType = this.getAttribute('data-type');
+                        
+                        // Show/hide history items based on selected type
+                        historyItems.forEach(item => {
+                            if (filterType === 'all' || item.getAttribute('data-type') === filterType) {
+                                item.style.display = 'block';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+            }
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (medicalInfoModal && medicalInfoModal.style.display === 'flex') {
+                        closeMedicalInfoModal();
+                    }
+                }
+            });
+        });
+        
+        // Send alert to nursing station
+        function sendAlert(alertType) {
+            const alertStatus = document.getElementById('alertStatus');
+            
+            // Show loading state
+            alertStatus.style.display = 'block';
+            alertStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending alert...';
+            alertStatus.className = 'alert-status mt-3';
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            // Send alert to server
+            fetch('{{ route("admin.patients.alert.send", $patient->id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    alert_type: alertType,
+                    is_urgent: alertType === 'emergency'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    alertStatus.innerHTML = '<i class="fas fa-check-circle text-success"></i> Alert sent successfully! Nursing station has been notified.';
+                    alertStatus.className = 'alert-status mt-3 text-success';
+                    
+                    // Show toast notification
+                    showToast('Alert sent to nursing station');
+                    
+                    // Auto-close modal after 2 seconds
+                    setTimeout(() => {
+                        closeAlertModal();
+                    }, 2000);
+                } else {
+                    // Show error message
+                    alertStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Failed to send alert. Please try again.';
+                    alertStatus.className = 'alert-status mt-3 text-danger';
+                }
+            })
+            .catch(error => {
+                console.error('Error sending alert:', error);
+                alertStatus.innerHTML = '<i class="fas fa-exclamation-triangle text-danger"></i> Network error. Please check your connection and try again.';
+                alertStatus.className = 'alert-status mt-3 text-danger';
+            });
+        }
     </script>
     
     <!-- Vital Signs Modal -->
@@ -2656,7 +3419,15 @@
         <div class="vital-signs-content" style="background-color: white; border-radius: 8px; width: 95%; max-width: 800px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); max-height: 85vh; overflow-y: auto;">
             <div class="vital-signs-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #00a99d; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; position: sticky; top: 0; z-index: 10;">
                 <h5 style="margin: 0; font-size: 18px;">Vital Signs Information</h5>
-                <span class="close-vital-signs-modal" style="cursor: pointer; font-size: 24px;">&times;</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <a href="{{ route('admin.vital-signs.create', ['patient_id' => $patient->id]) }}" target="_blank" 
+                       style="background: rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: all 0.2s;"
+                       onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
+                       onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                        <i class="fas fa-plus"></i> Record New
+                    </a>
+                    <span class="close-vital-signs-modal" style="cursor: pointer; font-size: 24px;">&times;</span>
+                </div>
             </div>
             <div class="vital-signs-body" style="padding: 20px;">
                 <div class="vital-loading text-center py-5" id="vital-loading" style="text-align: center; padding: 3rem 0;">
@@ -2676,5 +3447,134 @@
         </div>
     </div>
 
+    <!-- Medical Information Modal -->
+    <div class="medical-info-modal" id="medicalInfoModal">
+        <div class="medical-info-content">
+            <div class="medical-info-header">
+                <h5>Medical Information</h5>
+                <span class="close-medical-info-modal">&times;</span>
+            </div>
+            <div class="medical-info-body">
+                <!-- Medications Section -->
+                <div class="medical-section">
+                    <h6 class="section-title">Current Medications</h6>
+                    <div class="medications-list">
+                        @forelse($medications as $medication)
+                            <div class="medication-item {{ $medication->status }}">
+                                <div class="medication-header">
+                                    <div class="medication-name">{{ $medication->medication_name }}</div>
+                                    <div class="medication-status status-{{ $medication->status }}">{{ ucfirst($medication->status) }}</div>
+                                </div>
+                                <div class="medication-details">
+                                    <div class="medication-row">
+                                        <span class="label">Dosage:</span>
+                                        <span class="value">{{ $medication->dosage }}</span>
+                                    </div>
+                                    <div class="medication-row">
+                                        <span class="label">Frequency:</span>
+                                        <span class="value">{{ $medication->frequency }}</span>
+                                    </div>
+                                    <div class="medication-row">
+                                        <span class="label">Route:</span>
+                                        <span class="value">{{ $medication->route }}</span>
+                                    </div>
+                                    @if($medication->instructions)
+                                    <div class="medication-row">
+                                        <span class="label">Instructions:</span>
+                                        <span class="value">{{ $medication->instructions }}</span>
+                                    </div>
+                                    @endif
+                                    <div class="medication-row">
+                                        <span class="label">Prescribed by:</span>
+                                        <span class="value">{{ $medication->prescribed_by }}</span>
+                                    </div>
+                                    <div class="medication-row">
+                                        <span class="label">Start Date:</span>
+                                        <span class="value">{{ $medication->start_date->format('d M Y') }}</span>
+                                    </div>
+                                    @if($medication->end_date)
+                                    <div class="medication-row">
+                                        <span class="label">End Date:</span>
+                                        <span class="value">{{ $medication->end_date->format('d M Y') }}</span>
+                                    </div>
+                                    @endif
+                                    @if($medication->notes)
+                                    <div class="medication-row">
+                                        <span class="label">Notes:</span>
+                                        <span class="value">{{ $medication->notes }}</span>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-medications">
+                                <i class="fa fa-info-circle"></i>
+                                <p>No medications recorded for this patient.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+                
+                <!-- Medical History Section -->
+                <div class="medical-section">
+                    <h6 class="section-title">Medical History</h6>
+                    <div class="medical-history-tabs">
+                        <button class="history-tab active" data-type="all">All</button>
+                        <button class="history-tab" data-type="condition">Conditions</button>
+                        <button class="history-tab" data-type="allergy">Allergies</button>
+                        <button class="history-tab" data-type="surgery">Surgeries</button>
+                        <button class="history-tab" data-type="family_history">Family History</button>
+                    </div>
+                    <div class="medical-history-list">
+                        @forelse($medicalHistories as $history)
+                            <div class="history-item" data-type="{{ $history->type }}">
+                                <div class="history-header">
+                                    <div class="history-title">{{ $history->title }}</div>
+                                    <div class="history-type type-{{ $history->type }}">{{ ucfirst(str_replace('_', ' ', $history->type)) }}</div>
+                                </div>
+                                <div class="history-details">
+                                    @if($history->description)
+                                    <div class="history-row">
+                                        <span class="label">Description:</span>
+                                        <span class="value">{{ $history->description }}</span>
+                                    </div>
+                                    @endif
+                                    @if($history->date_diagnosed)
+                                    <div class="history-row">
+                                        <span class="label">Date Diagnosed:</span>
+                                        <span class="value">{{ $history->date_diagnosed->format('d M Y') }}</span>
+                                    </div>
+                                    @endif
+                                    @if($history->severity)
+                                    <div class="history-row">
+                                        <span class="label">Severity:</span>
+                                        <span class="value severity-{{ strtolower($history->severity) }}">{{ ucfirst($history->severity) }}</span>
+                                    </div>
+                                    @endif
+                                    <div class="history-row">
+                                        <span class="label">Status:</span>
+                                        <span class="value status-{{ strtolower($history->status) }}">{{ ucfirst($history->status) }}</span>
+                                    </div>
+                                    @if($history->notes)
+                                    <div class="history-row">
+                                        <span class="label">Notes:</span>
+                                        <span class="value">{{ $history->notes }}</span>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="no-history">
+                                <i class="fa fa-info-circle"></i>
+                                <p>No medical history recorded for this patient.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environmental Control Modal -->
 </body>
 </html>

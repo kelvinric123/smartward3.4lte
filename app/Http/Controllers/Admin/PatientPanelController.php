@@ -7,6 +7,8 @@ use App\Models\Patient;
 use App\Models\FoodMenu;
 use App\Models\FoodOrder;
 use App\Models\PatientAlert;
+use App\Models\Medication;
+use App\Models\MedicalHistory;
 use Illuminate\Http\Request;
 
 class PatientPanelController extends Controller
@@ -45,8 +47,31 @@ class PatientPanelController extends Controller
             ->where('status', '!=', 'cancelled')
             ->orderBy('created_at', 'desc')
             ->get();
+            
+        // Get patient's medications
+        $medications = $patient->medications()->orderBy('start_date', 'desc')->get();
         
-        return view('admin.patients.panel', compact('patient', 'activeAdmission', 'bed', 'ward', 'menuItems', 'activeOrders'));
+        // Get patient's medical history
+        $medicalHistories = $patient->medicalHistories()->orderBy('date_diagnosed', 'desc')->get();
+        
+        // Get patient's vital signs (latest 10 records)
+        $vitalSigns = $patient->vitalSigns()
+            ->with('recorder')
+            ->latest('recorded_at')
+            ->take(10)
+            ->get();
+        
+        return view('admin.patients.panel', compact(
+            'patient', 
+            'activeAdmission', 
+            'bed', 
+            'ward', 
+            'menuItems', 
+            'activeOrders', 
+            'medications', 
+            'medicalHistories',
+            'vitalSigns'
+        ));
     }
     
     /**

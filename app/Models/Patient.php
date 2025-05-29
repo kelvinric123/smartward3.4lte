@@ -167,4 +167,28 @@ class Patient extends Model
     {
         return $this->hasMany(PatientReferral::class)->orderBy('referral_date', 'desc');
     }
+    
+    /**
+     * Get the medications for this patient
+     */
+    public function medications()
+    {
+        return $this->hasMany(Medication::class);
+    }
+    
+    /**
+     * Get active medications for this patient
+     */
+    public function activeMedications()
+    {
+        return $this->hasMany(Medication::class)->where('status', 'active');
+    }
+    
+    /**
+     * Get the medical history for this patient
+     */
+    public function medicalHistories()
+    {
+        return $this->hasMany(MedicalHistory::class);
+    }
 } 

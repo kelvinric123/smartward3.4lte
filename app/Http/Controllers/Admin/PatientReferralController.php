@@ -100,17 +100,10 @@ class PatientReferralController extends Controller
     public function getConsultantsBySpecialty(Request $request)
     {
         $specialtyId = $request->input('specialty_id');
-        $hospitalId = $request->input('hospital_id');
         
-        $query = Consultant::where('specialty_id', $specialtyId)
-            ->where('is_active', true);
-            
-        // Filter by hospital if provided
-        if ($hospitalId) {
-            $query->where('hospital_id', $hospitalId);
-        }
-        
-        $consultants = $query->get();
+        $consultants = Consultant::where('specialty_id', $specialtyId)
+            ->where('is_active', true)
+            ->get();
             
         return response()->json($consultants);
     }
@@ -122,21 +115,14 @@ class PatientReferralController extends Controller
     {
         try {
             $specialtyId = $request->input('specialty_id');
-            $hospitalId = $request->input('hospital_id');
             
             if (!$specialtyId) {
                 return response()->json(['error' => 'Specialty ID is required'], 400);
             }
             
-            $query = Consultant::where('specialty_id', $specialtyId)
-                ->where('is_active', true);
-                
-            // Filter by hospital if provided
-            if ($hospitalId) {
-                $query->where('hospital_id', $hospitalId);
-            }
-            
-            $consultants = $query->get(['id', 'name', 'specialty_id', 'hospital_id']);
+            $consultants = Consultant::where('specialty_id', $specialtyId)
+                ->where('is_active', true)
+                ->get(['id', 'name', 'specialty_id']);
                 
             return response()->json($consultants);
         } catch (\Exception $e) {
@@ -151,14 +137,10 @@ class PatientReferralController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
-            'specialty' => 'required|string',
-            'consultant' => 'required|string',
-            'referral_date' => 'required|date',
+            'specialty_id' => 'required|exists:specialties,id',
+            'consultant_id' => 'required|exists:consultants,id',
             'clinical_question' => 'required|string',
-            'reason_for_referral' => 'required|string',
-            'relevant_clinical_info' => 'nullable|string',
-            'urgency' => 'required|in:routine,urgent,emergency',
-            'referring_doctor' => 'required|string',
+            'notes' => 'nullable|string',
         ]);
         
         // Find the patient
@@ -189,17 +171,25 @@ class PatientReferralController extends Controller
             'admission_id' => $activeAdmission->id,
             'from_ward_id' => $ward->id,
             'from_consultant_id' => $bed->consultant_id ?? null,
-            'to_specialty' => $validated['specialty'],
-            'to_consultant' => $validated['consultant'],
-            'referral_date' => $validated['referral_date'],
+            'to_specialty_id' => $validated['specialty_id'],
+            'to_consultant_id' => $validated['consultant_id'],
+            'referral_date' => now(),
             'clinical_question' => $validated['clinical_question'],
-            'reason' => $validated['reason_for_referral'],
-            'notes' => $validated['relevant_clinical_info'],
-            'urgency' => $validated['urgency'],
+            'reason' => $validated['clinical_question'], // Using clinical_question as reason for now
+            'notes' => $validated['notes'],
+            'urgency' => 'routine', // Default urgency
             'status' => 'pending',
             'referred_by' => auth()->id(),
-            'referring_doctor' => $validated['referring_doctor'],
+            'referring_doctor' => auth()->user()->name ?? 'Unknown',
         ]);
+        
+        // Check if this is an AJAX request
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient referral submitted successfully.'
+            ]);
+        }
         
         return redirect()->back()
             ->with('success', 'Patient referral submitted successfully.');

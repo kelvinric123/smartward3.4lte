@@ -329,7 +329,7 @@ class WardController extends Controller
             $serviceLocations = ['Radiology', 'Laboratory', 'Physiotherapy', 'Pharmacy', 'Dialysis', 'Operating Theatre'];
             
             // Load patient referrals
-            $patientReferrals = $patient->referrals;
+            $patientReferrals = $patient->referrals()->with(['toSpecialty', 'toConsultant', 'fromWard', 'referredBy'])->get();
             
             return view('admin.beds.wards.patient_details', compact(
                 'ward', 
@@ -444,7 +444,7 @@ class WardController extends Controller
             $serviceLocations = ['Radiology', 'Laboratory', 'Physiotherapy', 'Pharmacy', 'Dialysis', 'Operating Theatre'];
             
             // Load patient referrals
-            $patientReferrals = $patient->referrals;
+            $patientReferrals = $patient->referrals()->with(['toSpecialty', 'toConsultant', 'fromWard', 'referredBy'])->get();
             
             return view('admin.beds.wards.iframe_patient_details', compact(
                 'ward', 
@@ -477,13 +477,13 @@ class WardController extends Controller
                 ->take(20)
                 ->get();
                 
-            // Count new alerts
-            $newAlertsCount = $patientAlerts->where('status', 'new')->count();
+            // Count all unresolved alerts (both new and seen are considered active)
+            $activeAlertsCount = $patientAlerts->count();
             
             return response()->json([
                 'success' => true,
                 'alerts' => $patientAlerts,
-                'newAlertsCount' => $newAlertsCount
+                'new_alerts_count' => $activeAlertsCount
             ]);
         } catch (\Exception $e) {
             return response()->json([
