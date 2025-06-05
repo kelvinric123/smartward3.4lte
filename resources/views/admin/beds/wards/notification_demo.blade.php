@@ -45,8 +45,8 @@
                             </div>
                         </div>
                         <div class="btn-group btn-group-sm w-100">
-                            <button type="button" class="btn btn-outline-danger resolve-btn" data-alert-id="{{ $alert->id }}">
-                                <i class="fas fa-times"></i> Resolve
+                            <button type="button" class="btn btn-outline-success respond-btn" data-alert-id="{{ $alert->id }}">
+                                <i class="fas fa-reply"></i> Respond
                             </button>
                         </div>
                     </div>
@@ -118,8 +118,8 @@
         transform: translateY(-1px);
     }
     
-    /* Fade out animation for resolved cards */
-    .alert-card.resolving {
+    /* Fade out animation for responded cards */
+    .alert-card.responding {
         opacity: 0.6;
         transform: scale(0.95);
         transition: all 0.5s ease;
@@ -128,20 +128,93 @@
 
 @push('js')
 <script>
+    // Comprehensive AdminLTE iframe error prevention
+    (function() {
+        'use strict';
+        
+        // Completely disable AdminLTE iframe functionality
+        // This prevents the "Cannot read properties of null (reading 'autoIframeMode')" error
+        
+        // Create AdminLTE object if it doesn't exist
+        if (typeof window.AdminLTE === 'undefined') {
+            window.AdminLTE = {};
+        }
+        
+        // Override IFrame object with safe dummy methods
+        window.AdminLTE.IFrame = {
+            _config: { autoIframeMode: false },
+            _element: null,
+            _init: function() { console.log('AdminLTE IFrame._init intercepted'); return this; },
+            _initFrameElement: function() { console.log('AdminLTE IFrame._initFrameElement intercepted'); return this; },
+            _jQueryInterface: function() { console.log('AdminLTE IFrame._jQueryInterface intercepted'); return this; },
+            autoIframeMode: false
+        };
+        
+        // Prevent jQuery plugin registration
+        $(function() {
+            // Override jQuery IFrame plugin completely
+            $.fn.IFrame = function(config) { 
+                console.log('jQuery IFrame plugin call intercepted and ignored');
+                return this; 
+            };
+            
+            // Remove any data-widget="iframe" elements to prevent auto-initialization
+            $('[data-widget="iframe"]').removeAttr('data-widget');
+            
+            // Disable AdminLTE auto-initialization for iframes
+            if (window.AdminLTE && window.AdminLTE.PluginManager) {
+                window.AdminLTE.PluginManager.autoLoad = false;
+            }
+        });
+        
+        // Intercept and prevent iframe-related errors at the window level
+        window.addEventListener('error', function(e) {
+            if (e.message && (
+                e.message.includes('autoIframeMode') || 
+                e.message.includes('_initFrameElement') ||
+                e.message.includes('IFrame')
+            )) {
+                console.log('Intercepted AdminLTE iframe error:', e.message);
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+        
+    })();
+
     $(document).ready(function() {
         console.log('Document ready - initializing notification demo...');
         console.log('jQuery version:', $.fn.jquery);
         console.log('Initial alert cards found:', $('.alert-card').length);
+        console.log('Running inside iframe:', window.parent !== window);
+        console.log('AdminLTE object:', typeof window.AdminLTE);
+        console.log('Current URL:', window.location.href);
         
-        // Prevent AdminLTE iframe conflicts
+        // Additional runtime protection against AdminLTE iframe errors
         try {
-            // Disable AdminLTE iframe handling on this page
-            if (typeof window.AdminLTE !== 'undefined' && window.AdminLTE.IFrame) {
-                console.log('Disabling AdminLTE iframe handling for notifications...');
+            console.log('Applying additional AdminLTE iframe protection...');
+            
+            // Force disable any remaining iframe functionality
+            if (window.AdminLTE && window.AdminLTE.IFrame) {
                 window.AdminLTE.IFrame = null;
             }
+            
+            // Remove any iframe-related elements that might cause issues
+            $('[data-widget="iframe"]').remove();
+            $('.main-sidebar .nav-link[data-widget="iframe"]').remove();
+            
+            // Disable any AdminLTE auto-initialization
+            if (window.AdminLTE && window.AdminLTE.PluginManager) {
+                window.AdminLTE.PluginManager = {
+                    autoLoad: false,
+                    register: function() { return this; }
+                };
+            }
+            
+            console.log('Additional AdminLTE iframe protection applied successfully');
         } catch (e) {
-            console.log('AdminLTE iframe handling already disabled or not present');
+            console.log('Error applying additional iframe protection:', e.message);
         }
         
         // Function to get the CSRF token
@@ -232,8 +305,8 @@
                                     </div>
                                 </div>
                                 <div class="btn-group btn-group-sm w-100">
-                                    <button type="button" class="btn btn-outline-danger resolve-btn" data-alert-id="${alert.id}">
-                                        <i class="fas fa-times"></i> Resolve
+                                    <button type="button" class="btn btn-outline-success respond-btn" data-alert-id="${alert.id}">
+                                        <i class="fas fa-reply"></i> Respond
                                     </button>
                                 </div>
                             </div>
@@ -300,10 +373,10 @@
             console.log('Attaching event handlers to buttons...');
             
             // Remove any existing handlers to prevent duplicates
-            $(document).off('click', '.resolve-btn');
+            $(document).off('click', '.respond-btn');
             
-            // Resolve button using event delegation
-            $(document).on('click', '.resolve-btn', function(e) {
+            // Respond button using event delegation
+            $(document).on('click', '.respond-btn', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 
@@ -311,7 +384,7 @@
                 const card = $(this).closest('.alert-card');
                 const btn = $(this);
                 
-                console.log('Resolve clicked for alert ID:', alertId);
+                console.log('Respond clicked for alert ID:', alertId);
                 
                 // Prevent double-clicks
                 if (btn.prop('disabled')) {
@@ -319,16 +392,16 @@
                 }
                 
                 // Disable button and show loading state
-                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Resolving...');
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Responding...');
                 
-                // Add resolving animation class
-                card.addClass('resolving');
+                // Add responding animation class
+                card.addClass('responding');
                 
-                const resolveUrl = '{{ route("admin.beds.wards.alerts.resolve", ":alertId") }}'.replace(':alertId', alertId);
-                console.log('Resolve URL:', resolveUrl);
+                const respondUrl = '{{ route("admin.beds.wards.alerts.respond", ":alertId") }}'.replace(':alertId', alertId);
+                console.log('Respond URL:', respondUrl);
                 
                 $.ajax({
-                    url: resolveUrl,
+                    url: respondUrl,
                     method: 'PUT',
                     headers: {
                         'X-CSRF-TOKEN': getCsrfToken(),
@@ -336,7 +409,7 @@
                         'Content-Type': 'application/json'
                     },
                     success: function(response) {
-                        console.log('Resolve response:', response);
+                        console.log('Respond response:', response);
                         if (response.success) {
                             // Immediate fade out and remove
                             card.fadeOut(400, function() {
@@ -356,21 +429,21 @@
                             });
                             
                             // Show success feedback
-                            showToast('Alert resolved successfully', 'success');
+                            showToast('Alert responded to successfully. Patient has been notified.', 'success');
                         } else {
-                            // Remove resolving class and re-enable button on error
-                            card.removeClass('resolving');
-                            btn.prop('disabled', false).html('<i class="fas fa-times"></i> Resolve');
-                            showToast('Failed to resolve alert', 'error');
+                            // Remove responding class and re-enable button on error
+                            card.removeClass('responding');
+                            btn.prop('disabled', false).html('<i class="fas fa-reply"></i> Respond');
+                            showToast('Failed to respond to alert', 'error');
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('Failed to resolve alert:', {xhr, status, error});
+                        console.error('Failed to respond to alert:', {xhr, status, error});
                         console.error('Response text:', xhr.responseText);
-                        // Remove resolving class and re-enable button on error
-                        card.removeClass('resolving');
-                        btn.prop('disabled', false).html('<i class="fas fa-times"></i> Resolve');
-                        showToast('Failed to resolve alert. Please try again.', 'error');
+                        // Remove responding class and re-enable button on error
+                        card.removeClass('responding');
+                        btn.prop('disabled', false).html('<i class="fas fa-reply"></i> Respond');
+                        showToast('Failed to respond to alert. Please try again.', 'error');
                     }
                 });
                 
@@ -378,7 +451,7 @@
             });
             
             console.log('Event handlers attached using delegation. Found buttons:', {
-                resolveButtons: $('.resolve-btn').length
+                respondButtons: $('.respond-btn').length
             });
         }
         
@@ -424,7 +497,7 @@
         // Test if buttons exist after page load
         setTimeout(function() {
             console.log('After timeout - buttons check:', {
-                resolveButtons: $('.resolve-btn').length,
+                respondButtons: $('.respond-btn').length,
                 alertCards: $('.alert-card').length
             });
         }, 1000);

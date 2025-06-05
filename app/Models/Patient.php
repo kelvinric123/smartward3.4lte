@@ -191,4 +191,20 @@ class Patient extends Model
     {
         return $this->hasMany(MedicalHistory::class);
     }
+    
+    /**
+     * Get the responses/notifications for this patient
+     */
+    public function responses()
+    {
+        return $this->hasMany(PatientResponse::class);
+    }
+    
+    /**
+     * Get unread responses for this patient
+     */
+    public function unreadResponses()
+    {
+        return $this->hasMany(PatientResponse::class)->where('status', 'sent');
+    }
 } 

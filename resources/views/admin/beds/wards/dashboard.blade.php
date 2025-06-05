@@ -58,7 +58,7 @@
                         <div class="d-flex justify-content-between">
                             <h3 class="card-title">Beds Layout</h3>
                             <div class="btn-group">
-                                <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#notificationModal" id="notification-btn">
+                                                <button type="button" class="btn btn-warning" id="notification-btn" onclick="showNotificationsPanel()">
                                     <i class="fas fa-bell"></i> Notifications 
                                     @if(isset($patientAlerts) && $patientAlerts->count() > 0)
                                         <span class="badge badge-light" id="new-alerts-count">{{ $patientAlerts->count() }}</span>
@@ -384,21 +384,99 @@
         </div>
     </div>
     
-    <!-- Notification Modal -->
-    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true" data-iframe="false">
-        <div class="modal-dialog modal-lg" role="document">
+    <!-- Simple Notifications Panel Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="notificationModalLabel">Patient to Nurse Notifications</h5>
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="notificationModalLabel">
+                        <i class="fas fa-bell"></i> Patient Notifications
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body p-0">
-                    <iframe src="{{ url('/admin/beds/wards/'.$ward->id.'/notification-demo') }}" 
-                            style="width: 100%; height: 500px; border: none;" 
-                            data-auto-iframe-mode="false"
-                            id="notification-iframe"></iframe>
+                <div class="modal-body">
+                    <!-- Statistics Row -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-exclamation-circle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">New Alerts</span>
+                                    <span class="info-box-number" id="modal-new-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-bell"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Active</span>
+                                    <span class="info-box-number" id="modal-total-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-reply"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Responses</span>
+                                    <span class="info-box-number" id="modal-responses-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-success btn-block" id="refresh-notifications">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button type="button" class="btn btn-primary btn-block mt-2" id="create-test-alert">
+                                <i class="fas fa-plus"></i> Test Alert
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notifications List -->
+                    <div id="notifications-list">
+                        <div class="text-center py-4">
+                            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                            <p class="mt-2 text-muted">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Response Modal -->
+    <div class="modal fade" id="responseModal" tabindex="-1" role="dialog" aria-labelledby="responseModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="responseModalLabel">
+                        <i class="fas fa-reply"></i> Respond to Patient Alert
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Patient:</strong> <span id="response-patient-name"></span><br>
+                        <strong>Bed:</strong> <span id="response-bed-number"></span><br>
+                        <strong>Alert:</strong> <span id="response-alert-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="response-message">Your Response Message:</label>
+                        <textarea class="form-control" id="response-message" rows="3" 
+                                  placeholder="Enter your response to the patient...">Your alert has been acknowledged by nursing staff. We are taking care of your request.</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="send-response">
+                        <i class="fas fa-paper-plane"></i> Send Response
+                    </button>
                 </div>
             </div>
         </div>
@@ -1186,6 +1264,302 @@
                 Notification.requestPermission().then(permission => {
                     console.log('Notification permission:', permission);
                 });
+            }
+
+            // Simple Notification System - No iframe needed!
+            let currentAlertId = null;
+
+            // Show notifications panel function
+            window.showNotificationsPanel = function() {
+                $('#notificationModal').modal('show');
+                loadNotifications();
+            };
+
+            // Load notifications via AJAX
+            function loadNotifications() {
+                $('#notifications-list').html(`
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                        <p class="mt-2 text-muted">Loading notifications...</p>
+                    </div>
+                `);
+
+                $.ajax({
+                    url: '{{ route("admin.beds.wards.alerts", $ward->id) }}',
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success && response.alerts) {
+                            displayNotifications(response.alerts);
+                            updateModalStats(response.alerts);
+                        } else {
+                            showNoNotifications();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to load notifications:', xhr.responseText);
+                        $('#notifications-list').html(`
+                            <div class="text-center py-4">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                                <p class="mt-2 text-danger">Failed to load notifications</p>
+                                <button class="btn btn-outline-primary" onclick="loadNotifications()">Try Again</button>
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            // Display notifications
+            function displayNotifications(alerts) {
+                const container = $('#notifications-list');
+                container.empty();
+
+                if (alerts.length === 0) {
+                    showNoNotifications();
+                    return;
+                }
+
+                alerts.forEach(function(alert) {
+                    const alertCard = createNotificationCard(alert);
+                    container.append(alertCard);
+                });
+            }
+
+            // Show no notifications message
+            function showNoNotifications() {
+                $('#notifications-list').html(`
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle fa-3x text-success"></i>
+                        <h4 class="mt-3">No Active Alerts</h4>
+                        <p class="text-muted">All patients are doing well!</p>
+                    </div>
+                `);
+            }
+
+            // Create notification card
+            function createNotificationCard(alert) {
+                const icons = {
+                    'emergency': 'fa-exclamation-triangle',
+                    'pain': 'fa-heartbeat',
+                    'assistance': 'fa-hands-helping',
+                    'water': 'fa-tint',
+                    'bathroom': 'fa-toilet',
+                    'food': 'fa-utensils'
+                };
+                
+                const icon = icons[alert.alert_type] || 'fa-bell';
+                const urgentClass = alert.is_urgent ? 'border-danger' : 'border-primary';
+                const badgeClass = alert.is_urgent ? 'badge-danger' : 'badge-primary';
+                const statusBadge = alert.status === 'new' ? 'badge-warning' : 'badge-secondary';
+                
+                return $(`
+                    <div class="card mb-3 ${urgentClass}" data-alert-id="${alert.id}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1 text-center">
+                                    <span class="badge ${badgeClass} p-2">
+                                        <i class="fas ${icon} fa-lg"></i>
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="mb-1">
+                                        <strong>${alert.patient.name}</strong>
+                                        <span class="text-muted">(Bed ${alert.bed.bed_number})</span>
+                                    </h6>
+                                    <p class="mb-1">${alert.message}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> ${formatTimeAgo(alert.created_at)}
+                                        ${alert.is_urgent ? '<span class="badge badge-danger ml-2">URGENT</span>' : ''}
+                                    </small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <span class="badge ${statusBadge}">
+                                        ${alert.status.charAt(0).toUpperCase() + alert.status.slice(1)}
+                                    </span>
+                                    <br><small class="text-muted">${alert.alert_type.charAt(0).toUpperCase() + alert.alert_type.slice(1)}</small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <button type="button" class="btn btn-success btn-sm respond-to-alert" 
+                                            data-alert-id="${alert.id}"
+                                            data-patient-name="${alert.patient.name}"
+                                            data-bed-number="${alert.bed.bed_number}"
+                                            data-alert-message="${alert.message}">
+                                        <i class="fas fa-reply"></i> Respond
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+
+            // Format time ago
+            function formatTimeAgo(timestamp) {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} min ago`;
+                if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hour ago`;
+                return `${Math.floor(diffMins / 1440)} day ago`;
+            }
+
+            // Update modal statistics
+            function updateModalStats(alerts) {
+                const newCount = alerts.filter(a => a.status === 'new').length;
+                const totalCount = alerts.length;
+                
+                $('#modal-new-count').text(newCount);
+                $('#modal-total-count').text(totalCount);
+                
+                // We'll calculate responses from previous responses
+                $('#modal-responses-count').text('0'); // Will be updated later if needed
+            }
+
+            // Event handlers for new notification system
+            $(document).on('click', '.respond-to-alert', function() {
+                currentAlertId = $(this).data('alert-id');
+                const patientName = $(this).data('patient-name');
+                const bedNumber = $(this).data('bed-number');
+                const alertMessage = $(this).data('alert-message');
+                
+                $('#response-patient-name').text(patientName);
+                $('#response-bed-number').text(bedNumber);
+                $('#response-alert-message').text(alertMessage);
+                $('#response-message').val('Your alert has been acknowledged by nursing staff. We are taking care of your request.');
+                
+                $('#responseModal').modal('show');
+            });
+
+            // Send response handler
+            $('#send-response').click(function() {
+                if (!currentAlertId) return;
+                
+                const btn = $(this);
+                const originalHtml = btn.html();
+                btn.html('<i class="fas fa-spinner fa-spin"></i> Sending...').prop('disabled', true);
+                
+                const responseMessage = $('#response-message').val().trim();
+                if (!responseMessage) {
+                    alert('Please enter a response message');
+                    btn.html(originalHtml).prop('disabled', false);
+                    return;
+                }
+                
+                $.ajax({
+                    url: '{{ route("admin.beds.wards.alerts.respond", ":alertId") }}'.replace(':alertId', currentAlertId),
+                    method: 'PUT',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify({
+                        response_message: responseMessage
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            // Remove the alert card with animation
+                            $(`[data-alert-id="${currentAlertId}"]`).fadeOut(400, function() {
+                                $(this).remove();
+                                // Reload notifications to update counts
+                                loadNotifications();
+                            });
+                            
+                            $('#responseModal').modal('hide');
+                            
+                            // Show success feedback
+                            showToast('Response sent successfully! Patient has been notified.', 'success');
+                            
+                            // Update main dashboard alert count
+                            pollForNewAlerts();
+                            
+                        } else {
+                            showToast('Failed to send response', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Response failed:', xhr.responseText);
+                        showToast('Failed to send response. Please try again.', 'error');
+                    },
+                    complete: function() {
+                        btn.html(originalHtml).prop('disabled', false);
+                        currentAlertId = null;
+                    }
+                });
+            });
+
+            // Refresh notifications
+            $('#refresh-notifications').click(function() {
+                const btn = $(this);
+                const originalHtml = btn.html();
+                btn.html('<i class="fas fa-spinner fa-spin"></i> Refreshing...').prop('disabled', true);
+                
+                loadNotifications();
+                
+                setTimeout(() => {
+                    btn.html(originalHtml).prop('disabled', false);
+                }, 1000);
+            });
+
+            // Create test alert
+            $('#create-test-alert').click(function() {
+                const btn = $(this);
+                const originalHtml = btn.html();
+                btn.html('<i class="fas fa-spinner fa-spin"></i> Creating...').prop('disabled', true);
+                
+                $.ajax({
+                    url: '{{ route("admin.beds.wards.create-test-alert", $ward->id) }}',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showToast('Test alert created successfully!', 'success');
+                            loadNotifications(); // Refresh the list
+                            pollForNewAlerts(); // Update main dashboard
+                        } else {
+                            showToast('Failed to create test alert', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Test alert creation failed:', xhr.responseText);
+                        showToast('Failed to create test alert', 'error');
+                    },
+                    complete: function() {
+                        btn.html(originalHtml).prop('disabled', false);
+                    }
+                });
+            });
+
+            // Simple toast notification function
+            function showToast(message, type = 'info') {
+                const toastClass = type === 'success' ? 'alert-success' : (type === 'error' ? 'alert-danger' : 'alert-info');
+                const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-triangle' : 'fa-info-circle');
+                
+                const toast = $(`
+                    <div class="alert ${toastClass} alert-dismissible" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                        <i class="fas ${icon} mr-2"></i>
+                        ${message}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                `);
+                
+                $('body').append(toast);
+                setTimeout(() => {
+                    toast.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }, 4000);
             }
             
             // Prevent AdminLTE iframe conflicts - Enhanced version

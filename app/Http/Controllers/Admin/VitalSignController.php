@@ -289,4 +289,56 @@ class VitalSignController extends Controller
         
         return view('admin.vital_signs.iframe_trend', compact('patient', 'vitalSigns'));
     }
+    /**
+     * Get vital signs data for chart (AJAX endpoint)
+     */
+    public function trendData($patientId)
+    {
+        try {
+            $patient = Patient::findOrFail($patientId);
+            
+            $vitalSigns = VitalSign::where('patient_id', $patientId)
+                ->orderBy('recorded_at', 'desc')
+                ->take(30) // Get last 30 records for better chart performance
+                ->get()
+                ->reverse() // Reverse to get chronological order
+                ->values(); // Re-index the collection
+
+            return response()->json([
+                'success' => true,
+                'patient' => [
+                    'id' => $patient->id,
+                    'name' => $patient->name,
+                    'mrn' => $patient->mrn
+                ],
+                'vitals' => $vitalSigns->map(function($vital) {
+                    return [
+                        'id' => $vital->id,
+                        'recorded_at' => $vital->recorded_at->toISOString(),
+                        'temperature' => $vital->temperature,
+                        'heart_rate' => $vital->heart_rate,
+                        'systolic_pressure' => $vital->systolic_pressure,
+                        'diastolic_pressure' => $vital->diastolic_pressure,
+                        'respiratory_rate' => $vital->respiratory_rate,
+                        'oxygen_saturation' => $vital->oxygen_saturation,
+                        'pain_score' => $vital->pain_score,
+                        'blood_glucose' => $vital->blood_glucose,
+                        'total_ews' => $vital->total_ews
+                    ];
+                }),
+                'total_records' => VitalSign::where('patient_id', $patientId)->count()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching vital signs trend data', [
+                'patient_id' => $patientId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading vital signs data',
+                'vitals' => []
+            ], 500);
+        }
+    }
 } 

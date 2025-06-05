@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Nunito', sans-serif;
@@ -193,6 +194,141 @@
                 width: 100%;
                 z-index: -1;
             }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .notifications-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .notifications-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notifications-header {
+            background-color: #00a99d;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notifications-header h5 {
+            margin: 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-notifications-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .notifications-body {
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            background-color: #f8f9fa;
+            border-left: 4px solid #00a99d;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .notification-item.unread {
+            background-color: #e3f2fd;
+            border-left-color: #2196f3;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .notification-item.read {
+            opacity: 0.8;
+        }
+
+        .notification-from {
+            font-weight: bold;
+            color: #00a99d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mark-read-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .mark-read-btn:hover {
+            background-color: #218838;
+        }
+
+        .no-notifications {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .no-notifications i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
         }
         
         .alert-nurse-modal {
@@ -2598,13 +2734,20 @@
                 </div>
             </div>
             
-            <!-- Fourth row of buttons -->
+            <!-- New Notifications row -->
             <div class="button-row">
+                <div class="panel-button" id="notifications-btn">
+                    <i class="fa fa-envelope"></i>
+                    <div>Notifications</div>
+                    <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+                </div>
                 <div class="panel-button" id="vital-sign-btn" onclick="openVitalSignsModal()">
                     <i class="fa fa-heart"></i>
                     <div>Vital Sign</div>
                 </div>
             </div>
+            
+
                     </div>
                 </div>
                 
@@ -2637,6 +2780,22 @@
                     </button>
                 </div>
                 <div class="alert-status mt-3" id="alertStatus" style="display: none;"></div>
+            </div>
+                    </div>
+                </div>
+
+    <!-- Notifications Modal -->
+    <div class="notifications-modal" id="notificationsModal">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h5><i class="fa fa-envelope"></i> Nurse Responses</h5>
+                <div class="close-notifications-modal" onclick="closeNotificationsModal()">&times;</div>
+            </div>
+            <div class="notifications-body" id="notificationsBody">
+                <div class="no-notifications">
+                    <i class="fa fa-envelope-open"></i>
+                    <p>Loading notifications...</p>
+                </div>
             </div>
                     </div>
                 </div>
@@ -3649,6 +3808,17 @@
                 });
             }
 
+        // Notifications functionality
+        const notificationsBtn = document.getElementById('notifications-btn');
+        const notificationsModal = document.getElementById('notificationsModal');
+        
+        if (notificationsBtn) {
+            notificationsBtn.addEventListener('click', function() {
+                notificationsModal.style.display = 'flex';
+                loadNotifications();
+                });
+            }
+
             // Food Ordering button
             const foodOrderingBtn = document.getElementById('food-ordering-btn');
             const foodOrderingModal = document.getElementById('foodOrderingModal');
@@ -3784,6 +3954,7 @@
             // Add click-outside-to-close functionality for all modals
             const modals = [
                 { modal: alertModal, closeFunction: closeAlertModal },
+                { modal: notificationsModal, closeFunction: closeNotificationsModal },
                 { modal: medicalTeamModal, closeFunction: closeMedicalTeamModal },
                 { modal: environmentalModal, closeFunction: closeEnvironmentalModal },
                 { modal: surveyModal, closeFunction: closeSurveyModal },
@@ -3830,6 +4001,357 @@
             document.getElementById('alertModal').style.display = 'none';
             document.getElementById('alertStatus').style.display = 'none';
         }
+
+        // Close notifications modal
+        function closeNotificationsModal() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        // Load notifications from server
+        function loadNotifications() {
+            const notificationsBody = document.getElementById('notificationsBody');
+            notificationsBody.innerHTML = '<div class="no-notifications"><i class="fa fa-spinner fa-spin"></i><p>Loading notifications...</p></div>';
+
+            fetch(`/admin/patients/{{ $patient->id }}/notifications`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayNotifications(data.notifications || []);
+                updateNotificationBadge(data.unread_count || 0);
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+                notificationsBody.innerHTML = '<div class="no-notifications"><i class="fa fa-exclamation-triangle text-warning"></i><p>Error loading notifications. Please try again.</p></div>';
+            });
+        }
+
+        // Display notifications in the modal
+        function displayNotifications(notifications) {
+            const notificationsBody = document.getElementById('notificationsBody');
+            
+            if (notifications.length === 0) {
+                notificationsBody.innerHTML = '<div class="no-notifications"><i class="fa fa-envelope-open"></i><p>No nurse responses yet.</p></div>';
+                return;
+            }
+
+            let html = '';
+            notifications.forEach(notification => {
+                const isUnread = !notification.read_at;
+                const timeAgo = formatTimeAgo(new Date(notification.created_at));
+                
+                html += `
+                    <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-id="${notification.id}">
+                        <div class="notification-from">
+                            <i class="fa fa-user-nurse"></i>
+                            Response from ${notification.nurse_name}
+                        </div>
+                        <div class="notification-message">
+                            ${notification.response_message}
+                        </div>
+                        <div class="notification-time">
+                            <span><i class="fa fa-clock"></i> ${timeAgo}</span>
+                            ${isUnread ? '<button class="mark-read-btn" onclick="markAsRead(' + notification.id + ')">Mark as Read</button>' : '<span class="text-success"><i class="fa fa-check"></i> Read</span>'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            notificationsBody.innerHTML = html;
+        }
+
+        // Mark notification as read
+        function markAsRead(notificationId) {
+            fetch(`/admin/patients/{{ $patient->id }}/notifications/${notificationId}/read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the notification item
+                    const notificationItem = document.querySelector(`[data-id="${notificationId}"]`);
+                    if (notificationItem) {
+                        notificationItem.classList.remove('unread');
+                        notificationItem.classList.add('read');
+                        
+                        // Update the mark as read button
+                        const markReadBtn = notificationItem.querySelector('.mark-read-btn');
+                        if (markReadBtn) {
+                            markReadBtn.outerHTML = '<span class="text-success"><i class="fa fa-check"></i> Read</span>';
+                        }
+                    }
+                    
+                    // Refresh notifications to update badge
+                    loadNotificationCount();
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notification as read:', error);
+            });
+        }
+
+        // Update notification badge
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notification-badge');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // Load notification count for badge
+        function loadNotificationCount() {
+            fetch(`/admin/patients/{{ $patient->id }}/notifications/count`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateNotificationBadge(data.unread_count || 0);
+            })
+            .catch(error => {
+                console.error('Error loading notification count:', error);
+            });
+        }
+
+        // Format time ago helper function
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) {
+                return days === 1 ? '1 day ago' : `${days} days ago`;
+            } else if (hours > 0) {
+                return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+            } else if (minutes > 0) {
+                return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+            } else {
+                return 'Just now';
+            }
+        }
+
+        // Load notification count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNotificationCount();
+            
+            // Refresh notification count every 30 seconds
+            setInterval(loadNotificationCount, 30000);
+        });
+
+        // Vital Signs Graph Variables
+        let vitalSignsChart = null;
+
+        // Load Vital Signs Graph Data
+        function loadVitalSignsGraph() {
+            // Show loading state
+            document.getElementById('vital-loading-graph').style.display = 'block';
+            document.getElementById('vital-graph-content').style.display = 'none';
+            
+            fetch(`/admin/vital-signs/trend/{{ $patient->id }}/data`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading
+                document.getElementById('vital-loading-graph').style.display = 'none';
+                
+                if (data.success && data.vitals && data.vitals.length > 0) {
+                    // Show graph content
+                    document.getElementById('vital-graph-content').style.display = 'block';
+                    createVitalSignsChart(data.vitals);
+                } else {
+                    showGraphError('No vital signs data available');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading vital signs graph:', error);
+                document.getElementById('vital-loading-graph').style.display = 'none';
+                showGraphError('Error loading graph data');
+            });
+        }
+
+        // Create Vital Signs Chart
+        function createVitalSignsChart(vitals) {
+            const ctx = document.getElementById('vitalSignsChart').getContext('2d');
+            
+            // Prepare data
+            const labels = vitals.map(v => new Date(v.recorded_at).toLocaleDateString());
+            const temperatures = vitals.map(v => parseFloat(v.temperature) || null);
+            const heartRates = vitals.map(v => parseInt(v.heart_rate) || null);
+            const systolicBP = vitals.map(v => parseInt(v.systolic_pressure) || null);
+            const diastolicBP = vitals.map(v => parseInt(v.diastolic_pressure) || null);
+            const oxygenSat = vitals.map(v => parseFloat(v.oxygen_saturation) || null);
+
+            // Destroy existing chart if it exists
+            if (vitalSignsChart) {
+                vitalSignsChart.destroy();
+            }
+
+            vitalSignsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: temperatures,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'temp'
+                        },
+                        {
+                            label: 'Heart Rate (bpm)',
+                            data: heartRates,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'hr'
+                        },
+                        {
+                            label: 'Systolic BP (mmHg)',
+                            data: systolicBP,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'bp'
+                        },
+                        {
+                            label: 'Diastolic BP (mmHg)',
+                            data: diastolicBP,
+                            borderColor: '#17a2b8',
+                            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'bp'
+                        },
+                        {
+                            label: 'Oxygen Saturation (%)',
+                            data: oxygenSat,
+                            borderColor: '#6f42c1',
+                            backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                            tension: 0.4,
+                            yAxisID: 'spo2'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Vital Signs Trend',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        temp: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            },
+                            min: 35,
+                            max: 42,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        hr: {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Heart Rate (bpm)'
+                            },
+                            min: 40,
+                            max: 150,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        bp: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Blood Pressure (mmHg)'
+                            },
+                            min: 40,
+                            max: 200,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        spo2: {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Oxygen Saturation (%)'
+                            },
+                            min: 85,
+                            max: 100,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Show Graph Error
+        function showGraphError(message) {
+            const graphContainer = document.getElementById('vitalSignsGraphContainer');
+            graphContainer.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #666;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px; color: #ffc107;"></i>
+                    <h6 style="margin-bottom: 15px; color: #333;">${message}</h6>
+                    <button onclick="loadVitalSignsGraph()" style="background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                </div>
+            `;
+        }
         
         // Close functions for other modals
         function closeMedicalTeamModal() {
@@ -3866,6 +4388,75 @@
         
         function openVitalSignsModal() {
             document.getElementById('vitalSignsModal').style.display = 'flex';
+            // Step 1: Show ONLY selection screen - no data loading yet
+            document.getElementById('vitalSignsViewSelection').style.display = 'flex';
+            document.getElementById('vitalSignsListContainer').style.display = 'none';
+            document.getElementById('vitalSignsGraphContainer').style.display = 'none';
+            
+            // Reset any previous states
+            if (vitalSignsChart) {
+                vitalSignsChart.destroy();
+                vitalSignsChart = null;
+            }
+        }
+
+        // Step 2: Show vital signs list view with smooth transition
+        function showVitalSignsList() {
+            // Hide selection screen
+            const selectionScreen = document.getElementById('vitalSignsViewSelection');
+            selectionScreen.style.opacity = '0';
+            selectionScreen.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                selectionScreen.style.display = 'none';
+                
+                // Show list container
+                const listContainer = document.getElementById('vitalSignsListContainer');
+                listContainer.style.display = 'block';
+                listContainer.style.opacity = '0';
+                
+                // Smooth fade in
+                setTimeout(() => {
+                    listContainer.style.opacity = '1';
+                }, 10);
+                
+                // Now load the data
+                loadVitalSignsList();
+            }, 200);
+        }
+
+        // Step 2: Show vital signs trend/graph view with smooth transition
+        function showVitalSignsTrend() {
+            // Hide selection screen
+            const selectionScreen = document.getElementById('vitalSignsViewSelection');
+            selectionScreen.style.opacity = '0';
+            selectionScreen.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                selectionScreen.style.display = 'none';
+                
+                // Show graph container
+                const graphContainer = document.getElementById('vitalSignsGraphContainer');
+                graphContainer.style.display = 'block';
+                graphContainer.style.opacity = '0';
+                
+                // Smooth fade in
+                setTimeout(() => {
+                    graphContainer.style.opacity = '1';
+                }, 10);
+                
+                // Now load the graph data
+                loadVitalSignsGraph();
+            }, 200);
+        }
+
+        // Load vital signs list data (separate from graph)
+        function loadVitalSignsList() {
+            // Show loading state
+            document.getElementById('vital-loading-list').style.display = 'block';
+            document.getElementById('vital-signs-table-content').style.display = 'none';
+            
+            // Load the existing vital signs function but target correct container
             loadVitalSigns();
         }
         
@@ -3916,19 +4507,7 @@
             vitalSigns.sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
             
             vitalSigns.forEach((vital, index) => {
-                // Determine EWS class based on total score
-                let ewsClass = 'ews-normal';
-                let ewsText = 'Normal';
-                if (vital.total_ews >= 7) {
-                    ewsClass = 'ews-high';
-                    ewsText = 'High Risk';
-                } else if (vital.total_ews >= 5) {
-                    ewsClass = 'ews-medium';
-                    ewsText = 'Medium Risk';
-                } else if (vital.total_ews >= 3) {
-                    ewsClass = 'ews-low';
-                    ewsText = 'Low Risk';
-                }
+
                 
                 // Format date
                 const recordedDate = new Date(vital.recorded_at);
@@ -4039,13 +4618,7 @@
                                 </div>
                             </div>
                             
-                            <div class="vital-ews">
-                                <div class="ews-score ${ewsClass}">
-                                    <div class="ews-label">Early Warning Score</div>
-                                    <div class="ews-value">${vital.total_ews || '0'}</div>
-                                    <div class="ews-status" style="font-size: 11px; margin-top: 2px;">${ewsText}</div>
-                                </div>
-                            </div>
+                            
                             
                             ${vital.notes ? `
                             <div class="vital-notes">
@@ -4071,7 +4644,7 @@
                             <i class="fas fa-chart-line"></i> Quick Overview
                         </h6>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 13px;">
-                            <div><strong>Latest EWS:</strong> <span class="badge ${latest.total_ews >= 7 ? 'badge-danger' : latest.total_ews >= 5 ? 'badge-warning' : latest.total_ews >= 3 ? 'badge-info' : 'badge-success'}">${latest.total_ews || 0}</span></div>
+
                             <div><strong>Total Records:</strong> ${vitalSigns.length}</div>
                             <div><strong>Last Updated:</strong> ${new Date(latest.recorded_at).toLocaleDateString()}</div>
                         </div>
@@ -4498,19 +5071,65 @@
             <div class="vital-signs-header" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: #00a99d; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; position: sticky; top: 0; z-index: 10;">
                 <h5 style="margin: 0; font-size: 18px;">Vital Signs Information</h5>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <a href="{{ route('admin.vital-signs.create', ['patient_id' => $patient->id]) }}" target="_blank" 
-                       style="background: rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: all 0.2s;"
-                       onmouseover="this.style.background='rgba(255,255,255,0.3)'" 
-                       onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                        <i class="fas fa-plus"></i> Record New
-                    </a>
                     <span class="close-vital-signs-modal" style="cursor: pointer; font-size: 24px;">&times;</span>
                 </div>
             </div>
             <div class="vital-signs-body" style="padding: 20px;">
-                <div class="vital-loading text-center py-5" id="vital-loading" style="text-align: center; padding: 3rem 0;">
-                    <i class="fas fa-spinner fa-spin fa-3x"></i>
-                    <p class="mt-3" style="margin-top: 1rem;">Loading vital signs data...</p>
+                                  <!-- Step 1: Clean View Selection Screen (No data loading yet) -->
+                  <div id="vitalSignsViewSelection" style="text-align: center; padding: 60px 30px; height: 100%; display: flex; flex-direction: column; justify-content: center; opacity: 1; transform: translateY(0px); transition: all 0.3s ease;">
+                      <h6 style="margin-bottom: 50px; color: #333; font-size: 20px; font-weight: 600;">Choose how you want to view vital signs:</h6>
+                      
+                      <div style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap;">
+                          <button onclick="showVitalSignsList()" 
+                              style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; border: none; padding: 30px 40px; border-radius: 15px; cursor: pointer; min-width: 200px; box-shadow: 0 6px 20px rgba(0,123,255,0.3); transition: all 0.4s ease;"
+                              onmouseover="this.style.transform='translateY(-4px) scale(1.02)'; this.style.boxShadow='0 10px 25px rgba(0,123,255,0.4)'"
+                              onmouseout="this.style.transform='translateY(0px) scale(1)'; this.style.boxShadow='0 6px 20px rgba(0,123,255,0.3)'">
+                              <i class="fas fa-list" style="font-size: 32px; margin-bottom: 15px; display: block;"></i>
+                              <div style="font-weight: bold; font-size: 18px; margin-bottom: 8px;">View List</div>
+                              <div style="font-size: 13px; opacity: 0.9; line-height: 1.3;">Detailed table with all<br>vital signs records</div>
+                          </button>
+                          
+                          <button onclick="showVitalSignsTrend()" 
+                              style="background: linear-gradient(135deg, #28a745, #1e7e34); color: white; border: none; padding: 30px 40px; border-radius: 15px; cursor: pointer; min-width: 200px; box-shadow: 0 6px 20px rgba(40,167,69,0.3); transition: all 0.4s ease;"
+                              onmouseover="this.style.transform='translateY(-4px) scale(1.02)'; this.style.boxShadow='0 10px 25px rgba(40,167,69,0.4)'"
+                              onmouseout="this.style.transform='translateY(0px) scale(1)'; this.style.boxShadow='0 6px 20px rgba(40,167,69,0.3)'">
+                              <i class="fas fa-chart-line" style="font-size: 32px; margin-bottom: 15px; display: block;"></i>
+                              <div style="font-weight: bold; font-size: 18px; margin-bottom: 8px;">View Trend</div>
+                              <div style="font-size: 13px; opacity: 0.9; line-height: 1.3;">Interactive graph showing<br>vital signs trends</div>
+                          </button>
+                      </div>
+                  </div>
+
+                  <!-- Step 2: List View Container (initially hidden, loads data only when selected) -->
+                  <div id="vitalSignsListContainer" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+                      <div style="text-align: center; margin-bottom: 20px;">
+                          <h6 style="color: #333; font-size: 18px; margin: 0;"><i class="fas fa-list text-primary"></i> Vital Signs Records</h6>
+                      </div>
+                      
+                      <div id="vital-loading-list" style="text-align: center; padding: 60px 20px;">
+                          <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                          <p style="margin-top: 20px; color: #666; font-size: 16px;">Loading vital signs data...</p>
+                      </div>
+                      
+                      <div id="vital-signs-table-content" style="display: none;">
+                          <!-- Table content will be loaded here -->
+                      </div>
+                  </div>
+
+                  <!-- Step 2: Graph View Container (initially hidden, loads data only when selected) -->
+                  <div id="vitalSignsGraphContainer" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+                      <div style="text-align: center; margin-bottom: 20px;">
+                          <h6 style="color: #333; font-size: 18px; margin: 0;"><i class="fas fa-chart-line text-success"></i> Vital Signs Trend</h6>
+                      </div>
+                      
+                      <div id="vital-loading-graph" style="text-align: center; padding: 60px 20px;">
+                          <i class="fas fa-spinner fa-spin fa-2x text-success"></i>
+                          <p style="margin-top: 20px; color: #666; font-size: 16px;">Loading trend data...</p>
+                      </div>
+                      
+                      <div id="vital-graph-content" style="display: none; padding: 25px; background: #f8f9fa; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                          <canvas id="vitalSignsChart" style="max-height: 400px; width: 100%;"></canvas>
+                      </div>
                 </div>
                 
                 <div class="vital-data" id="vital-data" style="display: none;">

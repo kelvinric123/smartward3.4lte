@@ -515,24 +515,42 @@ class WardController extends Controller
         }
     }
     
+
+
     /**
-     * Mark an alert as resolved
+     * Mark an alert as resolved and send notification to patient
      */
-    public function resolveAlert($alertId)
+    public function respondToAlert(Request $request, $alertId)
     {
         try {
             $alert = \App\Models\PatientAlert::findOrFail($alertId);
+            
+            // Get custom response message or use default
+            $responseMessage = $request->input('response_message', 
+                'Your alert has been acknowledged by nursing staff. We are taking care of your request.'
+            );
+            
+            // Mark alert as resolved
             $alert->status = 'resolved';
             $alert->save();
             
+            // Create a response notification for the patient
+            \App\Models\PatientResponse::create([
+                'patient_alert_id' => $alert->id,
+                'patient_id' => $alert->patient_id,
+                'nurse_id' => auth()->id(), // Current logged-in user (nurse)
+                'response_message' => $responseMessage,
+                'status' => 'sent'
+            ]);
+            
             return response()->json([
                 'success' => true,
-                'message' => 'Alert resolved'
+                'message' => 'Alert responded to and patient notified'
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error resolving alert: ' . $e->getMessage()
+                'message' => 'Error responding to alert: ' . $e->getMessage()
             ], 500);
         }
     }

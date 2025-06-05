@@ -322,4 +322,115 @@ class PatientController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get patient notifications (nurse responses)
+     */
+    public function getNotifications(Patient $patient)
+    {
+        try {
+            $notifications = \App\Models\PatientResponse::where('patient_id', $patient->id)
+                ->with(['nurse', 'patientAlert'])
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($response) {
+                    return [
+                        'id' => $response->id,
+                        'nurse_name' => $response->nurse->name ?? 'Unknown Nurse',
+                        'response_message' => $response->response_message,
+                        'created_at' => $response->created_at->toISOString(),
+                        'read_at' => $response->read_at,
+                        'status' => $response->status,
+                        'alert_type' => $response->patientAlert->alert_type ?? 'general'
+                    ];
+                });
+
+            $unreadCount = \App\Models\PatientResponse::where('patient_id', $patient->id)
+                ->whereNull('read_at')
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'notifications' => $notifications,
+                'unread_count' => $unreadCount
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching patient notifications', [
+                'patient_id' => $patient->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading notifications'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get unread notification count for patient
+     */
+    public function getNotificationCount(Patient $patient)
+    {
+        try {
+            $unreadCount = \App\Models\PatientResponse::where('patient_id', $patient->id)
+                ->whereNull('read_at')
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'unread_count' => $unreadCount
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching notification count', [
+                'patient_id' => $patient->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'unread_count' => 0
+            ]);
+        }
+    }
+
+    /**
+     * Mark notification as read
+     */
+    public function markNotificationAsRead(Patient $patient, $notification)
+    {
+        try {
+            $patientResponse = \App\Models\PatientResponse::where('patient_id', $patient->id)
+                ->where('id', $notification)
+                ->first();
+
+            if (!$patientResponse) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Notification not found'
+                ], 404);
+            }
+
+            $patientResponse->update([
+                'read_at' => now(),
+                'status' => 'read'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification marked as read'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error marking notification as read', [
+                'patient_id' => $patient->id,
+                'notification_id' => $notification,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating notification'
+            ], 500);
+        }
+    }
 } 

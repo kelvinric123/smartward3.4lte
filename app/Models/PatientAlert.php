@@ -56,4 +56,12 @@ class PatientAlert extends Model
     {
         return $this->belongsTo(Bed::class);
     }
+    
+    /**
+     * Get the responses for this alert.
+     */
+    public function responses()
+    {
+        return $this->hasMany(PatientResponse::class);
+    }
 }

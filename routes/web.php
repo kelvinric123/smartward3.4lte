@@ -91,6 +91,7 @@ Route::prefix('admin')->group(function () {
     Route::put('/vital-signs/{vitalSign}', [VitalSignController::class, 'update'])->name('admin.vital-signs.update');
     Route::delete('/vital-signs/{vitalSign}', [VitalSignController::class, 'destroy'])->name('admin.vital-signs.destroy');
     Route::get('/vital-signs/trend/{patientId}', [VitalSignController::class, 'trend'])->name('admin.vital-signs.trend');
+    Route::get('/vital-signs/trend/{patientId}/data', [VitalSignController::class, 'trendData'])->name('admin.vital-signs.trend-data');
     Route::get('/vital-signs/flipbox-trend/{patientId}', [VitalSignController::class, 'flipboxTrend'])->name('admin.vital-signs.flipbox-trend');
     Route::get('/vital-signs/iframe-trend/{patientId}', [VitalSignController::class, 'iframeTrend'])->name('admin.vital-signs.iframe-trend');
     
@@ -105,7 +106,7 @@ Route::prefix('admin')->group(function () {
         // Ward Patient Alerts
         Route::get('wards/{ward}/alerts', [App\Http\Controllers\Admin\WardController::class, 'getPatientAlerts'])->name('wards.alerts');
         Route::put('wards/alerts/{alertId}/seen', [App\Http\Controllers\Admin\WardController::class, 'markAlertAsSeen'])->name('wards.alerts.seen');
-        Route::put('wards/alerts/{alertId}/resolve', [App\Http\Controllers\Admin\WardController::class, 'resolveAlert'])->name('wards.alerts.resolve');
+        Route::put('wards/alerts/{alertId}/respond', [App\Http\Controllers\Admin\WardController::class, 'respondToAlert'])->name('wards.alerts.respond');
         
         // Ward Dashboard - Admit Patient
         Route::get('wards/{ward}/admit/{bedId}', [App\Http\Controllers\Admin\WardController::class, 'admitPatient'])->name('wards.admit');
@@ -164,6 +165,15 @@ Route::prefix('admin')->group(function () {
     
     // Patient Alert Route
     Route::post('patients/{patient}/alert', [PatientPanelController::class, 'sendAlert'])->name('admin.patients.alert.send');
+    
+    // Patient Notification/Response Routes
+    Route::get('patients/{patient}/responses', [PatientPanelController::class, 'getResponses'])->name('admin.patients.responses');
+    Route::put('patients/responses/{responseId}/read', [PatientPanelController::class, 'markResponseAsRead'])->name('admin.patients.responses.read');
+    
+    // Patient notification routes for new notification system
+    Route::get('patients/{patient}/notifications', [PatientController::class, 'getNotifications'])->name('admin.patients.notifications');
+    Route::get('patients/{patient}/notifications/count', [PatientController::class, 'getNotificationCount'])->name('admin.patients.notifications.count');
+    Route::post('patients/{patient}/notifications/{notification}/read', [PatientController::class, 'markNotificationAsRead'])->name('admin.patients.notifications.read');
     
     // Test route for creating alerts
     Route::post('beds/wards/{ward}/create-test-alert', function($ward) {
