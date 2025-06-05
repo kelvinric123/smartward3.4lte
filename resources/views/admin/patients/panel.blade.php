@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>QM Smart Ward Patient System</title>
+    <title>Qmed Hospital - Smart Ward Patient System</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1909,14 +1909,627 @@
             background-color: #dc3545;
             color: #fff;
         }
+
+        /* Health Education Modal Styles */
+        .health-education-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .health-education-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 900px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .health-education-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #00a99d;
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .health-education-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close-health-education-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .health-education-body {
+            padding: 20px;
+        }
+
+        .education-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .education-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .welcome-content p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .hospital-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #00a99d;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-item i {
+            color: #00a99d;
+            width: 16px;
+        }
+
+        .condition-overview p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 12px;
+        }
+
+        .symptoms-section, .management-section, .diet-section, .exercise-section, .warning-section {
+            margin-top: 20px;
+        }
+
+        .symptoms-section ul, .warning-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .symptoms-section li, .warning-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .symptoms-section li:before, .warning-list li:before {
+            content: "•";
+            color: #00a99d;
+            font-weight: bold;
+            position: absolute;
+            left: 8px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .tip-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .tip-card i {
+            font-size: 24px;
+            color: #00a99d;
+            margin-bottom: 10px;
+        }
+
+        .tip-card h6 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .tip-card p {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .diet-recommendations {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .good-foods, .avoid-foods {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .good-foods {
+            border-left: 4px solid #28a745;
+        }
+
+        .avoid-foods {
+            border-left: 4px solid #ffc107;
+        }
+
+        .diet-recommendations ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .diet-recommendations li {
+            padding: 5px 0;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .good-foods li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .avoid-foods li:before {
+            content: "⚠";
+            color: #ffc107;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .exercise-list {
+            margin-top: 15px;
+        }
+
+        .exercise-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .exercise-item i {
+            font-size: 24px;
+            color: #00a99d;
+            margin-top: 5px;
+        }
+
+        .exercise-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .exercise-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .contact-card {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .contact-card i {
+            font-size: 32px;
+            color: #00a99d;
+            margin-bottom: 10px;
+        }
+
+        .contact-card h6 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .contact-card p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .text-primary { color: #0d6efd !important; }
+        .text-warning { color: #ffc107 !important; }
+        .text-success { color: #28a745 !important; }
+        .text-danger { color: #dc3545 !important; }
+
+        @media (max-width: 768px) {
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .diet-recommendations {
+                grid-template-columns: 1fr;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Introduction Modal Styles */
+        .introduction-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .introduction-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 900px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .introduction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #00a99d;
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .introduction-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close-introduction-modal {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .introduction-body {
+            padding: 20px;
+        }
+
+        .intro-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .intro-section:last-child {
+            border-bottom: none;
+        }
+
+        .hospital-logo-section {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #00a99d, #00b8a6);
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .hospital-logo {
+            margin-bottom: 15px;
+        }
+
+        .hospital-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .hospital-tagline {
+            font-size: 16px;
+            font-style: italic;
+            opacity: 0.9;
+        }
+
+        .welcome-message .lead {
+            font-size: 18px;
+            font-weight: 500;
+            color: #00a99d;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #00a99d;
+        }
+
+        .feature-item i {
+            color: #00a99d;
+            font-size: 20px;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-card {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-card i {
+            font-size: 28px;
+            color: #00a99d;
+            margin-bottom: 10px;
+        }
+
+        .info-card h6 {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .info-card p {
+            font-size: 14px;
+            color: #666;
+            margin: 0;
+        }
+
+        .mission-vision {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .mission, .vision {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .mission {
+            border-left: 4px solid #00a99d;
+        }
+
+        .vision {
+            border-left: 4px solid #0dcaf0;
+        }
+
+        .contact-services {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .contact-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .contact-info li {
+            margin-bottom: 8px;
+        }
+
+        .specialties-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .specialty-badge {
+            background-color: #00a99d;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .rights-responsibilities {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .rights, .responsibilities {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .rights {
+            border-left: 4px solid #28a745;
+        }
+
+        .responsibilities {
+            border-left: 4px solid #ffc107;
+        }
+
+        .rights ul, .responsibilities ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .rights li, .responsibilities li {
+            padding: 5px 0;
+            font-size: 14px;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .rights li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .responsibilities li:before {
+            content: "•";
+            color: #ffc107;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .emergency-content {
+            background-color: #fff5f5;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+
+        .emergency-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .emergency-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .emergency-item i {
+            font-size: 24px;
+            color: #dc3545;
+            margin-top: 5px;
+        }
+
+        .emergency-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #dc3545;
+        }
+
+        .emergency-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .mission-vision {
+                grid-template-columns: 1fr;
+            }
+            
+            .contact-services {
+                grid-template-columns: 1fr;
+            }
+            
+            .rights-responsibilities {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
     <div class="header">
         <div class="logo">
-            <i class="fa fa-hospital-user"></i>
-            QM Smart Ward Patient System
+            <i class="fa fa-hospital"></i>
+            Qmed Hospital - Smart Ward Patient System
         </div>
         <div class="time-info">
             <span id="current-time">15:18:36</span>
@@ -2089,6 +2702,390 @@
         </div>
     </div>
 </div>
+
+    <!-- Health Education Modal -->
+    <div class="health-education-modal" id="healthEducationModal">
+        <div class="health-education-content">
+            <div class="health-education-header">
+                <h5><i class="fa fa-graduation-cap"></i> Health Education - Osteoarthritis</h5>
+                <span class="close-health-education-modal">&times;</span>
+            </div>
+            <div class="health-education-body">
+                <!-- Welcome Section -->
+                <div class="education-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-hospital text-primary"></i> 
+                        Welcome to Qmed Hospital
+                    </h6>
+                    <div class="welcome-content">
+                        <p>Welcome to Qmed Hospital's Smart Ward Patient System. We are committed to providing you with comprehensive care and education about your condition.</p>
+                        <div class="hospital-info">
+                            <div class="info-item">
+                                <i class="fa fa-map-marker-alt"></i>
+                                <span>123 Medical Plaza, Healthcare District</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa fa-phone"></i>
+                                <span>+1 (555) 123-QMED</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa fa-envelope"></i>
+                                <span>info@qmedhospital.com</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Osteoarthritis Education -->
+                <div class="education-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-bone text-warning"></i> 
+                        Understanding Osteoarthritis
+                    </h6>
+                    <div class="condition-overview">
+                        <p><strong>What is Osteoarthritis?</strong></p>
+                        <p>Osteoarthritis (OA) is the most common form of arthritis. It occurs when the protective cartilage that cushions the ends of your bones wears down over time.</p>
+                        
+                        <div class="symptoms-section">
+                            <h6><i class="fa fa-stethoscope"></i> Common Symptoms:</h6>
+                            <ul>
+                                <li>Joint pain during or after movement</li>
+                                <li>Stiffness, especially in the morning</li>
+                                <li>Tenderness when applying light pressure</li>
+                                <li>Loss of flexibility and range of motion</li>
+                                <li>Bone spurs around affected joints</li>
+                            </ul>
+                        </div>
+
+                        <div class="management-section">
+                            <h6><i class="fa fa-heart-pulse"></i> Management Tips:</h6>
+                            <div class="tips-grid">
+                                <div class="tip-card">
+                                    <i class="fa fa-dumbbell"></i>
+                                    <h6>Stay Active</h6>
+                                    <p>Low-impact exercises like swimming, walking, and stretching can help maintain joint mobility.</p>
+                                </div>
+                                <div class="tip-card">
+                                    <i class="fa fa-weight"></i>
+                                    <h6>Maintain Healthy Weight</h6>
+                                    <p>Reducing excess weight decreases stress on weight-bearing joints.</p>
+                                </div>
+                                <div class="tip-card">
+                                    <i class="fa fa-pills"></i>
+                                    <h6>Take Medications</h6>
+                                    <p>Follow your prescribed medication regimen to manage pain and inflammation.</p>
+                                </div>
+                                <div class="tip-card">
+                                    <i class="fa fa-snowflake"></i>
+                                    <h6>Apply Heat/Cold</h6>
+                                    <p>Use heat for stiffness and cold for acute pain and swelling.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="diet-section">
+                            <h6><i class="fa fa-apple-alt"></i> Nutrition Guidelines:</h6>
+                            <div class="diet-recommendations">
+                                <div class="good-foods">
+                                    <h6 class="text-success">Include in Your Diet:</h6>
+                                    <ul>
+                                        <li>Fish rich in omega-3 fatty acids (salmon, mackerel)</li>
+                                        <li>Colorful fruits and vegetables</li>
+                                        <li>Nuts and seeds</li>
+                                        <li>Whole grains</li>
+                                        <li>Foods rich in vitamin D and calcium</li>
+                                    </ul>
+                                </div>
+                                <div class="avoid-foods">
+                                    <h6 class="text-warning">Limit These Foods:</h6>
+                                    <ul>
+                                        <li>Processed and fried foods</li>
+                                        <li>Sugary snacks and beverages</li>
+                                        <li>Excessive red meat</li>
+                                        <li>Foods high in trans fats</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="exercise-section">
+                            <h6><i class="fa fa-running"></i> Recommended Exercises:</h6>
+                            <div class="exercise-list">
+                                <div class="exercise-item">
+                                    <i class="fa fa-swimmer"></i>
+                                    <div>
+                                        <strong>Water Exercises</strong>
+                                        <p>Swimming and water aerobics reduce joint stress while improving strength and flexibility.</p>
+                                    </div>
+                                </div>
+                                <div class="exercise-item">
+                                    <i class="fa fa-walking"></i>
+                                    <div>
+                                        <strong>Walking</strong>
+                                        <p>Start with 10-15 minutes daily and gradually increase duration as tolerated.</p>
+                                    </div>
+                                </div>
+                                <div class="exercise-item">
+                                    <i class="fa fa-hands"></i>
+                                    <div>
+                                        <strong>Range of Motion</strong>
+                                        <p>Gentle stretching and range of motion exercises help maintain joint flexibility.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="warning-section">
+                            <h6><i class="fa fa-exclamation-triangle text-danger"></i> When to Contact Your Doctor:</h6>
+                            <ul class="warning-list">
+                                <li>Sudden increase in pain or swelling</li>
+                                <li>Joint becomes red, warm, or tender</li>
+                                <li>Inability to move the joint normally</li>
+                                <li>Signs of infection (fever, unusual drainage)</li>
+                                <li>Side effects from medications</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="education-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-phone-alt text-success"></i> 
+                        Need Help? Contact Us
+                    </h6>
+                    <div class="contact-grid">
+                        <div class="contact-card">
+                            <i class="fa fa-user-nurse"></i>
+                            <h6>Nursing Station</h6>
+                            <p>Press the call button or dial ext. 2345</p>
+                        </div>
+                        <div class="contact-card">
+                            <i class="fa fa-user-md"></i>
+                            <h6>Your Doctor</h6>
+                            <p>Dr. {{ $activeAdmission->consultant->name ?? 'Smith' }}</p>
+                            <p>Available during rounds: 8 AM - 12 PM</p>
+                        </div>
+                        <div class="contact-card">
+                            <i class="fa fa-question-circle"></i>
+                            <h6>Patient Coordinator</h6>
+                            <p>For questions about your care plan</p>
+                            <p>Dial ext. 3456</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Introduction Modal -->
+    <div class="introduction-modal" id="introductionModal">
+        <div class="introduction-content">
+            <div class="introduction-header">
+                <h5><i class="fa fa-hospital"></i> Welcome to Qmed Hospital</h5>
+                <span class="close-introduction-modal">&times;</span>
+            </div>
+            <div class="introduction-body">
+                <!-- Hospital Welcome -->
+                <div class="intro-section">
+                    <div class="hospital-logo-section">
+                        <div class="hospital-logo">
+                            <i class="fa fa-hospital fa-4x"></i>
+                        </div>
+                        <h2 class="hospital-name">Qmed Hospital</h2>
+                        <p class="hospital-tagline">Your Health, Our Priority</p>
+                    </div>
+                </div>
+
+                <!-- Welcome Message -->
+                <div class="intro-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-heart text-danger"></i> 
+                        Welcome Message
+                    </h6>
+                    <div class="welcome-message">
+                        <p class="lead">Dear Patient,</p>
+                        <p>Welcome to <strong>Qmed Hospital's Smart Ward Patient System</strong>. We are delighted to have you in our care and want to ensure your stay with us is as comfortable and healing as possible.</p>
+                        
+                        <p>Our state-of-the-art patient system has been designed with <strong>you</strong> in mind. Through this interactive panel, you can:</p>
+                        
+                        <div class="features-grid">
+                            <div class="feature-item">
+                                <i class="fa fa-utensils"></i>
+                                <span>Order meals tailored to your dietary needs</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa fa-thermometer-half"></i>
+                                <span>Control your room environment</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa fa-bell"></i>
+                                <span>Alert nursing staff when you need assistance</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa fa-user-md"></i>
+                                <span>View your medical team information</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa fa-pills"></i>
+                                <span>Access your medication information</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="fa fa-graduation-cap"></i>
+                                <span>Learn about your health condition</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hospital Information -->
+                <div class="intro-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-info-circle text-primary"></i> 
+                        About Qmed Hospital
+                    </h6>
+                    <div class="hospital-info-detailed">
+                        <div class="info-cards">
+                            <div class="info-card">
+                                <i class="fa fa-certificate"></i>
+                                <h6>JCI Accredited</h6>
+                                <p>Internationally recognized for quality and safety standards</p>
+                            </div>
+                            <div class="info-card">
+                                <i class="fa fa-calendar-alt"></i>
+                                <h6>Established 1985</h6>
+                                <p>Over 35 years of excellence in healthcare</p>
+                            </div>
+                            <div class="info-card">
+                                <i class="fa fa-users"></i>
+                                <h6>500+ Medical Professionals</h6>
+                                <p>Dedicated team of specialists and caregivers</p>
+                            </div>
+                            <div class="info-card">
+                                <i class="fa fa-award"></i>
+                                <h6>Award Winning</h6>
+                                <p>Multiple healthcare excellence awards</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mission-vision">
+                            <div class="mission">
+                                <h6><i class="fa fa-bullseye"></i> Our Mission</h6>
+                                <p>To provide compassionate, high-quality healthcare services while advancing medical knowledge through innovation and research.</p>
+                            </div>
+                            <div class="vision">
+                                <h6><i class="fa fa-eye"></i> Our Vision</h6>
+                                <p>To be the leading healthcare institution, setting standards for patient care, medical excellence, and technological advancement.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact & Services -->
+                <div class="intro-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-phone-alt text-success"></i> 
+                        Contact Information & Services
+                    </h6>
+                    <div class="contact-services">
+                        <div class="contact-info">
+                            <h6>📍 Location</h6>
+                            <p>123 Medical Plaza<br>Healthcare District<br>Medical City, MC 12345</p>
+                            
+                            <h6>📞 Contact Numbers</h6>
+                            <ul>
+                                <li><strong>Main Hospital:</strong> +1 (555) 123-QMED</li>
+                                <li><strong>Emergency:</strong> +1 (555) 911-HELP</li>
+                                <li><strong>Patient Relations:</strong> +1 (555) 123-CARE</li>
+                            </ul>
+                            
+                            <h6>🌐 Online</h6>
+                            <ul>
+                                <li><strong>Website:</strong> www.qmedhospital.com</li>
+                                <li><strong>Email:</strong> info@qmedhospital.com</li>
+                                <li><strong>Patient Portal:</strong> portal.qmedhospital.com</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="services-info">
+                            <h6>🏥 Our Specialties</h6>
+                            <div class="specialties-grid">
+                                <span class="specialty-badge">Cardiology</span>
+                                <span class="specialty-badge">Orthopedics</span>
+                                <span class="specialty-badge">Neurology</span>
+                                <span class="specialty-badge">Oncology</span>
+                                <span class="specialty-badge">Pediatrics</span>
+                                <span class="specialty-badge">Emergency Medicine</span>
+                                <span class="specialty-badge">Surgery</span>
+                                <span class="specialty-badge">Internal Medicine</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Rights & Responsibilities -->
+                <div class="intro-section">
+                    <h6 class="section-title">
+                        <i class="fa fa-shield-alt text-warning"></i> 
+                        Your Rights & Responsibilities
+                    </h6>
+                    <div class="rights-responsibilities">
+                        <div class="rights">
+                            <h6>Your Rights as a Patient:</h6>
+                            <ul>
+                                <li>Receive respectful and considerate care</li>
+                                <li>Privacy and confidentiality of your medical information</li>
+                                <li>Participate in decisions about your care</li>
+                                <li>Access your medical records</li>
+                                <li>Voice complaints without fear of retaliation</li>
+                            </ul>
+                        </div>
+                        <div class="responsibilities">
+                            <h6>Your Responsibilities:</h6>
+                            <ul>
+                                <li>Provide accurate and complete health information</li>
+                                <li>Follow prescribed treatment plans</li>
+                                <li>Ask questions when you don't understand</li>
+                                <li>Treat staff and other patients with respect</li>
+                                <li>Follow hospital policies and procedures</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Information -->
+                <div class="intro-section emergency-info">
+                    <h6 class="section-title">
+                        <i class="fa fa-exclamation-triangle text-danger"></i> 
+                        Emergency Information
+                    </h6>
+                    <div class="emergency-content">
+                        <div class="emergency-item">
+                            <i class="fa fa-bell"></i>
+                            <div>
+                                <strong>Call Button</strong>
+                                <p>Press the red call button next to your bed for immediate assistance</p>
+                            </div>
+                        </div>
+                        <div class="emergency-item">
+                            <i class="fa fa-fire-extinguisher"></i>
+                            <div>
+                                <strong>Fire Emergency</strong>
+                                <p>Pull the fire alarm and follow evacuation procedures posted in your room</p>
+                            </div>
+                        </div>
+                        <div class="emergency-item">
+                            <i class="fa fa-heartbeat"></i>
+                            <div>
+                                <strong>Medical Emergency</strong>
+                                <p>Press the emergency button or call extension 911 from your bedside phone</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Environmental Control Modal -->
     <div class="environmental-modal" id="environmentalModal">
@@ -2612,7 +3609,7 @@
     
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="nav-item">
+        <div class="nav-item" id="introduction-btn">
             <i class="fa fa-info-circle"></i>
             <span>Introduction</span>
         </div>
@@ -2620,8 +3617,8 @@
             <i class="fa fa-hospital-user"></i>
             <span>Admission Information</span>
         </div>
-        <div class="nav-item">
-            <i class="fa fa-heartbeat"></i>
+        <div class="nav-item" id="health-education-btn">
+            <i class="fa fa-graduation-cap"></i>
             <span>Health Education</span>
         </div>
     </div>
@@ -2738,6 +3735,36 @@
                 closeMedicalInfoModalBtn.addEventListener('click', closeMedicalInfoModal);
             }
 
+            // Introduction button (bottom nav)
+            const introductionBtn = document.getElementById('introduction-btn');
+            const introductionModal = document.getElementById('introductionModal');
+            if (introductionBtn && introductionModal) {
+                introductionBtn.addEventListener('click', function() {
+                    introductionModal.style.display = 'flex';
+                });
+            }
+
+            // Close Introduction modal
+            const closeIntroductionModalBtn = document.querySelector('.close-introduction-modal');
+            if (closeIntroductionModalBtn) {
+                closeIntroductionModalBtn.addEventListener('click', closeIntroductionModal);
+            }
+
+            // Health Education button (bottom nav)
+            const healthEducationBtn = document.getElementById('health-education-btn');
+            const healthEducationModal = document.getElementById('healthEducationModal');
+            if (healthEducationBtn && healthEducationModal) {
+                healthEducationBtn.addEventListener('click', function() {
+                    healthEducationModal.style.display = 'flex';
+                });
+            }
+
+            // Close Health Education modal
+            const closeHealthEducationModalBtn = document.querySelector('.close-health-education-modal');
+            if (closeHealthEducationModalBtn) {
+                closeHealthEducationModalBtn.addEventListener('click', closeHealthEducationModal);
+            }
+
             // Vital Sign button
             const vitalSignBtn = document.getElementById('vital-sign-btn');
             const vitalSignsModal = document.getElementById('vitalSignsModal');
@@ -2753,6 +3780,49 @@
             if (closeVitalSignsModalBtn) {
                 closeVitalSignsModalBtn.addEventListener('click', closeVitalSignsModal);
             }
+
+            // Add click-outside-to-close functionality for all modals
+            const modals = [
+                { modal: alertModal, closeFunction: closeAlertModal },
+                { modal: medicalTeamModal, closeFunction: closeMedicalTeamModal },
+                { modal: environmentalModal, closeFunction: closeEnvironmentalModal },
+                { modal: surveyModal, closeFunction: closeSurveyModal },
+                { modal: admissionModal, closeFunction: closeAdmissionModal },
+                { modal: foodOrderingModal, closeFunction: closeFoodOrderingModal },
+                { modal: vitalSignsModal, closeFunction: closeVitalSignsModal },
+                { modal: healthEducationModal, closeFunction: closeHealthEducationModal },
+                { modal: introductionModal, closeFunction: closeIntroductionModal }
+            ];
+
+            modals.forEach(({ modal, closeFunction }) => {
+                if (modal) {
+                    // Click outside to close modal
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            closeFunction();
+                        }
+                    });
+
+                    // Prevent modal from closing when clicking on content
+                    const modalContent = modal.querySelector('[class*="-content"]');
+                    if (modalContent) {
+                        modalContent.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                        });
+                    }
+                }
+            });
+
+            // Add Escape key functionality for all modals
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    modals.forEach(({ modal, closeFunction }) => {
+                        if (modal && modal.style.display === 'flex') {
+                            closeFunction();
+                        }
+                    });
+                }
+            });
         });
         
         // Close alert modal
@@ -2784,6 +3854,14 @@
 
         function closeVitalSignsModal() {
             document.getElementById('vitalSignsModal').style.display = 'none';
+        }
+
+        function closeHealthEducationModal() {
+            document.getElementById('healthEducationModal').style.display = 'none';
+        }
+
+        function closeIntroductionModal() {
+            document.getElementById('introductionModal').style.display = 'none';
         }
         
         function openVitalSignsModal() {
