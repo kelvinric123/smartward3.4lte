@@ -3935,15 +3935,7 @@
                 closeHealthEducationModalBtn.addEventListener('click', closeHealthEducationModal);
             }
 
-            // Vital Sign button
-            const vitalSignBtn = document.getElementById('vital-sign-btn');
-            const vitalSignsModal = document.getElementById('vitalSignsModal');
-            if (vitalSignBtn && vitalSignsModal) {
-                vitalSignBtn.addEventListener('click', function() {
-                    vitalSignsModal.style.display = 'flex';
-                    loadVitalSigns();
-                });
-            }
+            // Vital Sign button - now handled by onclick in HTML
 
             // Close Vital Signs modal
             const closeVitalSignsModalBtn = document.querySelector('.close-vital-signs-modal');
@@ -4199,8 +4191,8 @@
             const labels = vitals.map(v => new Date(v.recorded_at).toLocaleDateString());
             const temperatures = vitals.map(v => parseFloat(v.temperature) || null);
             const heartRates = vitals.map(v => parseInt(v.heart_rate) || null);
-            const systolicBP = vitals.map(v => parseInt(v.systolic_pressure) || null);
-            const diastolicBP = vitals.map(v => parseInt(v.diastolic_pressure) || null);
+            const systolicBP = vitals.map(v => parseInt(v.systolic_pressure || v.systolic_bp) || null);
+            const diastolicBP = vitals.map(v => parseInt(v.diastolic_pressure || v.diastolic_bp) || null);
             const oxygenSat = vitals.map(v => parseFloat(v.oxygen_saturation) || null);
 
             // Destroy existing chart if it exists
@@ -4343,12 +4335,25 @@
         function showGraphError(message) {
             const graphContainer = document.getElementById('vitalSignsGraphContainer');
             graphContainer.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <button onclick="goBackToVitalSignsSelection()" 
+                        style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <h6 style="color: #333; font-size: 18px; margin: 0;"><i class="fas fa-chart-line text-success"></i> Vital Signs Trend</h6>
+                    <div></div>
+                </div>
                 <div style="text-align: center; padding: 60px 20px; color: #666;">
                     <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px; color: #ffc107;"></i>
                     <h6 style="margin-bottom: 15px; color: #333;">${message}</h6>
-                    <button onclick="loadVitalSignsGraph()" style="background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
-                        <i class="fas fa-redo"></i> Try Again
-                    </button>
+                    <div style="display: flex; justify-content: center; gap: 10px;">
+                        <button onclick="loadVitalSignsGraph()" style="background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                        <button onclick="goBackToVitalSignsSelection()" style="background: #6c757d; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                            <i class="fas fa-arrow-left"></i> Back to Selection
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -4376,6 +4381,99 @@
 
         function closeVitalSignsModal() {
             document.getElementById('vitalSignsModal').style.display = 'none';
+            
+            // Reset modal to initial state
+            resetVitalSignsModal();
+        }
+
+        // Reset vital signs modal to initial selection state
+        function resetVitalSignsModal() {
+            // Hide all containers
+            const listContainer = document.getElementById('vitalSignsListContainer');
+            const graphContainer = document.getElementById('vitalSignsGraphContainer');
+            const selectionScreen = document.getElementById('vitalSignsViewSelection');
+            
+            if (listContainer) {
+                listContainer.style.display = 'none';
+                listContainer.style.opacity = '0';
+            }
+            
+            if (graphContainer) {
+                graphContainer.style.display = 'none';
+                graphContainer.style.opacity = '0';
+            }
+            
+            // Show and reset selection screen
+            if (selectionScreen) {
+                selectionScreen.style.display = 'flex';
+                selectionScreen.style.opacity = '1';
+                selectionScreen.style.transform = 'translateY(0px)';
+            }
+            
+            // Reset any chart instance
+            if (vitalSignsChart) {
+                vitalSignsChart.destroy();
+                vitalSignsChart = null;
+            }
+            
+            // Clear any content from previous views
+            const tableContent = document.getElementById('vital-signs-table-content');
+            const graphContent = document.getElementById('vital-graph-content');
+            
+            if (tableContent) {
+                tableContent.innerHTML = '';
+                tableContent.style.display = 'none';
+            }
+            
+            if (graphContent) {
+                graphContent.innerHTML = '<canvas id="vitalSignsChart" style="max-height: 400px; width: 100%;"></canvas>';
+                graphContent.style.display = 'none';
+            }
+            
+            // Reset loading states
+            const listLoading = document.getElementById('vital-loading-list');
+            const graphLoading = document.getElementById('vital-loading-graph');
+            
+            if (listLoading) {
+                listLoading.style.display = 'block';
+            }
+            
+            if (graphLoading) {
+                graphLoading.style.display = 'block';
+            }
+        }
+
+        // Go back to vital signs selection screen
+        function goBackToVitalSignsSelection() {
+            // Hide current containers
+            const listContainer = document.getElementById('vitalSignsListContainer');
+            const graphContainer = document.getElementById('vitalSignsGraphContainer');
+            
+            listContainer.style.opacity = '0';
+            graphContainer.style.opacity = '0';
+            
+            setTimeout(() => {
+                listContainer.style.display = 'none';
+                graphContainer.style.display = 'none';
+                
+                // Show selection screen
+                const selectionScreen = document.getElementById('vitalSignsViewSelection');
+                selectionScreen.style.display = 'flex';
+                selectionScreen.style.opacity = '0';
+                selectionScreen.style.transform = 'translateY(-20px)';
+                
+                // Smooth fade in
+                setTimeout(() => {
+                    selectionScreen.style.opacity = '1';
+                    selectionScreen.style.transform = 'translateY(0px)';
+                }, 10);
+                
+                // Reset any chart instance
+                if (vitalSignsChart) {
+                    vitalSignsChart.destroy();
+                    vitalSignsChart = null;
+                }
+            }, 200);
         }
 
         function closeHealthEducationModal() {
@@ -4388,16 +4486,9 @@
         
         function openVitalSignsModal() {
             document.getElementById('vitalSignsModal').style.display = 'flex';
-            // Step 1: Show ONLY selection screen - no data loading yet
-            document.getElementById('vitalSignsViewSelection').style.display = 'flex';
-            document.getElementById('vitalSignsListContainer').style.display = 'none';
-            document.getElementById('vitalSignsGraphContainer').style.display = 'none';
             
-            // Reset any previous states
-            if (vitalSignsChart) {
-                vitalSignsChart.destroy();
-                vitalSignsChart = null;
-            }
+            // Reset modal to initial state first
+            resetVitalSignsModal();
         }
 
         // Step 2: Show vital signs list view with smooth transition
@@ -4456,25 +4547,10 @@
             document.getElementById('vital-loading-list').style.display = 'block';
             document.getElementById('vital-signs-table-content').style.display = 'none';
             
-            // Load the existing vital signs function but target correct container
-            loadVitalSigns();
-        }
-        
-        // Load patient vital signs data
-        function loadVitalSigns() {
-            const vitalLoading = document.getElementById('vital-loading');
-            const vitalData = document.getElementById('vital-data');
-            const vitalEmpty = document.getElementById('vital-empty');
-            
-            // Show loading, hide others
-            if (vitalLoading) vitalLoading.style.display = 'block';
-            if (vitalData) vitalData.style.display = 'none';
-            if (vitalEmpty) vitalEmpty.style.display = 'none';
-            
             // Simulate a delay to show loading (in a real app, this would be a fetch request)
             setTimeout(() => {
                 // Hide loading
-                if (vitalLoading) vitalLoading.style.display = 'none';
+                document.getElementById('vital-loading-list').style.display = 'none';
                 
                 // Check if patient has vital signs
                 @if(isset($patient) && method_exists($patient, 'vitalSigns') && $patient->vitalSigns()->count() > 0)
@@ -4482,33 +4558,48 @@
                     const vitalSigns = @json($patient->vitalSigns()->with('recorder')->latest('recorded_at')->get());
                     
                     // Show data container
-                    if (vitalData) vitalData.style.display = 'block';
+                    document.getElementById('vital-signs-table-content').style.display = 'block';
                     
-                    // Render the vital signs
-                    renderVitalSigns(vitalSigns);
+                    // Render the vital signs in list format
+                    renderVitalSignsList(vitalSigns);
                 @else
                     // Show empty message
-                    if (vitalEmpty) vitalEmpty.style.display = 'block';
+                    document.getElementById('vital-signs-table-content').style.display = 'block';
+                    document.getElementById('vital-signs-table-content').innerHTML = `
+                        <div style="text-align: center; padding: 60px 20px; color: #666;">
+                            <i class="fas fa-heartbeat fa-3x" style="margin-bottom: 20px; color: #ddd;"></i>
+                            <h6 style="margin-bottom: 15px; color: #333;">No vital signs recorded yet</h6>
+                            <p style="color: #666; font-size: 14px;">Vital signs will appear here once they are recorded.</p>
+                        </div>
+                    `;
                 @endif
             }, 500);
         }
         
-        // Render vital signs data
-        function renderVitalSigns(vitalSigns) {
-            const vitalData = document.getElementById('vital-data');
-            
-            if (!vitalData) {
-                return;
-            }
-            
-            let html = '';
-            
+        // Render vital signs data in list/table format
+        function renderVitalSignsList(vitalSigns) {
             // Sort vital signs by recorded_at in descending order (most recent first)
             vitalSigns.sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at));
             
+            let html = `
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <thead style="background: linear-gradient(135deg, #00a99d, #007b7a); color: white;">
+                            <tr>
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; font-size: 13px;">Date & Time</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 13px;">Temp (°C)</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 13px;">HR (bpm)</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 13px;">RR (bpm)</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 13px;">BP (mmHg)</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 13px;">SpO2 (%)</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 13px;">AVPU</th>
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; font-size: 13px;">Recorded By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
             vitalSigns.forEach((vital, index) => {
-
-                
                 // Format date
                 const recordedDate = new Date(vital.recorded_at);
                 const formattedDate = recordedDate.toLocaleString('en-US', { 
@@ -4520,139 +4611,117 @@
                     hour12: true
                 });
                 
-                // Helper function to get vital status class
-                function getVitalStatus(value, type) {
-                    if (!value || value === '-') return '';
+                // Helper function to get vital status class and format value
+                function getVitalCell(value, type, unit = '') {
+                    if (!value || value === null || value === undefined) return '<span style="color: #999;">-</span>';
                     
                     const val = parseFloat(value);
+                    let statusClass = '';
+                    
                     switch(type) {
                         case 'temperature':
-                            if (val < 35 || val > 39) return 'critical';
-                            if (val < 36 || val > 38) return 'warning';
-                            return 'normal';
+                            if (val < 35 || val > 39) statusClass = 'critical';
+                            else if (val < 36 || val > 38) statusClass = 'warning';
+                            else statusClass = 'normal';
+                            break;
                         case 'heart_rate':
-                            if (val < 50 || val > 120) return 'critical';
-                            if (val < 60 || val > 100) return 'warning';
-                            return 'normal';
+                            if (val < 50 || val > 120) statusClass = 'critical';
+                            else if (val < 60 || val > 100) statusClass = 'warning';
+                            else statusClass = 'normal';
+                            break;
                         case 'respiratory_rate':
-                            if (val < 10 || val > 25) return 'critical';
-                            if (val < 12 || val > 20) return 'warning';
-                            return 'normal';
+                            if (val < 10 || val > 25) statusClass = 'critical';
+                            else if (val < 12 || val > 20) statusClass = 'warning';
+                            else statusClass = 'normal';
+                            break;
                         case 'systolic_bp':
-                            if (val < 90 || val > 180) return 'critical';
-                            if (val < 100 || val > 140) return 'warning';
-                            return 'normal';
+                            if (val < 90 || val > 180) statusClass = 'critical';
+                            else if (val < 100 || val > 140) statusClass = 'warning';
+                            else statusClass = 'normal';
+                            break;
                         case 'oxygen_saturation':
-                            if (val < 90) return 'critical';
-                            if (val < 95) return 'warning';
-                            return 'normal';
-                        default:
-                            return '';
+                            if (val < 90) statusClass = 'critical';
+                            else if (val < 95) statusClass = 'warning';
+                            else statusClass = 'normal';
+                            break;
                     }
+                    
+                    const colors = {
+                        'critical': '#dc3545',
+                        'warning': '#fd7e14', 
+                        'normal': '#28a745'
+                    };
+                    
+                    const color = colors[statusClass] || '#333';
+                    return `<span style="color: ${color}; font-weight: 500;">${value}${unit}</span>`;
                 }
                 
-                // Helper function to format vital value with unit
-                function formatVitalValue(value, unit = '') {
-                    if (!value || value === null || value === undefined) return '-';
-                    return value + (unit ? ` ${unit}` : '');
-                }
-                
-                // Helper function to get consciousness level display
+                // Get consciousness level display
                 function getConsciousnessDisplay(level) {
-                    if (!level) return '-';
+                    if (!level) return '<span style="color: #999;">-</span>';
                     const levels = {
                         'A': 'Alert',
-                        'V': 'Verbal',
+                        'V': 'Verbal', 
                         'P': 'Pain',
                         'U': 'Unresponsive'
                     };
-                    return levels[level] || level;
+                    const display = levels[level] || level;
+                    const colors = {'A': '#28a745', 'V': '#ffc107', 'P': '#fd7e14', 'U': '#dc3545'};
+                    const color = colors[level] || '#333';
+                    return `<span style="color: ${color}; font-weight: 500;">${display}</span>`;
                 }
                 
+                // Blood pressure formatting
+                const bpValue = vital.systolic_bp && vital.diastolic_bp ? 
+                    `${vital.systolic_bp}/${vital.diastolic_bp}` : 
+                    (vital.systolic_bp ? vital.systolic_bp : null);
+                
+                const rowStyle = index === 0 ? 'background: linear-gradient(135deg, #e8f5f0, #f0f9f6);' : 
+                               index % 2 === 0 ? 'background: #f8f9fa;' : 'background: white;';
+                
                 html += `
-                    <div class="vital-sign-card ${index === 0 ? 'latest' : ''}">
-                        <div class="vital-sign-header">
-                            <div class="vital-time">
-                                <i class="fas fa-clock"></i> ${formattedDate}
-                            </div>
-                            <div class="vital-recorder">
-                                <i class="fas fa-user-nurse"></i> ${vital.recorder ? vital.recorder.name : 'Unknown Staff'}
-                            </div>
-                        </div>
-                        <div class="vital-sign-body">
-                            <div class="vital-metrics">
-                                <div class="vital-metric ${getVitalStatus(vital.temperature, 'temperature')}">
-                                    <i class="fas fa-thermometer-half"></i>
-                                    <div class="metric-value">${formatVitalValue(vital.temperature, '°C')}</div>
-                                    <div class="metric-label">Temperature</div>
-                                </div>
-                                <div class="vital-metric ${getVitalStatus(vital.heart_rate, 'heart_rate')}">
-                                    <i class="fas fa-heartbeat"></i>
-                                    <div class="metric-value">${formatVitalValue(vital.heart_rate, 'bpm')}</div>
-                                    <div class="metric-label">Heart Rate</div>
-                                </div>
-                                <div class="vital-metric ${getVitalStatus(vital.respiratory_rate, 'respiratory_rate')}">
-                                    <i class="fas fa-lungs"></i>
-                                    <div class="metric-value">${formatVitalValue(vital.respiratory_rate, 'bpm')}</div>
-                                    <div class="metric-label">Respiratory Rate</div>
-                                </div>
-                                <div class="vital-metric ${getVitalStatus(vital.systolic_bp, 'systolic_bp')}">
-                                    <i class="fas fa-stethoscope"></i>
-                                    <div class="metric-value">
-                                        ${vital.systolic_bp && vital.diastolic_bp ? 
-                                            `${vital.systolic_bp}/${vital.diastolic_bp}` : 
-                                            (vital.systolic_bp ? vital.systolic_bp : '-')
-                                        }
-                                    </div>
-                                    <div class="metric-label">Blood Pressure</div>
-                                </div>
-                                <div class="vital-metric ${getVitalStatus(vital.oxygen_saturation, 'oxygen_saturation')}">
-                                    <i class="fas fa-percent"></i>
-                                    <div class="metric-value">${formatVitalValue(vital.oxygen_saturation, '%')}</div>
-                                    <div class="metric-label">SpO<sub>2</sub></div>
-                                </div>
-                                <div class="vital-metric">
-                                    <i class="fas fa-brain"></i>
-                                    <div class="metric-value">${getConsciousnessDisplay(vital.consciousness)}</div>
-                                    <div class="metric-label">AVPU Score</div>
-                                </div>
-                            </div>
-                            
-                            
-                            
-                            ${vital.notes ? `
-                            <div class="vital-notes">
-                                <div class="notes-label">
-                                    <i class="fas fa-clipboard"></i> Clinical Notes
-                                </div>
-                                <div class="notes-text">${vital.notes}</div>
-                            </div>
-                            ` : ''}
-                        </div>
-                    </div>
+                    <tr style="${rowStyle} border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px 8px; font-size: 13px;">
+                            <div style="font-weight: 500; color: #333;">${formattedDate}</div>
+                            ${index === 0 ? '<div style="font-size: 11px; color: #00a99d; font-weight: 600;">LATEST</div>' : ''}
+                        </td>
+                        <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                            ${getVitalCell(vital.temperature, 'temperature', '°C')}
+                        </td>
+                        <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                            ${getVitalCell(vital.heart_rate, 'heart_rate', ' bpm')}
+                        </td>
+                        <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                            ${getVitalCell(vital.respiratory_rate, 'respiratory_rate', ' bpm')}
+                        </td>
+                        <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                            ${bpValue ? getVitalCell(vital.systolic_bp, 'systolic_bp', bpValue.includes('/') ? '' : ' mmHg').replace(vital.systolic_bp, bpValue) : '<span style="color: #999;">-</span>'}
+                        </td>
+                        <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                            ${getVitalCell(vital.oxygen_saturation, 'oxygen_saturation', '%')}
+                        </td>
+                        <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                            ${getConsciousnessDisplay(vital.consciousness)}
+                        </td>
+                        <td style="padding: 12px 8px; font-size: 13px; color: #666;">
+                            <i class="fas fa-user-nurse" style="margin-right: 5px; color: #00a99d;"></i>
+                            ${vital.recorder ? vital.recorder.name : 'Unknown Staff'}
+                        </td>
+                    </tr>
                 `;
             });
             
-            // Add summary statistics if there are multiple records
-            if (vitalSigns.length > 1) {
-                const latest = vitalSigns[0];
-                const previous = vitalSigns[1];
-                
-                html = `
-                    <div class="vital-summary-card" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid #dee2e6;">
-                        <h6 style="color: #00a99d; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-chart-line"></i> Quick Overview
-                        </h6>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 13px;">
-
-                            <div><strong>Total Records:</strong> ${vitalSigns.length}</div>
-                            <div><strong>Last Updated:</strong> ${new Date(latest.recorded_at).toLocaleDateString()}</div>
-                        </div>
-                    </div>
-                ` + html;
-            }
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; font-size: 13px; color: #666;">
+                    <strong>Total Records:</strong> ${vitalSigns.length} | 
+                    <strong>Latest Record:</strong> ${new Date(vitalSigns[0].recorded_at).toLocaleDateString()}
+                </div>
+            `;
             
-            vitalData.innerHTML = html;
+            document.getElementById('vital-signs-table-content').innerHTML = html;
         }
         
         // Environmental controls functionality
@@ -5102,8 +5171,13 @@
 
                   <!-- Step 2: List View Container (initially hidden, loads data only when selected) -->
                   <div id="vitalSignsListContainer" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
-                      <div style="text-align: center; margin-bottom: 20px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                          <button onclick="goBackToVitalSignsSelection()" 
+                              style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                              <i class="fas fa-arrow-left"></i> Back
+                          </button>
                           <h6 style="color: #333; font-size: 18px; margin: 0;"><i class="fas fa-list text-primary"></i> Vital Signs Records</h6>
+                          <div></div>
                       </div>
                       
                       <div id="vital-loading-list" style="text-align: center; padding: 60px 20px;">
@@ -5118,8 +5192,13 @@
 
                   <!-- Step 2: Graph View Container (initially hidden, loads data only when selected) -->
                   <div id="vitalSignsGraphContainer" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
-                      <div style="text-align: center; margin-bottom: 20px;">
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                          <button onclick="goBackToVitalSignsSelection()" 
+                              style="background: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">
+                              <i class="fas fa-arrow-left"></i> Back
+                          </button>
                           <h6 style="color: #333; font-size: 18px; margin: 0;"><i class="fas fa-chart-line text-success"></i> Vital Signs Trend</h6>
+                          <div></div>
                       </div>
                       
                       <div id="vital-loading-graph" style="text-align: center; padding: 60px 20px;">
@@ -5130,15 +5209,6 @@
                       <div id="vital-graph-content" style="display: none; padding: 25px; background: #f8f9fa; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                           <canvas id="vitalSignsChart" style="max-height: 400px; width: 100%;"></canvas>
                       </div>
-                </div>
-                
-                <div class="vital-data" id="vital-data" style="display: none;">
-                    <!-- This will be populated with vital signs data via JavaScript -->
-                </div>
-                
-                <div class="vital-empty text-center py-5" id="vital-empty" style="display: none; text-align: center; padding: 3rem 0;">
-                    <i class="fas fa-heartbeat fa-3x text-muted" style="color: #6c757d;"></i>
-                    <p class="mt-3" style="margin-top: 1rem;">No vital signs recorded yet.</p>
                 </div>
             </div>
         </div>
