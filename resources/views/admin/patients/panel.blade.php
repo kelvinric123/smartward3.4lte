@@ -3748,7 +3748,6 @@
                                     <div class="order-name">{{ $order->item_name }}</div>
                                     <div class="order-meal">{{ $order->meal_type }} {{ $order->dietary_restriction ? "({$order->dietary_restriction})" : '' }}</div>
                                     <div class="order-time">
-                                        <div><strong>Delivery date:</strong> {{ $order->delivery_date->format('D, M j, Y') }}</div>
                                         <div><strong>Ordered:</strong> {{ $order->order_time->format('d M Y, h:i A') }}</div>
                                     </div>
                                     <div class="order-status status-{{ $order->status }}">{{ ucfirst($order->status) }}</div>
@@ -4921,52 +4920,116 @@
                             dateText = selectedOption.text.replace('(', '').replace(')', '');
                         }
                         
-                        // In a real app, this would send data to the server via AJAX
-                        // For demo purposes, just log and show a confirmation
-                        console.log('Order submitted:', { selections, dietaryRestriction, orderDate });
+                        // Disable the submit button and show loading state
+                        submitOrderBtn.disabled = true;
+                        submitOrderBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
                         
-                        // Show confirmation
-                        showToast(`Your meal order for ${dateText} has been submitted!`);
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                         
-                        // In a real app, you would refresh the orders list after successful submission
-                        // For demo purposes, add a simulated entry
-                        const ordersList = document.getElementById('orders-list');
-                        if (ordersList) {
-                            // Hide "no orders" message if present
-                            const noOrders = ordersList.querySelector('.no-orders');
-                            if (noOrders) {
-                                noOrders.style.display = 'none';
+                        // Submit each selected meal order via AJAX
+                        let submittedOrders = 0;
+                        let totalOrders = Object.keys(selections).length;
+                        let hasErrors = false;
+                        
+                        Object.keys(selections).forEach(async (mealType) => {
+                            const selection = selections[mealType];
+                            
+                            try {
+                                const response = await fetch('{{ route("admin.patients.food-order.store", $patient->id) }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': csrfToken,
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        item_name: selection.item,
+                                        meal_type: mealType,
+                                        dietary_restriction: dietaryRestriction
+                                    })
+                                });
+                                
+                                const data = await response.json();
+                                
+                                if (response.ok && data.success) {
+                                    // Order submitted successfully
+                                    const ordersList = document.getElementById('orders-list');
+                                    if (ordersList) {
+                                        // Hide "no orders" message if present
+                                        const noOrders = ordersList.querySelector('.no-orders');
+                                        if (noOrders) {
+                                            noOrders.style.display = 'none';
+                                        }
+                                        
+                                        // Get the heading element (for inserting after it)
+                                        const heading = ordersList.querySelector('h6');
+                                        
+                                        // Add the new order to the list
+                                        const orderItem = document.createElement('div');
+                                        orderItem.className = 'order-item';
+                                        orderItem.id = `order-${data.order.id}`;
+                                        orderItem.innerHTML = `
+                                            <div class="order-info">
+                                                <div class="order-name">${selection.item}</div>
+                                                <div class="order-meal">${mealType} ${dietaryRestriction ? `(${dietaryRestriction})` : ''}</div>
+                                                <div class="order-time">
+                                                    <div><strong>Ordered:</strong> Just now</div>
+                                                </div>
+                                                <div class="order-status status-pending">Pending</div>
+                                            </div>
+                                            <button class="cancel-order" data-order-id="${data.order.id}">Cancel</button>
+                                        `;
+                                        
+                                        // Insert after the heading
+                                        if (heading && heading.nextSibling) {
+                                            ordersList.insertBefore(orderItem, heading.nextSibling);
+                                        } else {
+                                            ordersList.appendChild(orderItem);
+                                        }
+                                        
+                                        // Add event listener for the new cancel button
+                                        const cancelBtn = orderItem.querySelector('.cancel-order');
+                                        if (cancelBtn) {
+                                            cancelBtn.addEventListener('click', function() {
+                                                cancelOrder(data.order.id);
+                                            });
+                                        }
+                                    }
+                                } else {
+                                    hasErrors = true;
+                                    showToast(`Error submitting ${mealType} order: ${data.message || 'Unknown error'}`);
+                                }
+                                
+                            } catch (error) {
+                                hasErrors = true;
+                                showToast(`Error submitting ${mealType} order: ${error.message}`);
                             }
                             
-                            // Get the heading element (for inserting after it)
-                            const heading = ordersList.querySelector('h6');
+                            submittedOrders++;
                             
-                            // Add each selected meal as an order
-                            Object.keys(selections).forEach(mealType => {
-                                const selection = selections[mealType];
-                                const orderItem = document.createElement('div');
-                                orderItem.className = 'order-item';
-                                orderItem.innerHTML = `
-                                    <div class="order-info">
-                                        <div class="order-name">${selection.item}</div>
-                                        <div class="order-meal">${mealType} ${dietaryRestriction ? `(${dietaryRestriction})` : ''}</div>
-                                        <div class="order-time">
-                                            <div><strong>Delivery date:</strong> ${dateText}</div>
-                                            <div><strong>Ordered:</strong> Just now</div>
-                                        </div>
-                                        <div class="order-status status-pending">Pending</div>
-                                    </div>
-                                    <button class="cancel-order">Cancel</button>
-                                `;
+                            // Check if all orders have been processed
+                            if (submittedOrders === totalOrders) {
+                                // Re-enable the submit button
+                                submitOrderBtn.disabled = false;
+                                submitOrderBtn.innerHTML = '<i class="fas fa-check-circle"></i> Submit Order';
                                 
-                                // Insert after the heading
-                                if (heading && heading.nextSibling) {
-                                    ordersList.insertBefore(orderItem, heading.nextSibling);
-                                } else {
-                                    ordersList.appendChild(orderItem);
+                                // Clear selections and reset form
+                                orderButtons.forEach(btn => {
+                                    btn.classList.remove('selected');
+                                    btn.textContent = 'Order';
+                                });
+                                
+                                // Reset meal summaries
+                                ['breakfast', 'lunch', 'dinner', 'snack'].forEach(meal => {
+                                    updateMealSummary(meal.charAt(0).toUpperCase() + meal.slice(1), '');
+                                });
+                                
+                                if (!hasErrors) {
+                                    showToast(`Your meal orders for ${dateText} have been submitted successfully!`);
                                 }
-                            });
-                        }
+                            }
+                        });
                     });
                 }
             }
@@ -5018,6 +5081,74 @@
                 }, 500);
             }, 3000);
         }
+        
+        // Cancel food order function
+        async function cancelOrder(orderId) {
+            const orderElement = document.getElementById(`order-${orderId}`);
+            if (!orderElement) return;
+            
+            const cancelBtn = orderElement.querySelector('.cancel-order');
+            if (cancelBtn) {
+                cancelBtn.disabled = true;
+                cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                const response = await fetch(`{{ url('admin/food-order') }}/${orderId}/cancel`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Remove the order from the list
+                    orderElement.remove();
+                    showToast(data.message || 'Order cancelled successfully');
+                    
+                    // Check if there are no orders left and show "no orders" message
+                    const ordersList = document.getElementById('orders-list');
+                    const remainingOrders = ordersList.querySelectorAll('.order-item');
+                    if (remainingOrders.length === 0) {
+                        const noOrdersDiv = document.createElement('div');
+                        noOrdersDiv.className = 'no-orders';
+                        noOrdersDiv.textContent = 'No meals ordered yet';
+                        ordersList.appendChild(noOrdersDiv);
+                    }
+                } else {
+                    showToast(data.message || 'Failed to cancel order');
+                    if (cancelBtn) {
+                        cancelBtn.disabled = false;
+                        cancelBtn.innerHTML = 'Cancel';
+                    }
+                }
+            } catch (error) {
+                showToast('Error cancelling order: ' + error.message);
+                if (cancelBtn) {
+                    cancelBtn.disabled = false;
+                    cancelBtn.innerHTML = 'Cancel';
+                }
+            }
+        }
+        
+        // Initialize existing cancel order buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const existingCancelButtons = document.querySelectorAll('.cancel-order');
+            existingCancelButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    if (orderId) {
+                        cancelOrder(orderId);
+                    }
+                });
+            });
+        });
         
         // Close medical information modal
         function closeMedicalInfoModal() {
