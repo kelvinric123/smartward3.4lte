@@ -121,6 +121,10 @@ Route::prefix('admin')->group(function () {
         // Patient Movement
         Route::post('wards/{ward}/bed/{bedId}/movement', [PatientMovementController::class, 'scheduleMovement'])->name('wards.patient.scheduleMovement');
         
+        // Patient Bed Transfer
+        Route::post('wards/{ward}/bed/{bedId}/transfer', [App\Http\Controllers\Admin\WardController::class, 'transferPatientBed'])->name('wards.patient.transferBed');
+        Route::get('wards/{ward}/available-beds', [App\Http\Controllers\Admin\WardController::class, 'getAvailableBeds'])->name('wards.availableBeds');
+        
         // Beds Routes
         Route::resource('beds', App\Http\Controllers\Admin\BedController::class)->names('beds');
         

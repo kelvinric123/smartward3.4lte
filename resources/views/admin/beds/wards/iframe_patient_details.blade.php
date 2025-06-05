@@ -208,6 +208,11 @@
                         <i class="fas fa-sign-out-alt"></i> Discharge
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="transfer-tab" data-toggle="tab" href="#transfer" role="tab" aria-controls="transfer" aria-selected="false">
+                        <i class="fas fa-bed"></i> Transfer Bed
+                    </a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -633,6 +638,95 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Transfer Bed Tab -->
+                <div class="tab-pane fade" id="transfer" role="tabpanel" aria-labelledby="transfer-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="m-0"><i class="fas fa-bed mr-2"></i> Transfer Patient to Another Bed</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Transfer the patient to a different bed in the same ward or another ward.
+                                    </div>
+                                    
+                                    <form id="transferBedForm">
+                                        @csrf
+                                        <div class="form-group">
+                                            <label for="target_ward_id">Target Ward</label>
+                                            <select class="form-control" id="target_ward_id" name="target_ward_id" required>
+                                                <option value="">Select Ward</option>
+                                                @foreach($allWards as $availableWard)
+                                                    <option value="{{ $availableWard->id }}" 
+                                                            {{ $availableWard->id == $ward->id ? 'selected' : '' }}>
+                                                        {{ $availableWard->name }} ({{ $availableWard->specialty->name ?? 'No Specialty' }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="target_bed_id">Available Beds</label>
+                                            <select class="form-control" id="target_bed_id" name="target_bed_id" required disabled>
+                                                <option value="">Please select a ward first</option>
+                                            </select>
+                                            <small class="form-text text-muted">Only available beds are shown</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="transfer_reason">Transfer Reason</label>
+                                            <select class="form-control" id="transfer_reason" name="transfer_reason" required>
+                                                <option value="">Select Reason</option>
+                                                <option value="Medical requirement">Medical requirement</option>
+                                                <option value="Patient request">Patient request</option>
+                                                <option value="Bed availability">Bed availability</option>
+                                                <option value="Isolation requirement">Isolation requirement</option>
+                                                <option value="Ward closure/maintenance">Ward closure/maintenance</option>
+                                                <option value="Specialty change">Specialty change</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="transfer_notes">Transfer Notes (Optional)</label>
+                                            <textarea class="form-control" id="transfer_notes" name="transfer_notes" rows="3" placeholder="Additional notes about the transfer..."></textarea>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card bg-light">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-muted">Current Location</h6>
+                                                        <p class="mb-1"><strong>Ward:</strong> {{ $ward->name }}</p>
+                                                        <p class="mb-0"><strong>Bed:</strong> {{ $bed->bed_number }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="card bg-light" id="targetLocationCard" style="display: none;">
+                                                    <div class="card-body">
+                                                        <h6 class="card-title text-muted">Target Location</h6>
+                                                        <p class="mb-1"><strong>Ward:</strong> <span id="targetWardName">-</span></p>
+                                                        <p class="mb-0"><strong>Bed:</strong> <span id="targetBedNumber">-</span></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr>
+                                        
+                                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="transferBedBtn">
+                                            <i class="fas fa-bed mr-2"></i> Transfer Patient
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -966,6 +1060,161 @@
                 }
             });
         });
+        
+        // Handle ward change to populate available beds for transfer
+        $('#target_ward_id').on('change', function() {
+            const wardId = $(this).val();
+            const bedSelect = $('#target_bed_id');
+            const targetLocationCard = $('#targetLocationCard');
+            const targetWardName = $('#targetWardName');
+            
+            // Clear and disable bed dropdown
+            bedSelect.empty();
+            bedSelect.append('<option value="">Select Bed</option>');
+            bedSelect.prop('disabled', true);
+            
+            // Hide target location card
+            targetLocationCard.hide();
+            
+            if (wardId) {
+                // Show loading state
+                bedSelect.append('<option value="">Loading available beds...</option>');
+                
+                // Update ward name in target location card
+                const selectedWardText = $('#target_ward_id option:selected').text();
+                targetWardName.text(selectedWardText.split(' (')[0]); // Remove specialty part
+                
+                // Make AJAX call to get available beds for this ward
+                $.ajax({
+                    url: '{{ route('admin.beds.wards.availableBeds', $ward->id) }}',
+                    type: 'GET',
+                    data: {
+                        ward_id: wardId
+                    },
+                    success: function(response) {
+                        // Clear loading state
+                        bedSelect.empty();
+                        bedSelect.append('<option value="">Select Bed</option>');
+                        
+                        // Populate available beds
+                        if (response.success && response.beds && response.beds.length > 0) {
+                            response.beds.forEach(function(bed) {
+                                bedSelect.append(
+                                    '<option value="' + bed.id + '" data-bed-number="' + bed.bed_number + '">' + 
+                                    bed.bed_number + '</option>'
+                                );
+                            });
+                            bedSelect.prop('disabled', false);
+                        } else {
+                            bedSelect.append('<option value="">No available beds in this ward</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching available beds:', error);
+                        bedSelect.empty();
+                        bedSelect.append('<option value="">Error loading beds</option>');
+                        
+                        // Show user-friendly error message
+                        alert('Error loading available beds. Please try again.');
+                    }
+                });
+            }
+        });
+        
+        // Handle bed selection to show target location
+        $('#target_bed_id').on('change', function() {
+            const bedId = $(this).val();
+            const targetLocationCard = $('#targetLocationCard');
+            const targetBedNumber = $('#targetBedNumber');
+            
+            if (bedId) {
+                const selectedBedNumber = $(this).find('option:selected').data('bed-number');
+                targetBedNumber.text(selectedBedNumber);
+                targetLocationCard.show();
+            } else {
+                targetLocationCard.hide();
+            }
+        });
+        
+        // Handle bed transfer form submission
+        $('#transferBedForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const form = $(this);
+            const submitBtn = $('#transferBedBtn');
+            const originalText = submitBtn.html();
+            
+            // Validate form
+            if (!$('#target_ward_id').val() || !$('#target_bed_id').val() || !$('#transfer_reason').val()) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Confirm transfer
+            const currentLocation = '{{ $ward->name }} - Bed {{ $bed->bed_number }}';
+            const targetWard = $('#target_ward_id option:selected').text().split(' (')[0];
+            const targetBed = $('#target_bed_id option:selected').text();
+            const confirmMessage = `Are you sure you want to transfer the patient from ${currentLocation} to ${targetWard} - Bed ${targetBed}?`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            // Disable submit button and show loading state
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Transferring...');
+            
+            // Clear any existing alerts
+            form.siblings('.alert').remove();
+            
+            $.ajax({
+                url: '{{ route('admin.beds.wards.patient.transferBed', ['ward' => $ward->id, 'bedId' => $bed->id]) }}',
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        // Show success message
+                        $('<div class="alert alert-success alert-dismissible fade show">' +
+                            '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                            '<i class="fas fa-check-circle mr-2"></i>' + response.message +
+                            '</div>').insertBefore(form);
+                        
+                        // Redirect after a delay
+                        setTimeout(function() {
+                            if (response.redirect_url) {
+                                window.parent.location.href = response.redirect_url;
+                            } else {
+                                window.parent.location.reload();
+                            }
+                        }, 2000);
+                    } else {
+                        throw new Error(response.message || 'Transfer failed');
+                    }
+                },
+                error: function(xhr) {
+                    let errorMessage = 'An error occurred during transfer. Please try again.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = Object.values(xhr.responseJSON.errors).flat();
+                        errorMessage = errors.join('<br>');
+                    }
+                    
+                    $('<div class="alert alert-danger alert-dismissible fade show">' +
+                        '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                        '<i class="fas fa-exclamation-triangle mr-2"></i>' + errorMessage +
+                        '</div>').insertBefore(form);
+                },
+                complete: function() {
+                    // Re-enable submit button
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+        
+        // Trigger ward change on page load if current ward is selected
+        if ($('#target_ward_id').val()) {
+            $('#target_ward_id').trigger('change');
+        }
     });
 </script>
 @endsection 

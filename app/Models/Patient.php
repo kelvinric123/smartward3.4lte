@@ -169,6 +169,14 @@ class Patient extends Model
     }
     
     /**
+     * Get all bed transfers for this patient
+     */
+    public function bedTransfers()
+    {
+        return $this->hasMany(PatientTransfer::class)->orderBy('transfer_date', 'desc');
+    }
+    
+    /**
      * Get the medications for this patient
      */
     public function medications()

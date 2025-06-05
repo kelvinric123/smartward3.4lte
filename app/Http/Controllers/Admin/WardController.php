@@ -446,6 +446,9 @@ class WardController extends Controller
             // Load patient referrals
             $patientReferrals = $patient->referrals()->with(['toSpecialty', 'toConsultant', 'fromWard', 'referredBy'])->get();
             
+            // Get all active wards for transfer options
+            $allWards = \App\Models\Ward::where('is_active', true)->get();
+            
             return view('admin.beds.wards.iframe_patient_details', compact(
                 'ward', 
                 'bed', 
@@ -453,7 +456,8 @@ class WardController extends Controller
                 'activeAdmission', 
                 'patientMovements',
                 'serviceLocations',
-                'patientReferrals'
+                'patientReferrals',
+                'allWards'
             ));
         } catch (\Exception $e) {
             return response()->view('layouts.iframe_error', [
@@ -551,6 +555,160 @@ class WardController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error responding to alert: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Transfer patient to a different bed
+     */
+    public function transferPatientBed(Request $request, Ward $ward, $bedId)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'target_ward_id' => 'required|exists:wards,id',
+                'target_bed_id' => 'required|exists:beds,id',
+                'transfer_reason' => 'required|string|max:255',
+                'transfer_notes' => 'nullable|string',
+            ]);
+
+            // Find the current bed within this ward
+            $currentBed = $ward->beds()->findOrFail($bedId);
+            
+            // Check if the bed has a patient
+            if (!$currentBed->patient_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This bed does not have a patient assigned.'
+                ], 422);
+            }
+            
+            // Get the patient
+            $patient = $currentBed->patient;
+            
+            // Find the target bed
+            $targetBed = \App\Models\Bed::findOrFail($validated['target_bed_id']);
+            
+            // Validate target bed is in the selected ward
+            if ($targetBed->ward_id != $validated['target_ward_id']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Selected bed does not belong to the selected ward.'
+                ], 422);
+            }
+            
+            // Check if target bed is available
+            if ($targetBed->status !== 'available' || $targetBed->patient_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Target bed is not available.'
+                ], 422);
+            }
+            
+            // Get the active admission
+            $activeAdmission = $patient->activeAdmission;
+            
+            if (!$activeAdmission) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No active admission found for this patient.'
+                ], 422);
+            }
+
+            // Start database transaction
+            \DB::beginTransaction();
+
+            try {
+                // Create a patient transfer record for tracking
+                \App\Models\PatientTransfer::create([
+                    'patient_id' => $patient->id,
+                    'admission_id' => $activeAdmission->id,
+                    'from_ward_id' => $currentBed->ward_id,
+                    'from_bed_id' => $currentBed->id,
+                    'to_ward_id' => $targetBed->ward_id,
+                    'to_bed_id' => $targetBed->id,
+                    'transfer_date' => now()->setTimezone('Asia/Kuala_Lumpur'),
+                    'reason' => $validated['transfer_reason'],
+                    'notes' => $validated['transfer_notes'],
+                    'transferred_by' => auth()->id(),
+                ]);
+
+                // Update the current bed - make it available
+                $currentBed->update([
+                    'status' => 'available',
+                    'patient_id' => null,
+                    'consultant_id' => null,
+                    'nurse_id' => null,
+                ]);
+
+                // Update the target bed - assign patient
+                $targetBed->update([
+                    'status' => 'occupied',
+                    'patient_id' => $patient->id,
+                    'consultant_id' => $currentBed->consultant_id, // Keep same consultant
+                    'nurse_id' => $currentBed->nurse_id, // Keep same nurse
+                ]);
+
+                // Update the active admission with new bed info
+                $activeAdmission->update([
+                    'ward_id' => $targetBed->ward_id,
+                    'bed_id' => $targetBed->id,
+                    'bed_number' => $targetBed->bed_number,
+                ]);
+
+                \DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Patient transferred successfully to ' . $targetBed->ward->name . ' - Bed ' . $targetBed->bed_number,
+                    'redirect_url' => route('admin.beds.wards.dashboard', $ward->id)
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollback();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred during transfer: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available beds for transfer (AJAX endpoint)
+     */
+    public function getAvailableBeds(Request $request, Ward $ward)
+    {
+        try {
+            $targetWardId = $request->input('ward_id');
+            
+            if (!$targetWardId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ward ID is required'
+                ], 400);
+            }
+
+            // Get available beds in the specified ward
+            $availableBeds = \App\Models\Bed::where('ward_id', $targetWardId)
+                ->where('status', 'available')
+                ->whereNull('patient_id')
+                ->orderBy('bed_number')
+                ->get(['id', 'bed_number']);
+
+            return response()->json([
+                'success' => true,
+                'beds' => $availableBeds
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching available beds: ' . $e->getMessage()
             ], 500);
         }
     }
