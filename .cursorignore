@@ -1,0 +1,35 @@
+# Cursor ignore file
+# Add files and patterns that Cursor should ignore
+# NOTE: .env files are NOT ignored so they can be edited
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Cache directories
+.cache/
+.vscode/
+
+# Large binary files
+*.zip
+*.tar.gz
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.mp4
+*.mov
+
+# Vendor directories (but allow .env files)
+vendor/
+
+# Don't ignore .env files - they need to be editable
+# .env 
