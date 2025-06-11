@@ -21,6 +21,11 @@ class VitalSign extends Model
         'diastolic_bp',
         'oxygen_saturation',
         'consciousness',
+        'gcs_total',
+        'gcs_eye',
+        'gcs_verbal',
+        'gcs_motor',
+        'gcs_score',
         'temperature_score',
         'heart_rate_score',
         'respiratory_rate_score',
@@ -39,6 +44,11 @@ class VitalSign extends Model
         'systolic_bp' => 'float',
         'diastolic_bp' => 'float',
         'oxygen_saturation' => 'float',
+        'gcs_total' => 'integer',
+        'gcs_eye' => 'integer',
+        'gcs_verbal' => 'integer',
+        'gcs_motor' => 'integer',
+        'gcs_score' => 'integer',
         'temperature_score' => 'integer',
         'heart_rate_score' => 'integer',
         'respiratory_rate_score' => 'integer',
@@ -183,6 +193,30 @@ class VitalSign extends Model
     public function getFormattedRecordedAtAttribute()
     {
         return $this->recorded_at ? $this->recorded_at->format('d M Y, h:ia') : null;
+    }
+
+    /**
+     * Get the GCS formatted display
+     */
+    public function getGcsDisplayAttribute()
+    {
+        if ($this->gcs_total) {
+            return "GCS {$this->gcs_total} (E{$this->gcs_eye}V{$this->gcs_verbal}M{$this->gcs_motor})";
+        }
+        return null;
+    }
+
+    /**
+     * Get GCS status color based on score
+     */
+    public function getGcsStatusColorAttribute()
+    {
+        if (!$this->gcs_total) return 'secondary';
+        
+        if ($this->gcs_total <= 8) return 'danger';     // Severe brain injury
+        if ($this->gcs_total <= 12) return 'warning';   // Moderate brain injury
+        if ($this->gcs_total <= 14) return 'info';      // Mild brain injury
+        return 'success';                                 // Normal
     }
 
     /**

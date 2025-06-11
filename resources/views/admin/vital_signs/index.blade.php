@@ -105,6 +105,7 @@
                                     <th>BP (mmHg)</th>
                                     <th>SpO2 (%)</th>
                                     <th>Consciousness</th>
+                                    <th>GCS</th>
                                     <th>EWS</th>
                                     <th>Recorded By</th>
                                     <th>Actions</th>
@@ -121,6 +122,15 @@
                                         <td>{{ $vitalSign->systolic_bp ?: '-' }}/{{ $vitalSign->diastolic_bp ?: '-' }}</td>
                                         <td>{{ $vitalSign->oxygen_saturation ?: '-' }}</td>
                                         <td>{{ $vitalSign->consciousness ?: '-' }}</td>
+                                        <td>
+                                            @if($vitalSign->gcs_total)
+                                                <span class="badge badge-{{ $vitalSign->gcs_status_color }}">
+                                                    {{ $vitalSign->gcs_display }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="badge badge-{{ $vitalSign->status_color }}">
                                                 {{ $vitalSign->total_ews }} - {{ $vitalSign->clinical_status }}
@@ -168,7 +178,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="11" class="text-center">No vital signs records found.</td>
+                                        <td colspan="12" class="text-center">No vital signs records found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -185,7 +195,15 @@
                     <div class="card-header">
                         <h3 class="card-title">Patients with Vital Sign Records</h3>
                         <div class="card-tools">
-                            <a href="{{ route('admin.vital-signs.create') }}" class="btn btn-primary btn-sm">
+                            <div class="btn-group" role="group">
+                                <a href="{{ route('admin.vital-signs.index', ['view' => 'table']) }}" class="btn {{ request('view') === 'table' ? 'btn-secondary' : 'btn-outline-secondary' }} btn-sm">
+                                    <i class="fas fa-list"></i> Table View
+                                </a>
+                                <a href="{{ route('admin.vital-signs.index', ['view' => 'card']) }}" class="btn {{ !request('view') || request('view') === 'card' ? 'btn-secondary' : 'btn-outline-secondary' }} btn-sm">
+                                    <i class="fas fa-th-large"></i> Card View
+                                </a>
+                            </div>
+                            <a href="{{ route('admin.vital-signs.create') }}" class="btn btn-primary btn-sm ml-2">
                                 <i class="fas fa-plus"></i> Record New Vital Signs
                             </a>
                         </div>
@@ -194,6 +212,9 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <form method="GET" action="{{ route('admin.vital-signs.index') }}">
+                                    @if(request('view'))
+                                        <input type="hidden" name="view" value="{{ request('view') }}">
+                                    @endif
                                     <div class="input-group">
                                         <input type="text" name="search" class="form-control" placeholder="Search by patient name or MRN..." value="{{ request('search') }}">
                                         <div class="input-group-append">

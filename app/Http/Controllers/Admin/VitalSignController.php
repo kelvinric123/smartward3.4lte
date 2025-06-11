@@ -32,27 +32,56 @@ class VitalSignController extends Controller
                 'patient' => $patient
             ]);
         }
-        
-        // Show list of patients with vital signs
-        $patientsQuery = Patient::select('patients.*')
-            ->join('vital_signs', 'patients.id', '=', 'vital_signs.patient_id')
-            ->groupBy('patients.id')
-            ->withCount(['vitalSigns'])
-            ->with('latestVitalSigns');
-            
-        // Handle search
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $patientsQuery->where(function($query) use ($search) {
-                $query->where('patients.name', 'like', "%{$search}%")
-                    ->orWhere('patients.mrn', 'like', "%{$search}%")
-                    ->orWhere('patients.identity_number', 'like', "%{$search}%");
-            });
+
+        // Check if table view is specifically requested, otherwise default to card view
+        if ($request->has('view') && $request->view === 'table') {
+            // Show list of patients with vital signs (table view)
+            $patientsQuery = Patient::select('patients.*')
+                ->join('vital_signs', 'patients.id', '=', 'vital_signs.patient_id')
+                ->groupBy('patients.id', 'patients.name', 'patients.mrn', 'patients.identity_number', 'patients.identity_type', 'patients.age', 'patients.gender', 'patients.email', 'patients.phone', 'patients.address', 'patients.created_at', 'patients.updated_at')
+                ->withCount(['vitalSigns'])
+                ->with('latestVitalSigns');
+                
+            // Handle search
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $patientsQuery->where(function($query) use ($search) {
+                    $query->where('patients.name', 'like', "%{$search}%")
+                        ->orWhere('patients.mrn', 'like', "%{$search}%")
+                        ->orWhere('patients.identity_number', 'like', "%{$search}%");
+                });
+            }
+                
+            $patients = $patientsQuery->orderBy('patients.name')->paginate(15);
+                
+            return view('admin.vital_signs.index', compact('patients'));
         }
-            
-        $patients = $patientsQuery->orderBy('name')->paginate(15);
-            
-        return view('admin.vital_signs.index', compact('patients'));
+        
+        // Default to card view
+        if (!$request->has('view') || $request->view === 'card') {
+            // Show card view of patients with their latest vital signs
+            $patientsQuery = Patient::select('patients.*')
+                ->join('vital_signs', 'patients.id', '=', 'vital_signs.patient_id')
+                ->groupBy('patients.id', 'patients.name', 'patients.mrn', 'patients.identity_number', 'patients.identity_type', 'patients.age', 'patients.gender', 'patients.email', 'patients.phone', 'patients.address', 'patients.created_at', 'patients.updated_at')
+                ->withCount(['vitalSigns'])
+                ->with(['latestVitalSigns' => function($query) {
+                    $query->with('recorder');
+                }]);
+                
+            // Handle search
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $patientsQuery->where(function($query) use ($search) {
+                    $query->where('patients.name', 'like', "%{$search}%")
+                        ->orWhere('patients.mrn', 'like', "%{$search}%")
+                        ->orWhere('patients.identity_number', 'like', "%{$search}%");
+                });
+            }
+                
+            $patients = $patientsQuery->orderBy('patients.name')->paginate(25);
+                
+            return view('admin.vital_signs.card_index', compact('patients'));
+        }
     }
 
     /**
@@ -91,6 +120,10 @@ class VitalSignController extends Controller
             'diastolic_bp' => 'nullable|numeric|between:0,200',
             'oxygen_saturation' => 'nullable|numeric|between:0,100',
             'consciousness' => 'nullable|in:A,V,P,U,Alert,Verbal,Pain,Unresponsive',
+            'gcs_total' => 'nullable|integer|between:3,15',
+            'gcs_eye' => 'nullable|integer|between:1,4',
+            'gcs_verbal' => 'nullable|integer|between:1,5',
+            'gcs_motor' => 'nullable|integer|between:1,6',
             'notes' => 'nullable|string',
         ]);
 
@@ -179,6 +212,10 @@ class VitalSignController extends Controller
             'diastolic_bp' => 'nullable|numeric|between:0,200',
             'oxygen_saturation' => 'nullable|numeric|between:0,100',
             'consciousness' => 'nullable|in:A,V,P,U,Alert,Verbal,Pain,Unresponsive',
+            'gcs_total' => 'nullable|integer|between:3,15',
+            'gcs_eye' => 'nullable|integer|between:1,4',
+            'gcs_verbal' => 'nullable|integer|between:1,5',
+            'gcs_motor' => 'nullable|integer|between:1,6',
             'notes' => 'nullable|string',
         ]);
 
@@ -338,6 +375,78 @@ class VitalSignController extends Controller
                 'success' => false,
                 'message' => 'Error loading vital signs data',
                 'vitals' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * Check for vital signs updates (AJAX endpoint)
+     */
+    public function checkUpdates(Request $request)
+    {
+        try {
+            // Get patients with vital signs for comparison
+            $patientsQuery = Patient::select('patients.*')
+                ->join('vital_signs', 'patients.id', '=', 'vital_signs.patient_id')
+                ->groupBy('patients.id', 'patients.name', 'patients.mrn', 'patients.identity_number', 'patients.identity_type', 'patients.age', 'patients.gender', 'patients.email', 'patients.phone', 'patients.address', 'patients.created_at', 'patients.updated_at')
+                ->withCount(['vitalSigns'])
+                ->with(['latestVitalSigns' => function($query) {
+                    $query->with('recorder');
+                }]);
+                
+            // Handle search
+            if ($request->has('search') && !empty($request->search)) {
+                $search = $request->search;
+                $patientsQuery->where(function($query) use ($search) {
+                    $query->where('patients.name', 'like', "%{$search}%")
+                        ->orWhere('patients.mrn', 'like', "%{$search}%")
+                        ->orWhere('patients.identity_number', 'like', "%{$search}%");
+                });
+            }
+                
+            $patients = $patientsQuery->orderBy('patients.name')->get();
+            
+            // Format the response data
+            $responseData = $patients->map(function($patient) {
+                $latestVital = $patient->latestVitalSigns;
+                return [
+                    'id' => $patient->id,
+                    'name' => $patient->name,
+                    'mrn' => $patient->mrn,
+                    'latest_vital_signs' => $latestVital ? [
+                        'id' => $latestVital->id,
+                        'recorded_at' => $latestVital->recorded_at->toISOString(),
+                        'temperature' => $latestVital->temperature,
+                        'heart_rate' => $latestVital->heart_rate,
+                        'respiratory_rate' => $latestVital->respiratory_rate,
+                        'systolic_bp' => $latestVital->systolic_bp,
+                        'diastolic_bp' => $latestVital->diastolic_bp,
+                        'oxygen_saturation' => $latestVital->oxygen_saturation,
+                        'consciousness' => $latestVital->consciousness,
+                        'total_ews' => $latestVital->total_ews,
+                        'recorder' => $latestVital->recorder ? [
+                            'id' => $latestVital->recorder->id,
+                            'name' => $latestVital->recorder->name
+                        ] : null
+                    ] : null
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'patients' => $responseData,
+                'timestamp' => now()->toISOString()
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error checking vital signs updates', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error checking for updates',
+                'patients' => []
             ], 500);
         }
     }
