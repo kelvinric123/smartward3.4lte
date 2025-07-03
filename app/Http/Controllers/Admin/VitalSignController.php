@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bed;
 use App\Models\Patient;
+use App\Models\PatientAlert;
 use App\Models\VitalSign;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class VitalSignController extends Controller
 {
@@ -155,6 +158,9 @@ class VitalSignController extends Controller
         // Create the vital sign record
         $vitalSign = VitalSign::create($data);
         
+        // Check for EWS-based alert triggers
+        $this->checkEWSAlerts($vitalSign);
+        
         Session::flash('success', 'Vital signs recorded successfully!');
         
         if ($request->has('redirect') && $request->redirect === 'patient') {
@@ -243,6 +249,9 @@ class VitalSignController extends Controller
         
         // Update the record
         $vitalSign->update($data);
+        
+        // Check for EWS-based alert triggers after update
+        $this->checkEWSAlerts($vitalSign->fresh());
         
         Session::flash('success', 'Vital signs updated successfully!');
         
@@ -448,6 +457,106 @@ class VitalSignController extends Controller
                 'message' => 'Error checking for updates',
                 'patients' => []
             ], 500);
+        }
+    }
+
+    /**
+     * Check EWS levels and create alerts for yellow/red warnings
+     * 
+     * @param VitalSign $vitalSign
+     * @return void
+     */
+    private function checkEWSAlerts(VitalSign $vitalSign)
+    {
+        try {
+            // Only trigger alerts for EWS >= 5 (High Risk/Critical)
+            if ($vitalSign->total_ews < 5) {
+                return;
+            }
+
+            // Get patient and their current bed information
+            $patient = $vitalSign->patient;
+            if (!$patient) {
+                return;
+            }
+
+            // Find the patient's current bed and ward
+            $currentBed = $patient->bed; // Get the bed this patient is currently assigned to
+            if (!$currentBed || !$currentBed->ward_id) {
+                // If patient is not in a bed, try to find through active admission
+                $activeAdmission = $patient->activeAdmission;
+                if (!$activeAdmission || !$activeAdmission->bed_id) {
+                    return; // No bed/ward information, can't create alert
+                }
+                $currentBed = \App\Models\Bed::find($activeAdmission->bed_id);
+                if (!$currentBed) {
+                    return;
+                }
+            }
+
+            // Determine alert message and urgency based on EWS level
+            $isUrgent = false;
+            $alertType = 'ews_warning';
+            $message = '';
+
+            if ($vitalSign->total_ews >= 7) {
+                // Critical - Red
+                $isUrgent = true;
+                $alertType = 'ews_critical';
+                $message = "CRITICAL: Patient has EWS score of {$vitalSign->total_ews} - Immediate medical attention required!";
+            } elseif ($vitalSign->total_ews >= 5) {
+                // High Risk - Yellow  
+                $isUrgent = true;
+                $alertType = 'ews_high_risk';
+                $message = "HIGH RISK: Patient has EWS score of {$vitalSign->total_ews} - Medical review required.";
+            }
+
+            // Check if there's already a recent EWS alert for this patient to avoid spam
+            $recentAlert = PatientAlert::where('patient_id', $patient->id)
+                ->where('ward_id', $currentBed->ward_id)
+                ->where('alert_type', $alertType)
+                ->where('status', '!=', 'resolved')
+                ->where('created_at', '>=', Carbon::now()->subMinutes(30)) // Don't spam within 30 minutes
+                ->first();
+
+            if ($recentAlert) {
+                // Update the existing alert with new EWS score instead of creating a new one
+                $recentAlert->update([
+                    'message' => $message,
+                    'is_urgent' => $isUrgent,
+                    'updated_at' => now()
+                ]);
+                return;
+            }
+
+            // Create new EWS-based alert
+            PatientAlert::create([
+                'patient_id' => $patient->id,
+                'ward_id' => $currentBed->ward_id,
+                'bed_id' => $currentBed->id,
+                'alert_type' => $alertType,
+                'message' => $message,
+                'status' => 'new',
+                'is_urgent' => $isUrgent,
+            ]);
+
+            \Log::info('EWS Alert Created', [
+                'patient_id' => $patient->id,
+                'patient_name' => $patient->name,
+                'ews_score' => $vitalSign->total_ews,
+                'alert_type' => $alertType,
+                'bed_number' => $currentBed->bed_number,
+                'ward_id' => $currentBed->ward_id
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating EWS alert', [
+                'vital_sign_id' => $vitalSign->id,
+                'patient_id' => $vitalSign->patient_id,
+                'ews_score' => $vitalSign->total_ews,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 } 

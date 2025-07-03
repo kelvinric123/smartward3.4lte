@@ -1385,7 +1385,10 @@
                     'assistance': 'fa-hands-helping',
                     'water': 'fa-tint',
                     'bathroom': 'fa-toilet',
-                    'food': 'fa-utensils'
+                    'food': 'fa-utensils',
+                    'ews_critical': 'fa-exclamation-triangle',
+                    'ews_high_risk': 'fa-chart-line',
+                    'ews_warning': 'fa-chart-line'
                 };
                 
                 const icon = icons[alert.alert_type] || 'fa-bell';
@@ -1530,7 +1533,10 @@
                     'assistance': 'fa-hands-helping',
                     'water': 'fa-tint',
                     'bathroom': 'fa-toilet',
-                    'food': 'fa-utensils'
+                    'food': 'fa-utensils',
+                    'ews_critical': 'fa-exclamation-triangle',
+                    'ews_high_risk': 'fa-chart-line',
+                    'ews_warning': 'fa-chart-line'
                 };
                 
                 const icon = icons[alert.alert_type] || 'fa-bell';
