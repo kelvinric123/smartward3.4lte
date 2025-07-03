@@ -484,15 +484,54 @@ class WardController extends Controller
             // Count all unresolved alerts (both new and seen are considered active)
             $activeAlertsCount = $patientAlerts->count();
             
+            // Get resolved alerts count for history statistics
+            $resolvedAlertsCount = \App\Models\PatientAlert::where('ward_id', $ward->id)
+                ->where('status', 'resolved')
+                ->count();
+            
+            // Get responses count (number of patient responses sent)
+            $responsesCount = \App\Models\PatientResponse::whereHas('patientAlert', function($query) use ($ward) {
+                $query->where('ward_id', $ward->id);
+            })->count();
+            
             return response()->json([
                 'success' => true,
                 'alerts' => $patientAlerts,
-                'new_alerts_count' => $activeAlertsCount
+                'new_alerts_count' => $activeAlertsCount,
+                'resolved_alerts_count' => $resolvedAlertsCount,
+                'responses_count' => $responsesCount
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching alerts: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get resolved patient alerts for history
+     * Used for displaying alert history
+     */
+    public function getPatientAlertsHistory(Ward $ward)
+    {
+        try {
+            // Get resolved patient alerts for this ward
+            $resolvedAlerts = \App\Models\PatientAlert::where('ward_id', $ward->id)
+                ->where('status', 'resolved')
+                ->with(['patient', 'bed', 'responses.nurse'])
+                ->orderBy('updated_at', 'desc')
+                ->take(50)
+                ->get();
+                
+            return response()->json([
+                'success' => true,
+                'history' => $resolvedAlerts
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching alert history: ' . $e->getMessage()
             ], 500);
         }
     }

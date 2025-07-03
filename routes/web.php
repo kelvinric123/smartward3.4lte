@@ -105,6 +105,7 @@ Route::prefix('admin')->group(function () {
         
         // Ward Patient Alerts
         Route::get('wards/{ward}/alerts', [App\Http\Controllers\Admin\WardController::class, 'getPatientAlerts'])->name('wards.alerts');
+        Route::get('wards/{ward}/alerts/history', [App\Http\Controllers\Admin\WardController::class, 'getPatientAlertsHistory'])->name('wards.alerts.history');
         Route::put('wards/alerts/{alertId}/seen', [App\Http\Controllers\Admin\WardController::class, 'markAlertAsSeen'])->name('wards.alerts.seen');
         Route::put('wards/alerts/{alertId}/respond', [App\Http\Controllers\Admin\WardController::class, 'respondToAlert'])->name('wards.alerts.respond');
         

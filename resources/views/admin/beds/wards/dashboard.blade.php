@@ -399,7 +399,7 @@
                 <div class="modal-body">
                     <!-- Statistics Row -->
                     <div class="row mb-3">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="info-box bg-warning">
                                 <span class="info-box-icon"><i class="fas fa-exclamation-circle"></i></span>
                                 <div class="info-box-content">
@@ -408,7 +408,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="info-box bg-info">
                                 <span class="info-box-icon"><i class="fas fa-bell"></i></span>
                                 <div class="info-box-content">
@@ -417,7 +417,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="info-box bg-success">
                                 <span class="info-box-icon"><i class="fas fa-reply"></i></span>
                                 <div class="info-box-content">
@@ -426,7 +426,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
+                            <div class="info-box bg-secondary">
+                                <span class="info-box-icon"><i class="fas fa-history"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">History</span>
+                                    <span class="info-box-number" id="modal-history-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <button type="button" class="btn btn-success btn-block" id="refresh-notifications">
                                 <i class="fas fa-sync-alt"></i> Refresh
                             </button>
@@ -436,11 +445,40 @@
                         </div>
                     </div>
 
-                    <!-- Notifications List -->
-                    <div id="notifications-list">
-                        <div class="text-center py-4">
-                            <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
-                            <p class="mt-2 text-muted">Loading notifications...</p>
+                    <!-- Navigation Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="notification-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="active-alerts-tab" data-bs-toggle="tab" data-target="#active-alerts" role="tab" aria-controls="active-alerts" aria-selected="true">
+                                <i class="fas fa-bell"></i> Active Alerts
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="history-tab" data-bs-toggle="tab" data-target="#history" role="tab" aria-controls="history" aria-selected="false">
+                                <i class="fas fa-history"></i> History
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="notification-tab-content">
+                        <!-- Active Alerts Tab -->
+                        <div class="tab-pane fade show active" id="active-alerts" role="tabpanel" aria-labelledby="active-alerts-tab">
+                            <div id="notifications-list">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="mt-2 text-muted">Loading notifications...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History Tab -->
+                        <div class="tab-pane fade" id="history" role="tabpanel" aria-labelledby="history-tab">
+                            <div id="history-list">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                                    <p class="mt-2 text-muted">Loading history...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1294,7 +1332,7 @@
                     success: function(response) {
                         if (response.success && response.alerts) {
                             displayNotifications(response.alerts);
-                            updateModalStats(response.alerts);
+                            updateModalStats(response);
                         } else {
                             showNoNotifications();
                         }
@@ -1410,16 +1448,159 @@
             }
 
             // Update modal statistics
-            function updateModalStats(alerts) {
+            function updateModalStats(data) {
+                const alerts = data.alerts || [];
                 const newCount = alerts.filter(a => a.status === 'new').length;
                 const totalCount = alerts.length;
                 
                 $('#modal-new-count').text(newCount);
                 $('#modal-total-count').text(totalCount);
-                
-                // We'll calculate responses from previous responses
-                $('#modal-responses-count').text('0'); // Will be updated later if needed
+                $('#modal-responses-count').text(data.responses_count || 0);
+                $('#modal-history-count').text(data.resolved_alerts_count || 0);
             }
+
+            // Load alert history
+            function loadHistory() {
+                $('#history-list').html(`
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
+                        <p class="mt-2 text-muted">Loading history...</p>
+                    </div>
+                `);
+
+                $.ajax({
+                    url: '{{ route("admin.beds.wards.alerts.history", $ward->id) }}',
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') || '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success && response.history) {
+                            displayHistory(response.history);
+                        } else {
+                            showNoHistory();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Failed to load history:', xhr.responseText);
+                        $('#history-list').html(`
+                            <div class="text-center py-4">
+                                <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
+                                <p class="mt-2 text-danger">Failed to load history</p>
+                                <button class="btn btn-outline-primary" onclick="loadHistory()">Try Again</button>
+                            </div>
+                        `);
+                    }
+                });
+            }
+
+            // Display history
+            function displayHistory(alerts) {
+                const container = $('#history-list');
+                container.empty();
+
+                if (alerts.length === 0) {
+                    showNoHistory();
+                    return;
+                }
+
+                alerts.forEach(function(alert) {
+                    const historyCard = createHistoryCard(alert);
+                    container.append(historyCard);
+                });
+            }
+
+            // Show no history message
+            function showNoHistory() {
+                $('#history-list').html(`
+                    <div class="text-center py-5">
+                        <i class="fas fa-history fa-3x text-muted"></i>
+                        <h4 class="mt-3">No History</h4>
+                        <p class="text-muted">No resolved alerts found.</p>
+                    </div>
+                `);
+            }
+
+            // Create history card
+            function createHistoryCard(alert) {
+                const icons = {
+                    'emergency': 'fa-exclamation-triangle',
+                    'pain': 'fa-heartbeat',
+                    'assistance': 'fa-hands-helping',
+                    'water': 'fa-tint',
+                    'bathroom': 'fa-toilet',
+                    'food': 'fa-utensils'
+                };
+                
+                const icon = icons[alert.alert_type] || 'fa-bell';
+                const badgeClass = alert.is_urgent ? 'badge-danger' : 'badge-primary';
+                
+                // Get response info
+                const response = alert.responses && alert.responses.length > 0 ? alert.responses[0] : null;
+                const nurseName = response && response.nurse ? response.nurse.name : 'Unknown';
+                const responseTime = response ? formatTimeAgo(response.created_at) : 'N/A';
+                
+                return $(`
+                    <div class="card mb-3 border-success">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-1 text-center">
+                                    <span class="badge ${badgeClass} p-2">
+                                        <i class="fas ${icon} fa-lg"></i>
+                                    </span>
+                                </div>
+                                <div class="col-md-5">
+                                    <h6 class="mb-1">
+                                        <strong>${alert.patient.name}</strong>
+                                        <span class="text-muted">(Bed ${alert.bed.bed_number})</span>
+                                    </h6>
+                                    <p class="mb-1">${alert.message}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> Alert: ${formatTimeAgo(alert.created_at)}
+                                        ${alert.is_urgent ? '<span class="badge badge-danger ml-2">URGENT</span>' : ''}
+                                    </small>
+                                </div>
+                                <div class="col-md-3">
+                                    <span class="badge badge-success">Resolved</span>
+                                    <br><small class="text-muted">${alert.alert_type.charAt(0).toUpperCase() + alert.alert_type.slice(1)}</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-success">
+                                        <i class="fas fa-user-nurse"></i> ${nurseName}<br>
+                                        <i class="fas fa-reply"></i> Responded ${responseTime}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+
+            // Tab switching handlers
+            $('#active-alerts-tab').click(function(e) {
+                e.preventDefault();
+                $('.nav-link').removeClass('active');
+                $(this).addClass('active');
+                $('.tab-pane').removeClass('show active');
+                $('#active-alerts').addClass('show active');
+                
+                // Load active alerts if not already loaded
+                if ($('#notifications-list').children().length === 0 || $('#notifications-list').find('.text-center').length > 0) {
+                    loadNotifications();
+                }
+            });
+
+            $('#history-tab').click(function(e) {
+                e.preventDefault();
+                $('.nav-link').removeClass('active');
+                $(this).addClass('active');
+                $('.tab-pane').removeClass('show active');
+                $('#history').addClass('show active');
+                
+                // Load history when tab is clicked
+                loadHistory();
+            });
 
             // Event handlers for new notification system
             $(document).on('click', '.respond-to-alert', function() {
@@ -1469,6 +1650,10 @@
                                 $(this).remove();
                                 // Reload notifications to update counts
                                 loadNotifications();
+                                // If history tab exists and has been loaded, refresh it too
+                                if ($('#history-list').children().length > 0) {
+                                    loadHistory();
+                                }
                             });
                             
                             $('#responseModal').modal('hide');
@@ -1500,7 +1685,13 @@
                 const originalHtml = btn.html();
                 btn.html('<i class="fas fa-spinner fa-spin"></i> Refreshing...').prop('disabled', true);
                 
+                // Refresh active alerts
                 loadNotifications();
+                
+                // If history tab is active, also refresh history
+                if ($('#history-tab').hasClass('active')) {
+                    loadHistory();
+                }
                 
                 setTimeout(() => {
                     btn.html(originalHtml).prop('disabled', false);
