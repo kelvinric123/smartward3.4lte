@@ -154,6 +154,72 @@
                                         @enderror
                                     </div>
                                     
+                                    <h5 class="mt-4">Glasgow Coma Scale (GCS) <small class="text-muted">(Optional)</small></h5>
+                                    <hr>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="gcs_eye">Eye Opening (1-4)</label>
+                                                <select name="gcs_eye" id="gcs_eye" class="form-control @error('gcs_eye') is-invalid @enderror">
+                                                    <option value="">-</option>
+                                                    <option value="1" {{ old('gcs_eye', $vitalSign->gcs_eye) == '1' ? 'selected' : '' }}>1 - No response</option>
+                                                    <option value="2" {{ old('gcs_eye', $vitalSign->gcs_eye) == '2' ? 'selected' : '' }}>2 - To pain</option>
+                                                    <option value="3" {{ old('gcs_eye', $vitalSign->gcs_eye) == '3' ? 'selected' : '' }}>3 - To voice</option>
+                                                    <option value="4" {{ old('gcs_eye', $vitalSign->gcs_eye) == '4' ? 'selected' : '' }}>4 - Spontaneous</option>
+                                                </select>
+                                                @error('gcs_eye')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="gcs_verbal">Verbal Response (1-5)</label>
+                                                <select name="gcs_verbal" id="gcs_verbal" class="form-control @error('gcs_verbal') is-invalid @enderror">
+                                                    <option value="">-</option>
+                                                    <option value="1" {{ old('gcs_verbal', $vitalSign->gcs_verbal) == '1' ? 'selected' : '' }}>1 - No response</option>
+                                                    <option value="2" {{ old('gcs_verbal', $vitalSign->gcs_verbal) == '2' ? 'selected' : '' }}>2 - Incomprehensible</option>
+                                                    <option value="3" {{ old('gcs_verbal', $vitalSign->gcs_verbal) == '3' ? 'selected' : '' }}>3 - Inappropriate</option>
+                                                    <option value="4" {{ old('gcs_verbal', $vitalSign->gcs_verbal) == '4' ? 'selected' : '' }}>4 - Confused</option>
+                                                    <option value="5" {{ old('gcs_verbal', $vitalSign->gcs_verbal) == '5' ? 'selected' : '' }}>5 - Oriented</option>
+                                                </select>
+                                                @error('gcs_verbal')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="gcs_motor">Motor Response (1-6)</label>
+                                                <select name="gcs_motor" id="gcs_motor" class="form-control @error('gcs_motor') is-invalid @enderror">
+                                                    <option value="">-</option>
+                                                    <option value="1" {{ old('gcs_motor', $vitalSign->gcs_motor) == '1' ? 'selected' : '' }}>1 - No response</option>
+                                                    <option value="2" {{ old('gcs_motor', $vitalSign->gcs_motor) == '2' ? 'selected' : '' }}>2 - Extension</option>
+                                                    <option value="3" {{ old('gcs_motor', $vitalSign->gcs_motor) == '3' ? 'selected' : '' }}>3 - Flexion</option>
+                                                    <option value="4" {{ old('gcs_motor', $vitalSign->gcs_motor) == '4' ? 'selected' : '' }}>4 - Withdrawal</option>
+                                                    <option value="5" {{ old('gcs_motor', $vitalSign->gcs_motor) == '5' ? 'selected' : '' }}>5 - Localizes</option>
+                                                    <option value="6" {{ old('gcs_motor', $vitalSign->gcs_motor) == '6' ? 'selected' : '' }}>6 - Obeys commands</option>
+                                                </select>
+                                                @error('gcs_motor')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label for="gcs_total">Total GCS (Auto)</label>
+                                                <input type="number" name="gcs_total" id="gcs_total" class="form-control @error('gcs_total') is-invalid @enderror" value="{{ old('gcs_total', $vitalSign->gcs_total) }}" readonly>
+                                                @error('gcs_total')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="form-group">
                                         <label for="notes">Additional Notes</label>
                                         <textarea name="notes" id="notes" rows="5" class="form-control @error('notes') is-invalid @enderror" placeholder="Enter any additional observations or notes here...">{{ old('notes', $vitalSign->notes) }}</textarea>
@@ -195,4 +261,31 @@
         .badge-warning { background-color: #ffc107; color: #212529; }
         .badge-danger { background-color: #dc3545; }
     </style>
+@stop
+
+@section('js')
+    <script>
+        $(function() {
+            // Auto-calculate GCS total when any GCS component changes
+            function calculateGCSTotal() {
+                var eye = parseInt($('#gcs_eye').val()) || 0;
+                var verbal = parseInt($('#gcs_verbal').val()) || 0;
+                var motor = parseInt($('#gcs_motor').val()) || 0;
+                
+                var total = eye + verbal + motor;
+                
+                if (total > 0) {
+                    $('#gcs_total').val(total);
+                } else {
+                    $('#gcs_total').val('');
+                }
+            }
+            
+            // Bind change events to GCS fields
+            $('#gcs_eye, #gcs_verbal, #gcs_motor').on('change', calculateGCSTotal);
+            
+            // Calculate on page load if values exist
+            calculateGCSTotal();
+        });
+    </script>
 @stop 

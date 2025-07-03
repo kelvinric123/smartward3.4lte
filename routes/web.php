@@ -84,6 +84,7 @@ Route::prefix('admin')->group(function () {
     
     // Vital Signs Routes
     Route::get('/vital-signs', [VitalSignController::class, 'index'])->name('admin.vital-signs.index');
+    Route::get('/vital-signs/check-updates', [VitalSignController::class, 'checkUpdates'])->name('admin.vital-signs.check-updates');
     Route::get('/vital-signs/create', [VitalSignController::class, 'create'])->name('admin.vital-signs.create');
     Route::get('/vital-signs/{vitalSign}', [VitalSignController::class, 'show'])->name('admin.vital-signs.show');
     Route::post('/vital-signs', [VitalSignController::class, 'store'])->name('admin.vital-signs.store');

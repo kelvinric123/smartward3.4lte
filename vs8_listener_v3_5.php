@@ -198,6 +198,7 @@ while (true) {
             $nurseId = '';
             $ewsTotal = null;
             $temperature = $meanBP = $bodyPosition = $height = $weight = null;
+            $gcsTotal = $gcsEye = $gcsVerbal = $gcsMotor = null;
             
             foreach ($segments as $segment) {
                 // Parse PID segment for patient info
@@ -335,6 +336,56 @@ while (true) {
                                 $ewsTotal = $value;
                                 error_log("EWS Total Score: $ewsTotal");
                                 break;
+
+                            case 'MDC_SCORE_GLAS_COMA':  // GCS Total Score
+                                $gcsTotal = $value;
+                                error_log("GCS Total Score: $gcsTotal");
+                                break;
+
+                            case 'MDC_SCORE_EYE_SUBSC_GLAS_COMA':  // GCS Eye Response
+                                $gcsEye = $value;
+                                error_log("GCS Eye Response: $gcsEye");
+                                break;
+
+                            case 'MDC_SCORE_SUBSC_VERBAL_GLAS_COMA':  // GCS Verbal Response
+                                $gcsVerbal = $value;
+                                error_log("GCS Verbal Response: $gcsVerbal");
+                                break;
+
+                            case 'MDC_SCORE_MOTOR_SUBSC_GLAS_COMA':  // GCS Motor Response
+                                $gcsMotor = $value;
+                                error_log("GCS Motor Response: $gcsMotor");
+                                break;
+
+                            case 'COMEN_EWS_LOC_AVPU':  // COMEN AVPU Score
+                                error_log("Processing COMEN AVPU - Raw value: " . print_r($value, true));
+                                
+                                // Extract the AVPU code from the value (format: 2751^COMEN_SCORE_LOC_AVPU_CONFUSED^99COMEN)
+                                $avpuCode = explode('^', $value)[1] ?? '';
+                                
+                                // Convert COMEN AVPU codes to standardized values
+                                switch ($avpuCode) {
+                                    case 'COMEN_SCORE_LOC_AVPU_ALERT':
+                                        $avpu = 'alert';
+                                        break;
+                                    case 'COMEN_SCORE_LOC_AVPU_VOICE':
+                                        $avpu = 'reacting to voice';
+                                        break;
+                                    case 'COMEN_SCORE_LOC_AVPU_PAIN':
+                                        $avpu = 'reacting to pain';
+                                        break;
+                                    case 'COMEN_SCORE_LOC_AVPU_UNRESPONSIVE':
+                                        $avpu = 'unresponsive';
+                                        break;
+                                    case 'COMEN_SCORE_LOC_AVPU_CONFUSED':
+                                        $avpu = 'confused';
+                                        break;
+                                    default:
+                                        $avpu = null;
+                                        error_log("COMEN AVPU value not recognized: $avpuCode");
+                                }
+                                error_log("Final COMEN AVPU value to be stored: " . ($avpu ?? 'NULL'));
+                                break;
                         }
                     }
                 }
@@ -354,6 +405,7 @@ while (true) {
             error_log("AVPU: {$avpu}, Position: {$bodyPosition}");
             error_log("Height: {$height}cm, Weight: {$weight}kg");
             error_log("EWS Total: {$ewsTotal}");
+            error_log("GCS Total: {$gcsTotal} (E{$gcsEye} V{$gcsVerbal} M{$gcsMotor})");
 
             error_log("Patient info: MRN: $mrn, Name: $name");
 
@@ -368,6 +420,10 @@ while (true) {
             $systolicBP = ($systolicBP === '' || $systolicBP === null) ? null : (int)$systolicBP;
             $diastolicBP = ($diastolicBP === '' || $diastolicBP === null) ? null : (int)$diastolicBP;
             $ewsTotal = ($ewsTotal === '' || $ewsTotal === null) ? null : (int)$ewsTotal;
+            $gcsTotal = ($gcsTotal === '' || $gcsTotal === null) ? null : (int)$gcsTotal;
+            $gcsEye = ($gcsEye === '' || $gcsEye === null) ? null : (int)$gcsEye;
+            $gcsVerbal = ($gcsVerbal === '' || $gcsVerbal === null) ? null : (int)$gcsVerbal;
+            $gcsMotor = ($gcsMotor === '' || $gcsMotor === null) ? null : (int)$gcsMotor;
 
             try {
                 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -379,12 +435,14 @@ while (true) {
                         respiratory_rate, spo2, pulse_rate, temperature,
                         nurse_id, systolic_bp, diastolic_bp, mean_bp,
                         avpu, ews_score_total, body_position, height, weight,
+                        gcs_total, gcs_eye, gcs_verbal, gcs_motor,
                         processed, created_at, updated_at
                     ) VALUES (
                         :device_timestamp, :raw_message, :mrn, :patient_name,
                         :respiratory_rate, :spo2, :pulse_rate, :temperature,
                         :nurse_id, :systolic_bp, :diastolic_bp, :mean_bp,
                         :avpu, :ews_score_total, :body_position, :height, :weight,
+                        :gcs_total, :gcs_eye, :gcs_verbal, :gcs_motor,
                         :processed, :created_at, :updated_at
                     )
                 ");
@@ -407,6 +465,10 @@ while (true) {
                     ':body_position' => $bodyPosition,
                     ':height' => $height,
                     ':weight' => $weight,
+                    ':gcs_total' => $gcsTotal,
+                    ':gcs_eye' => $gcsEye,
+                    ':gcs_verbal' => $gcsVerbal,
+                    ':gcs_motor' => $gcsMotor,
                     ':processed' => 0, // false, not processed yet
                     ':created_at' => $currentTime,
                     ':updated_at' => $currentTime
@@ -460,6 +522,7 @@ while (true) {
                             patient_id, recorded_by, recorded_at,
                             temperature, heart_rate, respiratory_rate,
                             systolic_bp, diastolic_bp, oxygen_saturation, consciousness,
+                            gcs_total, gcs_eye, gcs_verbal, gcs_motor, gcs_score,
                             temperature_score, heart_rate_score, respiratory_rate_score,
                             blood_pressure_score, oxygen_saturation_score, consciousness_score,
                             total_ews, notes, created_at, updated_at
@@ -467,6 +530,7 @@ while (true) {
                             :patient_id, :recorded_by, :recorded_at,
                             :temperature, :heart_rate, :respiratory_rate,
                             :systolic_bp, :diastolic_bp, :oxygen_saturation, :consciousness,
+                            :gcs_total, :gcs_eye, :gcs_verbal, :gcs_motor, :gcs_score,
                             :temperature_score, :heart_rate_score, :respiratory_rate_score,
                             :blood_pressure_score, :oxygen_saturation_score, :consciousness_score,
                             :total_ews, :notes, :created_at, :updated_at
@@ -484,6 +548,11 @@ while (true) {
                         ':diastolic_bp' => $diastolicBP,
                         ':oxygen_saturation' => $spo2,
                         ':consciousness' => $consciousness,
+                        ':gcs_total' => $gcsTotal,
+                        ':gcs_eye' => $gcsEye,
+                        ':gcs_verbal' => $gcsVerbal,
+                        ':gcs_motor' => $gcsMotor,
+                        ':gcs_score' => 0, // Can be calculated later if needed for EWS
                         ':temperature_score' => $ewsResults['scores']['temperature_score'],
                         ':heart_rate_score' => $ewsResults['scores']['heart_rate_score'],
                         ':respiratory_rate_score' => $ewsResults['scores']['respiratory_rate_score'],
@@ -491,7 +560,7 @@ while (true) {
                         ':oxygen_saturation_score' => $ewsResults['scores']['oxygen_saturation_score'],
                         ':consciousness_score' => $ewsResults['scores']['consciousness_score'],
                         ':total_ews' => $ewsResults['total_ews'],
-                        ':notes' => "Automatically recorded from vital signs monitor via HL7",
+                        ':notes' => "Automatically recorded from vital signs monitor via HL7" . ($gcsTotal ? " - GCS: E{$gcsEye}V{$gcsVerbal}M{$gcsMotor}" : ""),
                         ':created_at' => $currentTime,
                         ':updated_at' => $currentTime
                     ]);

@@ -106,6 +106,70 @@
                                 </div>
                             </div>
                             
+                            @if($vitalSign->gcs_total)
+                            <!-- GCS Card -->
+                            <div class="col-md-6">
+                                <div class="card card-{{ $vitalSign->gcs_status_color }}">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Glasgow Coma Scale (GCS)</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-12 text-center">
+                                                <div class="display-4 font-weight-bold">{{ $vitalSign->gcs_total }}/15</div>
+                                                <h5>{{ $vitalSign->gcs_display }}</h5>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-3">
+                                            <div class="col-md-12">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Component</th>
+                                                            <th class="text-center">Score</th>
+                                                            <th class="text-center">Max</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td>Eye Opening (E)</td>
+                                                            <td class="text-center">{{ $vitalSign->gcs_eye }}</td>
+                                                            <td class="text-center">4</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Verbal Response (V)</td>
+                                                            <td class="text-center">{{ $vitalSign->gcs_verbal }}</td>
+                                                            <td class="text-center">5</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Motor Response (M)</td>
+                                                            <td class="text-center">{{ $vitalSign->gcs_motor }}</td>
+                                                            <td class="text-center">6</td>
+                                                        </tr>
+                                                        <tr class="font-weight-bold">
+                                                            <td class="text-right">Total GCS:</td>
+                                                            <td class="text-center">{{ $vitalSign->gcs_total }}</td>
+                                                            <td class="text-center">15</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                
+                                                <div class="mt-3">
+                                                    <div class="alert alert-info">
+                                                        <strong>GCS Interpretation:</strong><br>
+                                                        • 13-15: Mild brain injury<br>
+                                                        • 9-12: Moderate brain injury<br>
+                                                        • 3-8: Severe brain injury
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            
                             <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-header">
