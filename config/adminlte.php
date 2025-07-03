@@ -335,6 +335,21 @@ return [
                     'url' => 'admin/analytics-dashboard#patient-status',
                     'icon' => 'fas fa-fw fa-heartbeat',
                 ],
+                [
+                    'text' => 'Nurse Call Metrics',
+                    'url' => 'admin/analytics-dashboard#nurse-call-metrics',
+                    'icon' => 'fas fa-fw fa-phone',
+                ],
+                [
+                    'text' => 'Housekeeping',
+                    'url' => 'admin/analytics-dashboard#housekeeping-metrics',
+                    'icon' => 'fas fa-fw fa-broom',
+                ],
+                [
+                    'text' => 'Patient Feedback',
+                    'url' => 'admin/analytics-dashboard#patient-feedback',
+                    'icon' => 'fas fa-fw fa-comments',
+                ],
             ],
         ],
         [

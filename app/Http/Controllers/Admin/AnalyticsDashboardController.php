@@ -313,10 +313,10 @@ class AnalyticsDashboardController extends Controller
      */
     private function getNurseCallResponseMetrics()
     {
-        // Get all alerts from last 30 days that have been responded to
-        $respondedAlerts = PatientAlert::where('status', 'responded')
+        // Get all alerts from last 30 days that have been resolved (with responses)
+        $resolvedAlerts = PatientAlert::where('status', 'resolved')
             ->where('created_at', '>=', Carbon::now()->subDays(30))
-            ->whereNotNull('responded_at')
+            ->with('responses')
             ->get();
 
         $totalResponseTime = 0;
@@ -324,23 +324,7 @@ class AnalyticsDashboardController extends Controller
         $nonUrgentResponseTime = 0;
         $urgentCount = 0;
         $nonUrgentCount = 0;
-
-        foreach ($respondedAlerts as $alert) {
-            $responseTime = Carbon::parse($alert->responded_at)->diffInMinutes(Carbon::parse($alert->created_at));
-            $totalResponseTime += $responseTime;
-
-            if ($alert->is_urgent) {
-                $urgentResponseTime += $responseTime;
-                $urgentCount++;
-            } else {
-                $nonUrgentResponseTime += $responseTime;
-                $nonUrgentCount++;
-            }
-        }
-
-        $averageResponseTime = $respondedAlerts->count() > 0 ? round($totalResponseTime / $respondedAlerts->count(), 1) : 0;
-        $averageUrgentResponseTime = $urgentCount > 0 ? round($urgentResponseTime / $urgentCount, 1) : 0;
-        $averageNonUrgentResponseTime = $nonUrgentCount > 0 ? round($nonUrgentResponseTime / $nonUrgentCount, 1) : 0;
+        $validResponseCount = 0;
 
         // Get response time breakdown by categories
         $responseTimeBreakdown = [
@@ -350,36 +334,56 @@ class AnalyticsDashboardController extends Controller
             'over_30_min' => 0,
         ];
 
-        foreach ($respondedAlerts as $alert) {
-            $responseTime = Carbon::parse($alert->responded_at)->diffInMinutes(Carbon::parse($alert->created_at));
+        foreach ($resolvedAlerts as $alert) {
+            // Get the first response time (when staff first responded)
+            $firstResponse = $alert->responses()->orderBy('created_at')->first();
             
-            if ($responseTime < 5) {
-                $responseTimeBreakdown['under_5_min']++;
-            } elseif ($responseTime < 15) {
-                $responseTimeBreakdown['5_to_15_min']++;
-            } elseif ($responseTime < 30) {
-                $responseTimeBreakdown['15_to_30_min']++;
-            } else {
-                $responseTimeBreakdown['over_30_min']++;
+            if ($firstResponse) {
+                $responseTime = Carbon::parse($firstResponse->created_at)->diffInMinutes(Carbon::parse($alert->created_at));
+                $totalResponseTime += $responseTime;
+                $validResponseCount++;
+
+                if ($alert->is_urgent) {
+                    $urgentResponseTime += $responseTime;
+                    $urgentCount++;
+                } else {
+                    $nonUrgentResponseTime += $responseTime;
+                    $nonUrgentCount++;
+                }
+
+                // Categorize response time
+                if ($responseTime < 5) {
+                    $responseTimeBreakdown['under_5_min']++;
+                } elseif ($responseTime < 15) {
+                    $responseTimeBreakdown['5_to_15_min']++;
+                } elseif ($responseTime < 30) {
+                    $responseTimeBreakdown['15_to_30_min']++;
+                } else {
+                    $responseTimeBreakdown['over_30_min']++;
+                }
             }
         }
 
+        $averageResponseTime = $validResponseCount > 0 ? round($totalResponseTime / $validResponseCount, 1) : 0;
+        $averageUrgentResponseTime = $urgentCount > 0 ? round($urgentResponseTime / $urgentCount, 1) : 0;
+        $averageNonUrgentResponseTime = $nonUrgentCount > 0 ? round($nonUrgentResponseTime / $nonUrgentCount, 1) : 0;
+
         // Get today's metrics
         $todayAlerts = PatientAlert::whereDate('created_at', Carbon::today())->count();
-        $todayResponded = PatientAlert::whereDate('created_at', Carbon::today())
-            ->where('status', 'responded')->count();
+        $todayResolved = PatientAlert::whereDate('created_at', Carbon::today())
+            ->where('status', 'resolved')->count();
         $todayPending = PatientAlert::whereDate('created_at', Carbon::today())
             ->whereIn('status', ['new', 'seen'])->count();
 
         return [
             'total_alerts_30_days' => PatientAlert::where('created_at', '>=', Carbon::now()->subDays(30))->count(),
-            'responded_alerts_30_days' => $respondedAlerts->count(),
+            'responded_alerts_30_days' => $validResponseCount,
             'average_response_time' => $averageResponseTime,
             'average_urgent_response_time' => $averageUrgentResponseTime,
             'average_non_urgent_response_time' => $averageNonUrgentResponseTime,
             'response_time_breakdown' => $responseTimeBreakdown,
             'today_alerts' => $todayAlerts,
-            'today_responded' => $todayResponded,
+            'today_responded' => $todayResolved,
             'today_pending' => $todayPending,
         ];
     }

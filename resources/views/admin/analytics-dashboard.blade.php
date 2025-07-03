@@ -500,6 +500,450 @@
                 </div>
             </div>
         </div>
+
+        <!-- Nurse Call Response Time Metrics Section -->
+        <div class="row" id="nurse-call-metrics">
+            <div class="col-12">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-phone mr-2"></i>Nurse Call Response Time Metrics</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Avg Response Time</span>
+                                        <span class="info-box-number">{{ $nurseCallMetrics['average_response_time'] }} min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Urgent Avg Response</span>
+                                        <span class="info-box-number">{{ $nurseCallMetrics['average_urgent_response_time'] }} min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-info-circle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Non-Urgent Avg Response</span>
+                                        <span class="info-box-number">{{ $nurseCallMetrics['average_non_urgent_response_time'] }} min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary"><i class="fas fa-bell"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Today's Alerts</span>
+                                        <span class="info-box-number">{{ $nurseCallMetrics['today_alerts'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Today's Responded</span>
+                                        <span class="info-box-number">{{ $nurseCallMetrics['today_responded'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-hourglass-half"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Today's Pending</span>
+                                        <span class="info-box-number">{{ $nurseCallMetrics['today_pending'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Response Time Breakdown (Last 30 Days)</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="progress-group">
+                                            <span class="progress-text">Under 5 minutes</span>
+                                            <span class="float-right"><b>{{ $nurseCallMetrics['response_time_breakdown']['under_5_min'] }}</b> alerts</span>
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar bg-success" style="width: {{ $nurseCallMetrics['responded_alerts_30_days'] > 0 ? round(($nurseCallMetrics['response_time_breakdown']['under_5_min'] / $nurseCallMetrics['responded_alerts_30_days']) * 100, 1) : 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="progress-group">
+                                            <span class="progress-text">5-15 minutes</span>
+                                            <span class="float-right"><b>{{ $nurseCallMetrics['response_time_breakdown']['5_to_15_min'] }}</b> alerts</span>
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar bg-warning" style="width: {{ $nurseCallMetrics['responded_alerts_30_days'] > 0 ? round(($nurseCallMetrics['response_time_breakdown']['5_to_15_min'] / $nurseCallMetrics['responded_alerts_30_days']) * 100, 1) : 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="progress-group">
+                                            <span class="progress-text">15-30 minutes</span>
+                                            <span class="float-right"><b>{{ $nurseCallMetrics['response_time_breakdown']['15_to_30_min'] }}</b> alerts</span>
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar bg-danger" style="width: {{ $nurseCallMetrics['responded_alerts_30_days'] > 0 ? round(($nurseCallMetrics['response_time_breakdown']['15_to_30_min'] / $nurseCallMetrics['responded_alerts_30_days']) * 100, 1) : 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="progress-group">
+                                            <span class="progress-text">Over 30 minutes</span>
+                                            <span class="float-right"><b>{{ $nurseCallMetrics['response_time_breakdown']['over_30_min'] }}</b> alerts</span>
+                                            <div class="progress progress-sm">
+                                                <div class="progress-bar bg-dark" style="width: {{ $nurseCallMetrics['responded_alerts_30_days'] > 0 ? round(($nurseCallMetrics['response_time_breakdown']['over_30_min'] / $nurseCallMetrics['responded_alerts_30_days']) * 100, 1) : 0 }}%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Performance Summary</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-primary">
+                                                <i class="fas fa-bell mr-2"></i>Total Alerts (30 days)
+                                            </span>
+                                            <span class="badge badge-primary badge-lg">{{ $nurseCallMetrics['total_alerts_30_days'] }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-success">
+                                                <i class="fas fa-check mr-2"></i>Responded Alerts
+                                            </span>
+                                            <span class="badge badge-success badge-lg">{{ $nurseCallMetrics['responded_alerts_30_days'] }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-info">
+                                                <i class="fas fa-percentage mr-2"></i>Response Rate
+                                            </span>
+                                            <span class="badge badge-info badge-lg">{{ $nurseCallMetrics['total_alerts_30_days'] > 0 ? round(($nurseCallMetrics['responded_alerts_30_days'] / $nurseCallMetrics['total_alerts_30_days']) * 100, 1) : 0 }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Housekeeping & Environment Section -->
+        <div class="row" id="housekeeping-metrics">
+            <div class="col-12">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-broom mr-2"></i>Housekeeping & Environment</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-broom"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Cleaning Needed</span>
+                                        <span class="info-box-number">{{ $housekeepingMetrics['cleaning_needed_beds'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Est. Cleaning Time</span>
+                                        <span class="info-box-number">{{ $housekeepingMetrics['estimated_cleaning_time'] }} min</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Cleaning Efficiency</span>
+                                        <span class="info-box-number">{{ $housekeepingMetrics['cleaning_efficiency'] }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary"><i class="fas fa-calendar-day"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Daily Cleaning Needs</span>
+                                        <span class="info-box-number">{{ $housekeepingMetrics['daily_cleaning_needs'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Cleaning Backlog</span>
+                                        <span class="info-box-number">{{ $housekeepingMetrics['cleaning_backlog'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-secondary"><i class="fas fa-wrench"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Maintenance Beds</span>
+                                        <span class="info-box-number">{{ $housekeepingMetrics['maintenance_beds'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Ward-wise Cleaning Status</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        @foreach($housekeepingMetrics['ward_cleaning_status'] as $ward)
+                                            <div class="progress-group">
+                                                <span class="progress-text">{{ $ward['ward_name'] }}</span>
+                                                <span class="float-right">
+                                                    <b>{{ $ward['cleaning_needed'] }}</b> cleaning needed
+                                                    <small class="text-muted">({{ $ward['cleaning_percentage'] }}%)</small>
+                                                </span>
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar {{ $ward['cleaning_percentage'] > 50 ? 'bg-danger' : ($ward['cleaning_percentage'] > 25 ? 'bg-warning' : 'bg-success') }}" 
+                                                         style="width: {{ $ward['cleaning_percentage'] }}%"></div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Environment Overview</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-primary">
+                                                <i class="fas fa-bed mr-2"></i>Total Beds
+                                            </span>
+                                            <span class="badge badge-primary badge-lg">{{ $housekeepingMetrics['total_beds'] }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-success">
+                                                <i class="fas fa-check-circle mr-2"></i>Room Availability Rate
+                                            </span>
+                                            <span class="badge badge-success badge-lg">{{ $housekeepingMetrics['room_availability_rate'] }}%</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-warning">
+                                                <i class="fas fa-broom mr-2"></i>Needs Cleaning
+                                            </span>
+                                            <span class="badge badge-warning badge-lg">{{ $housekeepingMetrics['cleaning_needed_beds'] }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Feedback Section -->
+        <div class="row" id="patient-feedback">
+            <div class="col-12">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-comments mr-2"></i>Patient Feedback</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-smile"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Satisfaction Rate</span>
+                                        <span class="info-box-number">{{ $patientFeedbackMetrics['satisfaction_rate'] }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-primary"><i class="fas fa-comment"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Total Responses</span>
+                                        <span class="info-box-number">{{ $patientFeedbackMetrics['total_responses_30_days'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info"><i class="fas fa-percentage"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Response Rate</span>
+                                        <span class="info-box-number">{{ $patientFeedbackMetrics['response_rate'] }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-thumbs-up"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Positive Feedback</span>
+                                        <span class="info-box-number">{{ $patientFeedbackMetrics['positive_responses'] }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Feedback by Category (Last 30 Days)</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        @foreach($patientFeedbackMetrics['feedback_categories'] as $category => $count)
+                                            <div class="progress-group">
+                                                <span class="progress-text">
+                                                    @if($category === 'care_quality')
+                                                        <i class="fas fa-heart text-danger mr-2"></i>Care Quality
+                                                    @elseif($category === 'food_service')
+                                                        <i class="fas fa-utensils text-warning mr-2"></i>Food Service
+                                                    @elseif($category === 'room_comfort')
+                                                        <i class="fas fa-bed text-info mr-2"></i>Room Comfort
+                                                    @elseif($category === 'staff_behavior')
+                                                        <i class="fas fa-user-friends text-success mr-2"></i>Staff Behavior
+                                                    @elseif($category === 'communication')
+                                                        <i class="fas fa-comments text-primary mr-2"></i>Communication
+                                                    @endif
+                                                </span>
+                                                <span class="float-right"><b>{{ $count }}</b> responses</span>
+                                                <div class="progress progress-sm">
+                                                    <div class="progress-bar bg-primary" style="width: {{ $patientFeedbackMetrics['total_responses_30_days'] > 0 ? round(($count / $patientFeedbackMetrics['total_responses_30_days']) * 100, 1) : 0 }}%"></div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Sentiment Breakdown</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-success">
+                                                <i class="fas fa-thumbs-up mr-2"></i>Positive
+                                            </span>
+                                            <span class="badge badge-success badge-lg">{{ $patientFeedbackMetrics['positive_responses'] }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-warning">
+                                                <i class="fas fa-minus mr-2"></i>Neutral
+                                            </span>
+                                            <span class="badge badge-warning badge-lg">{{ $patientFeedbackMetrics['neutral_responses'] }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="text-danger">
+                                                <i class="fas fa-thumbs-down mr-2"></i>Negative
+                                            </span>
+                                            <span class="badge badge-danger badge-lg">{{ $patientFeedbackMetrics['negative_responses'] }}</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-primary">
+                                                <i class="fas fa-chart-line mr-2"></i>Overall Satisfaction
+                                            </span>
+                                            <span class="badge badge-primary badge-lg">{{ $patientFeedbackMetrics['satisfaction_rate'] }}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(count($patientFeedbackMetrics['recent_feedback']) > 0)
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Recent Feedback (Last 7 Days)</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Patient</th>
+                                                        <th>Category</th>
+                                                        <th>Sentiment</th>
+                                                        <th>Message</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($patientFeedbackMetrics['recent_feedback'] as $feedback)
+                                                        <tr>
+                                                            <td>{{ $feedback->created_at->format('M j, H:i') }}</td>
+                                                            <td>{{ $feedback->patient->name ?? 'N/A' }}</td>
+                                                            <td>
+                                                                <span class="badge badge-secondary">{{ ucfirst(str_replace('_', ' ', $feedback->category ?? 'general')) }}</span>
+                                                            </td>
+                                                            <td>
+                                                                @if($feedback->response_type === 'positive')
+                                                                    <span class="badge badge-success"><i class="fas fa-thumbs-up"></i> Positive</span>
+                                                                @elseif($feedback->response_type === 'negative')
+                                                                    <span class="badge badge-danger"><i class="fas fa-thumbs-down"></i> Negative</span>
+                                                                @else
+                                                                    <span class="badge badge-warning"><i class="fas fa-minus"></i> Neutral</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ Str::limit($feedback->message ?? 'No message', 50) }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @stop
 
