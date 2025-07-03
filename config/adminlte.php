@@ -312,6 +312,32 @@ return [
             'text' => 'search',
         ],
         [
+            'text' => 'Dashboard',
+            'icon' => 'fas fa-fw fa-tachometer-alt',
+            'submenu' => [
+                [
+                    'text' => 'Analytics Dashboard',
+                    'url' => 'admin/analytics-dashboard',
+                    'icon' => 'fas fa-fw fa-chart-line',
+                ],
+                [
+                    'text' => 'Bed Occupancy',
+                    'url' => 'admin/analytics-dashboard#bed-occupancy',
+                    'icon' => 'fas fa-fw fa-bed',
+                ],
+                [
+                    'text' => 'Patient Flow',
+                    'url' => 'admin/analytics-dashboard#patient-flow',
+                    'icon' => 'fas fa-fw fa-exchange-alt',
+                ],
+                [
+                    'text' => 'Status Monitoring',
+                    'url' => 'admin/analytics-dashboard#patient-status',
+                    'icon' => 'fas fa-fw fa-heartbeat',
+                ],
+            ],
+        ],
+        [
             'text' => 'blog',
             'url' => 'admin/blog',
             'can' => 'manage-blog',

@@ -276,9 +276,9 @@ class BedController extends Controller
             'discharge_notes' => $request->has('notes') ? $request->notes : 'Discharged from bed ' . $bedNumber,
         ]);
         
-        // Update bed status to available and remove patient assignment
+        // Update bed status to cleaning needed and remove patient assignment
         $bed->update([
-            'status' => Bed::STATUS_AVAILABLE,
+            'status' => Bed::STATUS_CLEANING_NEEDED,
             'patient_id' => null,
             'consultant_id' => null,
             'nurse_id' => null,
@@ -286,5 +286,41 @@ class BedController extends Controller
         
         return redirect()->route('admin.beds.beds.show', $bed)
             ->with('success', 'Patient discharged successfully.');
+    }
+    
+    /**
+     * Mark bed cleaning as done
+     */
+    public function markCleaningDone(Request $request, Bed $bed)
+    {
+        // Check if the bed status is cleaning_needed
+        if ($bed->status !== Bed::STATUS_CLEANING_NEEDED) {
+            return redirect()->back()
+                ->with('error', 'This bed is not in cleaning needed status.');
+        }
+        
+        // Update bed status to available
+        $bed->update([
+            'status' => Bed::STATUS_AVAILABLE,
+        ]);
+        
+        // Check if this is an iframe request from ward dashboard
+        if ($request->has('is_iframe')) {
+            // Return a response that will refresh the parent window
+            return response()->json([
+                'success' => true,
+                'message' => 'Bed cleaning completed successfully.',
+                'refresh' => true
+            ]);
+        }
+        
+        // Redirect back to ward dashboard if requested
+        if ($request->has('redirect_to_ward') && $request->ward_id) {
+            return redirect()->route('admin.beds.wards.dashboard', $request->ward_id)
+                ->with('success', 'Bed cleaning completed successfully.');
+        }
+        
+        return redirect()->route('admin.beds.beds.show', $bed)
+            ->with('success', 'Bed cleaning completed successfully.');
     }
 }

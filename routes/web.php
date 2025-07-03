@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PatientReferralController;
 use App\Http\Controllers\Admin\PatientPanelController;
 use App\Http\Controllers\Admin\FoodOrderController;
 use App\Http\Controllers\Admin\FoodMenuController;
+use App\Http\Controllers\Admin\AnalyticsDashboardController;
 use Illuminate\Http\Request;
 
 /*
@@ -135,7 +136,13 @@ Route::prefix('admin')->group(function () {
         
         // Discharge Patient from Bed
         Route::post('beds/{bed}/discharge', [App\Http\Controllers\Admin\BedController::class, 'discharge'])->name('beds.discharge');
+        
+        // Mark Bed Cleaning as Done
+        Route::post('beds/{bed}/cleaning-done', [App\Http\Controllers\Admin\BedController::class, 'markCleaningDone'])->name('beds.cleaning-done');
     });
+    
+    // Analytics Dashboard - moved outside beds prefix
+    Route::get('analytics-dashboard', [AnalyticsDashboardController::class, 'index'])->name('admin.analytics-dashboard');
     
     // Notification Demo Page for Ward (moved out of nested group)
     Route::get('beds/wards/{ward}/notification-demo', function($ward) {

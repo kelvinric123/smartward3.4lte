@@ -30,6 +30,7 @@ class Bed extends Model
     const STATUS_AVAILABLE = 'available';
     const STATUS_OCCUPIED = 'occupied';
     const STATUS_MAINTENANCE = 'maintenance';
+    const STATUS_CLEANING_NEEDED = 'cleaning_needed';
 
     /**
      * Get all possible bed statuses
@@ -40,6 +41,7 @@ class Bed extends Model
             self::STATUS_AVAILABLE => 'Available',
             self::STATUS_OCCUPIED => 'Occupied',
             self::STATUS_MAINTENANCE => 'Under Maintenance',
+            self::STATUS_CLEANING_NEEDED => 'Cleaning Needed',
         ];
     }
 
@@ -95,6 +97,8 @@ class Bed extends Model
                 return 'badge-danger';
             case self::STATUS_MAINTENANCE:
                 return 'badge-secondary';
+            case self::STATUS_CLEANING_NEEDED:
+                return 'badge-warning';
             default:
                 return 'badge-info';
         }

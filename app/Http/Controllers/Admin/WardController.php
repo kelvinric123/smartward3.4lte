@@ -131,6 +131,7 @@ class WardController extends Controller
         
         // Get bed status counts for dashboard stats
         $availableBeds = $ward->beds->where('status', 'available')->count();
+        $cleaningNeededBeds = $ward->beds->where('status', 'cleaning_needed')->count();
         $totalBeds = $ward->beds->count();
         $occupiedBeds = $ward->beds->where('status', 'occupied')->count();
         
@@ -164,6 +165,7 @@ class WardController extends Controller
             'ward', 
             'allWards',
             'availableBeds', 
+            'cleaningNeededBeds',
             'nursesOnDuty',
             'occupiedBeds',
             'nursePatientRatio',

@@ -58,9 +58,9 @@ class PatientDischargeController extends Controller
             'discharge_notes' => $request->discharge_notes,
         ]);
         
-        // Update bed to available status and remove patient
+        // Update bed to cleaning needed status and remove patient
         $bed->update([
-            'status' => 'available',
+            'status' => 'cleaning_needed',
             'patient_id' => null,
         ]);
         
@@ -97,9 +97,9 @@ class PatientDischargeController extends Controller
             'discharge_notes' => $request->discharge_notes ?? 'Quick discharge from bed dashboard',
         ]);
         
-        // Update bed to available status and remove patient
+        // Update bed to cleaning needed status and remove patient
         $bed->update([
-            'status' => 'available',
+            'status' => 'cleaning_needed',
             'patient_id' => null,
             'consultant_id' => null,
             'nurse_id' => null,

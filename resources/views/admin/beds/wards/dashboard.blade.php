@@ -108,8 +108,13 @@
                             @forelse($ward->beds as $bed)
                                 @php
                                     // Default border color based on bed status
-                                    // Change default color for occupied beds from 'danger' to 'success'
-                                    $borderColor = $bed->status === 'available' ? 'success' : ($bed->status === 'occupied' ? 'success' : ($bed->status === 'reserved' ? 'warning' : 'secondary'));
+                                    $borderColor = match($bed->status) {
+                                        'available' => 'success',
+                                        'occupied' => 'success', 
+                                        'cleaning_needed' => 'warning',
+                                        'maintenance' => 'secondary',
+                                        default => 'secondary'
+                                    };
                                     
                                     // Check for abnormal EWS in latest vital signs
                                     if ($bed->status === 'occupied' && $bed->patient && $bed->patient->latestVitalSigns) {
@@ -277,6 +282,23 @@
                                                         <i class="fas fa-user-plus"></i> Admit Patient
                                                     </button>
                                                 </div>
+                                            @elseif($bed->status == 'cleaning_needed')
+                                                <p class="mb-1">
+                                                    <i class="fas fa-broom"></i> Cleaning Needed
+                                                </p>
+                                                <p class="text-muted mb-1">
+                                                    <i class="fas fa-info-circle"></i> Patient discharged, cleaning required
+                                                </p>
+                                                <div class="mt-2">
+                                                    <form action="{{ route('admin.beds.beds.cleaning-done', $bed) }}" method="POST" style="display: inline-block; width: 100%;">
+                                                        @csrf
+                                                        <input type="hidden" name="ward_id" value="{{ $ward->id }}">
+                                                        <input type="hidden" name="redirect_to_ward" value="1">
+                                                        <button type="submit" class="btn btn-warning btn-block">
+                                                            <i class="fas fa-check"></i> Cleaning Done
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             @else
                                                 <p class="mb-1">
                                                     <i class="fas fa-bed"></i> No Patient Admitted
@@ -320,24 +342,30 @@
                                 </div>
                             </div>
                             <div class="col-md-2 col-sm-4 col-6 text-center border-right">
+                                <div class="text-muted mb-1">CLEANING NEEDED</div>
+                                <div class="h5 mb-0 text-warning">
+                                    <i class="fas fa-broom"></i> {{ $cleaningNeededBeds }}
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 text-center border-right">
+                                <div class="text-muted mb-1">PATIENTS</div>
+                                <div class="h5 mb-0 text-info">
+                                    <i class="fas fa-user-injured"></i> {{ $occupiedBeds }}
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 text-center border-right">
                                 <div class="text-muted mb-1">NURSES ON DUTY</div>
                                 <div class="h5 mb-0 text-primary">
                                     <i class="fas fa-user-nurse"></i> {{ $nursesOnDuty }}
                                 </div>
                             </div>
-                            <div class="col-md-3 col-sm-4 col-6 text-center border-right">
-                                <div class="text-muted mb-1">PATIENTS</div>
-                                <div class="h5 mb-0 text-warning">
-                                    <i class="fas fa-user-injured"></i> {{ $occupiedBeds }}
-                                </div>
-                            </div>
                             <div class="col-md-2 col-sm-4 col-6 text-center border-right">
                                 <div class="text-muted mb-1">NURSE-PATIENT RATIO</div>
-                                <div class="h5 mb-0 text-info">
+                                <div class="h5 mb-0 text-secondary">
                                     <i class="fas fa-balance-scale"></i> {{ $nursePatientRatio }}:1
                                 </div>
                             </div>
-                            <div class="col-md-3 col-sm-8 col-12 text-center">
+                            <div class="col-md-2 col-sm-8 col-12 text-center">
                                 <div class="text-muted mb-1">OCCUPANCY RATE</div>
                                 <div class="h5 mb-0 text-danger">
                                     <i class="fas fa-chart-pie"></i> {{ $occupancyRate }}%
