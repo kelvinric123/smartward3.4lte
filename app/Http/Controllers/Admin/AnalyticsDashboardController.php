@@ -160,13 +160,9 @@ class AnalyticsDashboardController extends Controller
         $movementQuery = PatientMovement::query();
         
         if ($wardId) {
-            $admissionQuery->whereHas('bed.ward', function($q) use ($wardId) {
-                $q->where('id', $wardId);
-            });
-            $dischargeQuery->whereHas('bed.ward', function($q) use ($wardId) {
-                $q->where('id', $wardId);
-            });
-            $movementQuery->whereHas('bed.ward', function($q) use ($wardId) {
+            $admissionQuery->where('ward_id', $wardId);
+            $dischargeQuery->where('ward_id', $wardId);
+            $movementQuery->whereHas('fromBed.ward', function($q) use ($wardId) {
                 $q->where('id', $wardId);
             });
         }
@@ -304,9 +300,7 @@ class AnalyticsDashboardController extends Controller
         $admissionQuery = PatientAdmission::whereBetween('admission_date', [$startDate, $endDate]);
         
         if ($wardId) {
-            $admissionQuery->whereHas('bed', function($q) use ($wardId) {
-                $q->where('ward_id', $wardId);
-            });
+            $admissionQuery->where('ward_id', $wardId);
         }
         
         $admissions = $admissionQuery->select(DB::raw('HOUR(admission_date) as hour'), DB::raw('COUNT(*) as count'))
@@ -325,9 +319,7 @@ class AnalyticsDashboardController extends Controller
         $admissionQuery = PatientAdmission::where('is_active', true);
         
         if ($wardId) {
-            $admissionQuery->whereHas('bed', function($q) use ($wardId) {
-                $q->where('ward_id', $wardId);
-            });
+            $admissionQuery->where('ward_id', $wardId);
         }
         
         $activeAdmissions = $admissionQuery->get();
@@ -369,9 +361,7 @@ class AnalyticsDashboardController extends Controller
             $dischargeQuery = PatientDischarge::whereDate('discharge_date', $currentDate);
             
             if ($wardId) {
-                $admissionQuery->whereHas('bed', function($q) use ($wardId) {
-                    $q->where('ward_id', $wardId);
-                });
+                $admissionQuery->where('ward_id', $wardId);
                 $dischargeQuery->where('ward_id', $wardId);
             }
             
