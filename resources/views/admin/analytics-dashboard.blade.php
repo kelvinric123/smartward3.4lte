@@ -1,18 +1,17 @@
 @extends('adminlte::page')
 
-@section('title', 'Analytics Dashboard')
+@section('title', 'SmartWard Dashboard')
 
 @section('content_header')
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1><i class="fas fa-chart-line mr-2"></i>Analytics Dashboard</h1>
+                <h1><i class="fas fa-chart-line mr-2"></i>SmartWard Dashboard</h1>
                 <p class="text-muted">Comprehensive hospital metrics and insights</p>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Analytics</li>
+                    <li class="breadcrumb-item active">Dashboard</li>
                 </ol>
             </div>
         </div>
@@ -21,6 +20,89 @@
 
 @section('content')
     <div class="container-fluid">
+        
+        <!-- Analytics Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-filter mr-2"></i>Analytics Filters
+                        </h3>
+                    </div>
+                    <form method="GET" action="{{ route('admin.analytics-dashboard') }}" id="filterForm">
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Ward Filter -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="ward_id">Ward</label>
+                                        <select name="ward_id" id="ward_id" class="form-control">
+                                            <option value="">All Wards</option>
+                                            @foreach($wards as $ward)
+                                                <option value="{{ $ward->id }}" 
+                                                    {{ $selectedWardId == $ward->id ? 'selected' : '' }}>
+                                                    {{ $ward->name }} - {{ $ward->hospital->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- Date Filter -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="date" id="dateLabel">Date</label>
+                                        <input type="date" name="date" id="date" class="form-control" 
+                                               value="{{ $selectedDate }}" style="display: block;">
+                                        <input type="month" name="month" id="month" class="form-control" 
+                                               value="{{ \Carbon\Carbon::parse($selectedDate)->format('Y-m') }}" style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <!-- Duration Filter -->
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="duration">Duration</label>
+                                        <select name="duration" id="duration" class="form-control">
+                                            <option value="daily" {{ $selectedDuration == 'daily' ? 'selected' : '' }}>
+                                                Daily
+                                            </option>
+                                            <option value="weekly" {{ $selectedDuration == 'weekly' ? 'selected' : '' }}>
+                                                Weekly
+                                            </option>
+                                            <option value="monthly" {{ $selectedDuration == 'monthly' ? 'selected' : '' }}>
+                                                Monthly
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Filter Buttons -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search mr-1"></i>Apply Filters
+                                    </button>
+                                    <a href="{{ route('admin.analytics-dashboard') }}" class="btn btn-secondary">
+                                        <i class="fas fa-times mr-1"></i>Clear Filters
+                                    </a>
+                                    @if($selectedWard)
+                                        <span class="badge badge-info ml-2 p-2">
+                                            <i class="fas fa-bed mr-1"></i>{{ $selectedWard->name }}
+                                        </span>
+                                    @endif
+                                    <span class="badge badge-success ml-2 p-2">
+                                        <i class="fas fa-calendar mr-1"></i>{{ ucfirst($selectedDuration) }} View
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         
         <!-- Quick Overview Cards -->
         <div class="row mb-4">
@@ -38,8 +120,8 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3>{{ $patientFlowMetrics['admissions']['today'] }}</h3>
-                        <p>Admissions Today</p>
+                        <h3>{{ $patientFlowMetrics['admissions_in_range'] }}</h3>
+                        <p>Admissions ({{ ucfirst($selectedDuration) }})</p>
                     </div>
                     <div class="icon">
                         <i class="fas fa-user-plus"></i>
@@ -83,49 +165,59 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <!-- Compact Bed Statistics Grid -->
                         <div class="row">
-                            <!-- Overall Bed Statistics -->
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-info"><i class="fas fa-bed"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Total Beds</span>
-                                        <span class="info-box-number">{{ $bedOccupancyMetrics['total_beds'] }}</span>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="small-box bg-info">
+                                    <div class="inner">
+                                        <h3>{{ $bedOccupancyMetrics['total_beds'] }}</h3>
+                                        <p>Total Beds</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-bed"></i></div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-success"><i class="fas fa-user-injured"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Occupied Beds</span>
-                                        <span class="info-box-number">{{ $bedOccupancyMetrics['occupied_beds'] }}</span>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="small-box bg-success">
+                                    <div class="inner">
+                                        <h3>{{ $bedOccupancyMetrics['occupied_beds'] }}</h3>
+                                        <p>Occupied</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-user-injured"></i></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="small-box bg-warning">
+                                    <div class="inner">
+                                        <h3>{{ $bedOccupancyMetrics['available_beds'] }}</h3>
+                                        <p>Available</p>
+                                    </div>
+                                    <div class="icon"><i class="fas fa-check"></i></div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6">
+                                <div class="small-box bg-danger">
+                                    <div class="inner">
+                                        <h3>{{ $bedOccupancyMetrics['occupancy_rate'] }}%</h3>
+                                        <p>Occupancy Rate</p>
+                                    </div>
+                                    <div class="icon"><i class="fas fa-chart-pie"></i></div>
                                 </div>
                             </div>
                         </div>
-
+                        
+                        <!-- Secondary Metrics -->
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-success"><i class="fas fa-check"></i></span>
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-secondary"><i class="fas fa-broom"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Available</span>
-                                        <span class="info-box-number">{{ $bedOccupancyMetrics['available_beds'] }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-warning"><i class="fas fa-broom"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Cleaning Needed</span>
+                                        <span class="info-box-text">Cleaning</span>
                                         <span class="info-box-number">{{ $bedOccupancyMetrics['cleaning_needed_beds'] }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
                                     <span class="info-box-icon bg-secondary"><i class="fas fa-wrench"></i></span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Maintenance</span>
@@ -133,33 +225,21 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="info-box">
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
                                     <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Avg Length of Stay</span>
-                                        <span class="info-box-number">{{ $bedOccupancyMetrics['average_length_of_stay'] }} days</span>
+                                        <span class="info-box-text">Avg. Stay</span>
+                                        <span class="info-box-number">{{ $bedOccupancyMetrics['average_length_of_stay'] }}d</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
                                     <span class="info-box-icon bg-primary"><i class="fas fa-exchange-alt"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Bed Turnover (30d)</span>
+                                        <span class="info-box-text">Turnover</span>
                                         <span class="info-box-number">{{ $bedOccupancyMetrics['bed_turnover'] }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-danger"><i class="fas fa-chart-pie"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Occupancy Rate</span>
-                                        <span class="info-box-number">{{ $bedOccupancyMetrics['occupancy_rate'] }}%</span>
                                     </div>
                                 </div>
                             </div>
@@ -184,15 +264,24 @@
                                         <h3 class="card-title">Ward-wise Occupancy</h3>
                                     </div>
                                     <div class="card-body">
-                                        @foreach($bedOccupancyMetrics['ward_breakdown'] as $ward)
-                                            <div class="progress-group">
-                                                <span class="progress-text">{{ $ward['ward_name'] }}</span>
-                                                <span class="float-right"><b>{{ $ward['occupied_beds'] }}</b>/{{ $ward['total_beds'] }}</span>
-                                                <div class="progress progress-sm">
-                                                    <div class="progress-bar bg-primary" style="width: {{ $ward['occupancy_rate'] }}%"></div>
+                                        <div id="wardOccupancyList">
+                                            @foreach($bedOccupancyMetrics['ward_breakdown'] as $index => $ward)
+                                                <div class="progress-group ward-item {{ $index >= 3 ? 'ward-item-hidden' : '' }}" style="{{ $index >= 3 ? 'display: none;' : '' }}">
+                                                    <span class="progress-text">{{ $ward['ward_name'] }}</span>
+                                                    <span class="float-right"><b>{{ $ward['occupied_beds'] }}</b>/{{ $ward['total_beds'] }}</span>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar bg-primary" style="width: {{ $ward['occupancy_rate'] }}%"></div>
+                                                    </div>
                                                 </div>
+                                            @endforeach
+                                        </div>
+                                        @if(count($bedOccupancyMetrics['ward_breakdown']) > 3)
+                                            <div class="text-center mt-3">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" id="toggleWardOccupancy">
+                                                    <i class="fas fa-chevron-down"></i> Show More ({{ count($bedOccupancyMetrics['ward_breakdown']) - 3 }} more)
+                                                </button>
                                             </div>
-                                        @endforeach
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -230,9 +319,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-plus text-success"></i>
-                                                    {{ $patientFlowMetrics['admissions']['today'] }}
+                                                    {{ $patientFlowMetrics['admissions_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">Today</span>
+                                                <span class="text-muted">{{ ucfirst($selectedDuration) }}</span>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
@@ -242,9 +331,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-plus text-success"></i>
-                                                    {{ $patientFlowMetrics['admissions']['this_week'] }}
+                                                    {{ $patientFlowMetrics['admissions_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">This Week</span>
+                                                <span class="text-muted">Selected Period</span>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
@@ -254,9 +343,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-plus text-success"></i>
-                                                    {{ $patientFlowMetrics['admissions']['this_month'] }}
+                                                    {{ $patientFlowMetrics['admissions_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">This Month</span>
+                                                <span class="text-muted">Total in Range</span>
                                             </p>
                                         </div>
                                     </div>
@@ -277,9 +366,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-minus text-info"></i>
-                                                    {{ $patientFlowMetrics['discharges']['today'] }}
+                                                    {{ $patientFlowMetrics['discharges_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">Today</span>
+                                                <span class="text-muted">{{ ucfirst($selectedDuration) }}</span>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
@@ -289,9 +378,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-minus text-info"></i>
-                                                    {{ $patientFlowMetrics['discharges']['this_week'] }}
+                                                    {{ $patientFlowMetrics['discharges_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">This Week</span>
+                                                <span class="text-muted">Selected Period</span>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
@@ -301,9 +390,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-minus text-info"></i>
-                                                    {{ $patientFlowMetrics['discharges']['this_month'] }}
+                                                    {{ $patientFlowMetrics['discharges_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">This Month</span>
+                                                <span class="text-muted">Total in Range</span>
                                             </p>
                                         </div>
                                     </div>
@@ -324,9 +413,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-exchange-alt text-warning"></i>
-                                                    {{ $patientFlowMetrics['transfers']['today'] }}
+                                                    {{ $patientFlowMetrics['transfers_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">Today</span>
+                                                <span class="text-muted">{{ ucfirst($selectedDuration) }}</span>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center border-bottom mb-3">
@@ -336,9 +425,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-exchange-alt text-warning"></i>
-                                                    {{ $patientFlowMetrics['transfers']['this_week'] }}
+                                                    {{ $patientFlowMetrics['transfers_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">This Week</span>
+                                                <span class="text-muted">Selected Period</span>
                                             </p>
                                         </div>
                                         <div class="d-flex justify-content-between align-items-center">
@@ -348,9 +437,9 @@
                                             <p class="d-flex flex-column text-right">
                                                 <span class="font-weight-bold">
                                                     <i class="fas fa-exchange-alt text-warning"></i>
-                                                    {{ $patientFlowMetrics['transfers']['this_month'] }}
+                                                    {{ $patientFlowMetrics['transfers_in_range'] }}
                                                 </span>
-                                                <span class="text-muted">This Month</span>
+                                                <span class="text-muted">Total in Range</span>
                                             </p>
                                         </div>
                                     </div>
@@ -658,62 +747,60 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <!-- Compact Housekeeping Statistics -->
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-warning"><i class="fas fa-broom"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Cleaning Needed</span>
-                                        <span class="info-box-number">{{ $housekeepingMetrics['cleaning_needed_beds'] }}</span>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="small-box bg-warning">
+                                    <div class="inner">
+                                        <h4>{{ $housekeepingMetrics['cleaning_needed_beds'] }}</h4>
+                                        <p>Need Cleaning</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-broom"></i></div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Est. Cleaning Time</span>
-                                        <span class="info-box-number">{{ $housekeepingMetrics['estimated_cleaning_time'] }} min</span>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="small-box bg-info">
+                                    <div class="inner">
+                                        <h4>{{ $housekeepingMetrics['estimated_cleaning_time'] }}m</h4>
+                                        <p>Est. Time</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-clock"></i></div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-success"><i class="fas fa-percentage"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Cleaning Efficiency</span>
-                                        <span class="info-box-number">{{ $housekeepingMetrics['cleaning_efficiency'] }}%</span>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="small-box bg-success">
+                                    <div class="inner">
+                                        <h4>{{ $housekeepingMetrics['cleaning_efficiency'] }}%</h4>
+                                        <p>Efficiency</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-percentage"></i></div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-primary"><i class="fas fa-calendar-day"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Daily Cleaning Needs</span>
-                                        <span class="info-box-number">{{ $housekeepingMetrics['daily_cleaning_needs'] }}</span>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="small-box bg-primary">
+                                    <div class="inner">
+                                        <h4>{{ $housekeepingMetrics['daily_cleaning_needs'] }}</h4>
+                                        <p>Daily Needs</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-calendar-day"></i></div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Cleaning Backlog</span>
-                                        <span class="info-box-number">{{ $housekeepingMetrics['cleaning_backlog'] }}</span>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="small-box bg-danger">
+                                    <div class="inner">
+                                        <h4>{{ $housekeepingMetrics['cleaning_backlog'] }}</h4>
+                                        <p>Backlog</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="info-box">
-                                    <span class="info-box-icon bg-secondary"><i class="fas fa-wrench"></i></span>
-                                    <div class="info-box-content">
-                                        <span class="info-box-text">Maintenance Beds</span>
-                                        <span class="info-box-number">{{ $housekeepingMetrics['maintenance_beds'] }}</span>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <div class="small-box bg-secondary">
+                                    <div class="inner">
+                                        <h4>{{ $housekeepingMetrics['maintenance_beds'] }}</h4>
+                                        <p>Maintenance</p>
                                     </div>
+                                    <div class="icon"><i class="fas fa-wrench"></i></div>
                                 </div>
                             </div>
                         </div>
@@ -725,19 +812,28 @@
                                         <h3 class="card-title">Ward-wise Cleaning Status</h3>
                                     </div>
                                     <div class="card-body">
-                                        @foreach($housekeepingMetrics['ward_cleaning_status'] as $ward)
-                                            <div class="progress-group">
-                                                <span class="progress-text">{{ $ward['ward_name'] }}</span>
-                                                <span class="float-right">
-                                                    <b>{{ $ward['cleaning_needed'] }}</b> cleaning needed
-                                                    <small class="text-muted">({{ $ward['cleaning_percentage'] }}%)</small>
-                                                </span>
-                                                <div class="progress progress-sm">
-                                                    <div class="progress-bar {{ $ward['cleaning_percentage'] > 50 ? 'bg-danger' : ($ward['cleaning_percentage'] > 25 ? 'bg-warning' : 'bg-success') }}" 
-                                                         style="width: {{ $ward['cleaning_percentage'] }}%"></div>
+                                        <div id="wardCleaningList">
+                                            @foreach($housekeepingMetrics['ward_cleaning_status'] as $index => $ward)
+                                                <div class="progress-group cleaning-item {{ $index >= 3 ? 'cleaning-item-hidden' : '' }}" style="{{ $index >= 3 ? 'display: none;' : '' }}">
+                                                    <span class="progress-text">{{ $ward['ward_name'] }}</span>
+                                                    <span class="float-right">
+                                                        <b>{{ $ward['cleaning_needed'] }}</b> cleaning needed
+                                                        <small class="text-muted">({{ $ward['cleaning_percentage'] }}%)</small>
+                                                    </span>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar {{ $ward['cleaning_percentage'] > 50 ? 'bg-danger' : ($ward['cleaning_percentage'] > 25 ? 'bg-warning' : 'bg-success') }}" 
+                                                             style="width: {{ $ward['cleaning_percentage'] }}%"></div>
+                                                    </div>
                                                 </div>
+                                            @endforeach
+                                        </div>
+                                        @if(count($housekeepingMetrics['ward_cleaning_status']) > 3)
+                                            <div class="text-center mt-3">
+                                                <button type="button" class="btn btn-outline-success btn-sm" id="toggleWardCleaning">
+                                                    <i class="fas fa-chevron-down"></i> Show More ({{ count($housekeepingMetrics['ward_cleaning_status']) - 3 }} more)
+                                                </button>
                                             </div>
-                                        @endforeach
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -912,9 +1008,9 @@
                                                         <th>Message</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    @foreach($patientFeedbackMetrics['recent_feedback'] as $feedback)
-                                                        <tr>
+                                                <tbody id="feedbackTableBody">
+                                                    @foreach($patientFeedbackMetrics['recent_feedback'] as $index => $feedback)
+                                                        <tr class="feedback-row {{ $index >= 5 ? 'feedback-row-hidden' : '' }}" style="{{ $index >= 5 ? 'display: none;' : '' }}">
                                                             <td>{{ $feedback->created_at->format('M j, H:i') }}</td>
                                                             <td>{{ $feedback->patient->name ?? 'N/A' }}</td>
                                                             <td>
@@ -935,6 +1031,13 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                        @if(count($patientFeedbackMetrics['recent_feedback']) > 5)
+                                            <div class="text-center mt-3">
+                                                <button type="button" class="btn btn-outline-info btn-sm" id="toggleRecentFeedback">
+                                                    <i class="fas fa-chevron-down"></i> Show More ({{ count($patientFeedbackMetrics['recent_feedback']) - 5 }} more)
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -958,13 +1061,206 @@
         .card-header {
             font-weight: bold;
         }
+        
+        /* Compact small-box styling */
+        .small-box h4 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .small-box p {
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .small-box .inner {
+            padding: 10px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .small-box h4 {
+                font-size: 1.2rem;
+            }
+            .small-box p {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Month/Date picker styling */
+        #month, #date {
+            transition: all 0.3s ease;
+        }
+        
+        /* Compact info-box for secondary metrics */
+        .info-box.bg-light {
+            border: 1px solid #dee2e6;
+        }
+        .info-box.bg-light .info-box-content {
+            padding: 0.5rem;
+        }
+        .info-box.bg-light .info-box-text {
+            font-size: 0.875rem;
+        }
+        .info-box.bg-light .info-box-number {
+            font-size: 1.2rem;
+        }
+        
+        /* Expandable lists styling */
+        .ward-item, .cleaning-item, .feedback-row {
+            transition: all 0.3s ease;
+        }
+        
+        .ward-item-hidden, .cleaning-item-hidden, .feedback-row-hidden {
+            opacity: 0.8;
+        }
+        
+        /* Toggle button styling */
+        .btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-info:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-outline-primary i, .btn-outline-success i, .btn-outline-info i {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Fade in animation for hidden items */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .ward-item-hidden[style*="block"], 
+        .cleaning-item-hidden[style*="block"],
+        .feedback-row-hidden[style*="table-row"] {
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        /* Table row transition */
+        .feedback-row {
+            transition: all 0.3s ease;
+        }
     </style>
 @stop
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Filter Form Auto-Submit
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterForm = document.getElementById('filterForm');
+            const wardSelect = document.getElementById('ward_id');
+            const dateInput = document.getElementById('date');
+            const monthInput = document.getElementById('month');
+            const durationSelect = document.getElementById('duration');
+            const dateLabel = document.getElementById('dateLabel');
+            
+            // Function to toggle between date and month inputs
+            function toggleDateInput() {
+                const selectedDuration = durationSelect.value;
+                if (selectedDuration === 'monthly') {
+                    dateInput.style.display = 'none';
+                    monthInput.style.display = 'block';
+                    dateLabel.textContent = 'Month';
+                    // Convert current date to month format
+                    if (dateInput.value) {
+                        const date = new Date(dateInput.value);
+                        monthInput.value = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+                    }
+                } else {
+                    dateInput.style.display = 'block';
+                    monthInput.style.display = 'none';
+                    dateLabel.textContent = 'Date';
+                    // Convert month back to date format (first day of month)
+                    if (monthInput.value) {
+                        dateInput.value = monthInput.value + '-01';
+                    }
+                }
+            }
+            
+            // Initialize correct input based on current duration
+            toggleDateInput();
+            
+            // Auto-submit when ward changes
+            wardSelect.addEventListener('change', function() {
+                filterForm.submit();
+            });
+            
+            // Auto-submit when date changes
+            dateInput.addEventListener('change', function() {
+                filterForm.submit();
+            });
+            
+            // Auto-submit when month changes
+            monthInput.addEventListener('change', function() {
+                // Update the hidden date input with first day of selected month
+                dateInput.value = monthInput.value + '-01';
+                filterForm.submit();
+            });
+            
+            // Handle duration changes
+            durationSelect.addEventListener('change', function() {
+                toggleDateInput();
+                filterForm.submit();
+            });
+        });
+
         $(document).ready(function() {
+            // Ward list expand/collapse functionality
+            $('#toggleWardOccupancy').click(function() {
+                const hiddenItems = $('.ward-item-hidden');
+                const button = $(this);
+                const icon = button.find('i');
+                
+                if (hiddenItems.is(':visible')) {
+                    // Collapse
+                    hiddenItems.slideUp(300);
+                    icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                    button.html('<i class="fas fa-chevron-down"></i> Show More (' + hiddenItems.length + ' more)');
+                } else {
+                    // Expand
+                    hiddenItems.slideDown(300);
+                    icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                    button.html('<i class="fas fa-chevron-up"></i> Show Less');
+                }
+            });
+            
+            $('#toggleWardCleaning').click(function() {
+                const hiddenItems = $('.cleaning-item-hidden');
+                const button = $(this);
+                const icon = button.find('i');
+                
+                if (hiddenItems.is(':visible')) {
+                    // Collapse
+                    hiddenItems.slideUp(300);
+                    icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                    button.html('<i class="fas fa-chevron-down"></i> Show More (' + hiddenItems.length + ' more)');
+                } else {
+                    // Expand
+                    hiddenItems.slideDown(300);
+                    icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                    button.html('<i class="fas fa-chevron-up"></i> Show Less');
+                }
+            });
+            
+            $('#toggleRecentFeedback').click(function() {
+                const hiddenItems = $('.feedback-row-hidden');
+                const button = $(this);
+                const icon = button.find('i');
+                
+                if (hiddenItems.is(':visible')) {
+                    // Collapse
+                    hiddenItems.slideUp(300);
+                    icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                    button.html('<i class="fas fa-chevron-down"></i> Show More (' + hiddenItems.length + ' more)');
+                } else {
+                    // Expand
+                    hiddenItems.slideDown(300);
+                    icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                    button.html('<i class="fas fa-chevron-up"></i> Show Less');
+                }
+            });
+
             // Bed Status Distribution Chart
             const bedStatusCtx = document.getElementById('bedStatusChart').getContext('2d');
             new Chart(bedStatusCtx, {
@@ -1003,14 +1299,14 @@
                 type: 'line',
                 data: {
                     labels: [
-                        @foreach($chartData['last_7_days'] as $day)
+                        @foreach($chartData['chart_data'] as $day)
                             '{{ $day['date'] }}',
                         @endforeach
                     ],
                     datasets: [{
                         label: 'Admissions',
                         data: [
-                            @foreach($chartData['last_7_days'] as $day)
+                            @foreach($chartData['chart_data'] as $day)
                                 {{ $day['admissions'] }},
                             @endforeach
                         ],
@@ -1020,7 +1316,7 @@
                     }, {
                         label: 'Discharges',
                         data: [
-                            @foreach($chartData['last_7_days'] as $day)
+                            @foreach($chartData['chart_data'] as $day)
                                 {{ $day['discharges'] }},
                             @endforeach
                         ],

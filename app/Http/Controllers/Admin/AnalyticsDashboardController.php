@@ -33,16 +33,33 @@ class AnalyticsDashboardController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Get all basic metrics
-        $bedOccupancyMetrics = $this->getBedOccupancyMetrics();
-        $patientFlowMetrics = $this->getPatientFlowMetrics();
-        $patientStatusMetrics = $this->getPatientStatusMetrics();
-        $nurseCallMetrics = $this->getNurseCallResponseMetrics();
-        $housekeepingMetrics = $this->getHousekeepingMetrics();
-        $patientFeedbackMetrics = $this->getPatientFeedbackMetrics();
-        $chartData = $this->getChartData();
+        // Get filter parameters
+        $selectedWardId = $request->input('ward_id');
+        $selectedDate = $request->input('date', now()->format('Y-m-d'));
+        $selectedDuration = $request->input('duration', 'daily');
+        
+        // Get all active wards for the filter dropdown
+        $wards = Ward::where('is_active', true)
+                     ->with(['hospital', 'specialty'])
+                     ->orderBy('name')
+                     ->get();
+        
+        // Get the selected ward if specified
+        $selectedWard = $selectedWardId ? Ward::find($selectedWardId) : null;
+        
+        // Calculate date range based on duration
+        $dateRange = $this->calculateDateRange($selectedDate, $selectedDuration);
+        
+        // Get all filtered metrics
+        $bedOccupancyMetrics = $this->getBedOccupancyMetrics($selectedWardId, $dateRange);
+        $patientFlowMetrics = $this->getPatientFlowMetrics($selectedWardId, $dateRange);
+        $patientStatusMetrics = $this->getPatientStatusMetrics($selectedWardId, $dateRange);
+        $nurseCallMetrics = $this->getNurseCallResponseMetrics($selectedWardId, $dateRange);
+        $housekeepingMetrics = $this->getHousekeepingMetrics($selectedWardId, $dateRange);
+        $patientFeedbackMetrics = $this->getPatientFeedbackMetrics($selectedWardId, $dateRange);
+        $chartData = $this->getChartData($selectedWardId, $dateRange);
         
         return view('admin.analytics-dashboard', compact(
             'bedOccupancyMetrics',
@@ -51,45 +68,70 @@ class AnalyticsDashboardController extends Controller
             'nurseCallMetrics',
             'housekeepingMetrics',
             'patientFeedbackMetrics',
-            'chartData'
+            'chartData',
+            'wards',
+            'selectedWardId',
+            'selectedWard',
+            'selectedDate',
+            'selectedDuration'
         ));
+    }
+
+    /**
+     * Calculate date range based on selected date and duration
+     */
+    private function calculateDateRange($selectedDate, $duration)
+    {
+        $date = Carbon::parse($selectedDate);
+        
+        switch ($duration) {
+            case 'weekly':
+                return [
+                    'start' => $date->copy()->startOfWeek(),
+                    'end' => $date->copy()->endOfWeek()
+                ];
+            case 'monthly':
+                // For monthly view, always use the full month regardless of the specific day
+                return [
+                    'start' => $date->copy()->startOfMonth(),
+                    'end' => $date->copy()->endOfMonth()
+                ];
+            case 'daily':
+            default:
+                return [
+                    'start' => $date->copy()->startOfDay(),
+                    'end' => $date->copy()->endOfDay()
+                ];
+        }
     }
 
     /**
      * Get bed occupancy metrics
      */
-    private function getBedOccupancyMetrics()
+    private function getBedOccupancyMetrics($wardId = null, $dateRange = null)
     {
-        $totalBeds = Bed::count();
-        $occupiedBeds = Bed::where('status', 'occupied')->count();
-        $availableBeds = Bed::where('status', 'available')->count();
-        $cleaningNeededBeds = Bed::where('status', 'cleaning_needed')->count();
-        $maintenanceBeds = Bed::where('status', 'maintenance')->count();
+        // Base query for beds
+        $bedsQuery = Bed::query();
+        if ($wardId) {
+            $bedsQuery->where('ward_id', $wardId);
+        }
+        
+        $totalBeds = $bedsQuery->count();
+        $occupiedBeds = $bedsQuery->where('status', 'occupied')->count();
+        $availableBeds = $bedsQuery->where('status', 'available')->count();
+        $cleaningNeededBeds = $bedsQuery->where('status', 'cleaning_needed')->count();
+        $maintenanceBeds = $bedsQuery->where('status', 'maintenance')->count();
         
         $occupancyRate = $totalBeds > 0 ? round(($occupiedBeds / $totalBeds) * 100, 1) : 0;
         
-        // Calculate average length of stay
-        $averageLengthOfStay = $this->calculateAverageLengthOfStay();
+        // Calculate average length of stay with filters
+        $averageLengthOfStay = $this->calculateAverageLengthOfStay($wardId, $dateRange);
         
-        // Calculate bed turnover (discharges in last 30 days / total beds)
-        $dischargesLast30Days = PatientDischarge::where('discharge_date', '>=', Carbon::now()->subDays(30))->count();
-        $bedTurnover = $totalBeds > 0 ? round($dischargesLast30Days / $totalBeds, 2) : 0;
+        // Calculate bed turnover for the selected date range
+        $bedTurnover = $this->calculateBedTurnover($wardId, $dateRange);
         
-        // Ward-wise breakdown
-        $wardBreakdown = Ward::with('beds')->get()->map(function ($ward) {
-            $wardBeds = $ward->beds;
-            $occupied = $wardBeds->where('status', 'occupied')->count();
-            $total = $wardBeds->count();
-            
-            return [
-                'ward_name' => $ward->name,
-                'total_beds' => $total,
-                'occupied_beds' => $occupied,
-                'available_beds' => $wardBeds->where('status', 'available')->count(),
-                'cleaning_needed' => $wardBeds->where('status', 'cleaning_needed')->count(),
-                'occupancy_rate' => $total > 0 ? round(($occupied / $total) * 100, 1) : 0,
-            ];
-        });
+        // Ward-wise breakdown (only if not filtering by specific ward)
+        $wardBreakdown = $this->getWardBreakdown($wardId);
 
         return [
             'total_beds' => $totalBeds,
@@ -107,49 +149,43 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get patient flow metrics
      */
-    private function getPatientFlowMetrics()
+    private function getPatientFlowMetrics($wardId = null, $dateRange = null)
     {
-        $today = Carbon::today();
-        $thisWeek = Carbon::now()->startOfWeek();
-        $thisMonth = Carbon::now()->startOfMonth();
+        $startDate = $dateRange ? $dateRange['start'] : Carbon::today();
+        $endDate = $dateRange ? $dateRange['end'] : Carbon::today();
         
-        // Admissions
-        $admissionsToday = PatientAdmission::whereDate('admission_date', $today)->count();
-        $admissionsThisWeek = PatientAdmission::where('admission_date', '>=', $thisWeek)->count();
-        $admissionsThisMonth = PatientAdmission::where('admission_date', '>=', $thisMonth)->count();
+        // Build base queries with ward filter if specified
+        $admissionQuery = PatientAdmission::query();
+        $dischargeQuery = PatientDischarge::query();
+        $movementQuery = PatientMovement::query();
         
-        // Discharges
-        $dischargesToday = PatientDischarge::whereDate('discharge_date', $today)->count();
-        $dischargesThisWeek = PatientDischarge::where('discharge_date', '>=', $thisWeek)->count();
-        $dischargesThisMonth = PatientDischarge::where('discharge_date', '>=', $thisMonth)->count();
+        if ($wardId) {
+            $admissionQuery->whereHas('bed.ward', function($q) use ($wardId) {
+                $q->where('id', $wardId);
+            });
+            $dischargeQuery->whereHas('bed.ward', function($q) use ($wardId) {
+                $q->where('id', $wardId);
+            });
+            $movementQuery->whereHas('bed.ward', function($q) use ($wardId) {
+                $q->where('id', $wardId);
+            });
+        }
         
-        // Transfers (patient movements)
-        $transfersToday = PatientMovement::whereDate('created_at', $today)->count();
-        $transfersThisWeek = PatientMovement::where('created_at', '>=', $thisWeek)->count();
-        $transfersThisMonth = PatientMovement::where('created_at', '>=', $thisMonth)->count();
+        // Get counts for the selected date range
+        $admissionsInRange = $admissionQuery->whereBetween('admission_date', [$startDate, $endDate])->count();
+        $dischargesInRange = $dischargeQuery->whereBetween('discharge_date', [$startDate, $endDate])->count();
+        $transfersInRange = $movementQuery->whereBetween('created_at', [$startDate, $endDate])->count();
         
         // Active movements (patients currently away from beds)
-        $activeMovements = PatientMovement::where('status', 'sent')->count();
+        $activeMovements = $movementQuery->where('status', 'sent')->count();
         
-        // Peak hours analysis (last 7 days)
-        $peakHours = $this->getAdmissionPeakHours();
+        // Peak hours analysis
+        $peakHours = $this->getAdmissionPeakHours($wardId, $dateRange);
         
         return [
-            'admissions' => [
-                'today' => $admissionsToday,
-                'this_week' => $admissionsThisWeek,
-                'this_month' => $admissionsThisMonth,
-            ],
-            'discharges' => [
-                'today' => $dischargesToday,
-                'this_week' => $dischargesThisWeek,
-                'this_month' => $dischargesThisMonth,
-            ],
-            'transfers' => [
-                'today' => $transfersToday,
-                'this_week' => $transfersThisWeek,
-                'this_month' => $transfersThisMonth,
-            ],
+            'admissions_in_range' => $admissionsInRange,
+            'discharges_in_range' => $dischargesInRange,
+            'transfers_in_range' => $transfersInRange,
             'active_movements' => $activeMovements,
             'peak_hours' => $peakHours,
         ];
@@ -158,34 +194,50 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get patient status monitoring metrics
      */
-    private function getPatientStatusMetrics()
+    private function getPatientStatusMetrics($wardId = null, $dateRange = null)
     {
-        // Current patients
-        $totalCurrentPatients = Patient::whereHas('bed', function ($query) {
+        // Base query for current patients
+        $patientQuery = Patient::whereHas('bed', function ($query) use ($wardId) {
             $query->where('status', 'occupied');
-        })->count();
+            if ($wardId) {
+                $query->where('ward_id', $wardId);
+            }
+        });
         
-        // Vital signs monitoring
-        $patientsWithVitalSigns = Patient::whereHas('vitalSigns', function ($query) {
-            $query->where('created_at', '>=', Carbon::now()->subHours(24));
+        $totalCurrentPatients = $patientQuery->count();
+        
+        // Vital signs monitoring within date range
+        $startDate = $dateRange ? $dateRange['start'] : Carbon::now()->subHours(24);
+        $endDate = $dateRange ? $dateRange['end'] : Carbon::now();
+        
+        $patientsWithVitalSigns = $patientQuery->whereHas('vitalSigns', function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         })->count();
         
         // Critical patients (EWS >= 7)
-        $criticalPatients = Patient::whereHas('latestVitalSigns', function ($query) {
+        $criticalPatients = $patientQuery->whereHas('latestVitalSigns', function ($query) {
             $query->where('total_ews', '>=', 7);
         })->count();
         
         // High risk patients (EWS 5-6)
-        $highRiskPatients = Patient::whereHas('latestVitalSigns', function ($query) {
+        $highRiskPatients = $patientQuery->whereHas('latestVitalSigns', function ($query) {
             $query->whereBetween('total_ews', [5, 6]);
         })->count();
         
-        // Active alerts
-        $activeAlerts = PatientAlert::whereIn('status', ['new', 'seen'])->count();
-        $urgentAlerts = PatientAlert::whereIn('status', ['new', 'seen'])->where('is_urgent', true)->count();
+        // Active alerts within date range
+        $alertQuery = PatientAlert::whereIn('status', ['new', 'seen']);
+        if ($wardId) {
+            $alertQuery->where('ward_id', $wardId);
+        }
+        if ($dateRange) {
+            $alertQuery->whereBetween('created_at', [$dateRange['start'], $dateRange['end']]);
+        }
+        
+        $activeAlerts = $alertQuery->count();
+        $urgentAlerts = $alertQuery->where('is_urgent', true)->count();
         
         // Patients by risk factors
-        $riskFactorBreakdown = $this->getRiskFactorBreakdown();
+        $riskFactorBreakdown = $this->getRiskFactorBreakdown($wardId);
         
         return [
             'total_current_patients' => $totalCurrentPatients,
@@ -201,12 +253,19 @@ class AnalyticsDashboardController extends Controller
     /**
      * Calculate average length of stay
      */
-    private function calculateAverageLengthOfStay()
+    private function calculateAverageLengthOfStay($wardId = null, $dateRange = null)
     {
-        // Get discharged patients from last 30 days
-        $recentDischarges = PatientDischarge::with('patient')
-            ->where('discharge_date', '>=', Carbon::now()->subDays(30))
-            ->get();
+        // Get discharged patients from date range or last 30 days
+        $startDate = $dateRange ? $dateRange['start'] : Carbon::now()->subDays(30);
+        $endDate = $dateRange ? $dateRange['end'] : Carbon::now();
+        
+        $dischargeQuery = PatientDischarge::with('patient');
+        
+        if ($wardId) {
+            $dischargeQuery->where('ward_id', $wardId);
+        }
+        
+        $recentDischarges = $dischargeQuery->whereBetween('discharge_date', [$startDate, $endDate])->get();
         
         if ($recentDischarges->isEmpty()) {
             return 0;
@@ -237,10 +296,20 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get admission peak hours
      */
-    private function getAdmissionPeakHours()
+    private function getAdmissionPeakHours($wardId = null, $dateRange = null)
     {
-        $admissions = PatientAdmission::where('admission_date', '>=', Carbon::now()->subDays(7))
-            ->select(DB::raw('HOUR(admission_date) as hour'), DB::raw('COUNT(*) as count'))
+        $startDate = $dateRange ? $dateRange['start'] : Carbon::now()->subDays(7);
+        $endDate = $dateRange ? $dateRange['end'] : Carbon::now();
+        
+        $admissionQuery = PatientAdmission::whereBetween('admission_date', [$startDate, $endDate]);
+        
+        if ($wardId) {
+            $admissionQuery->whereHas('bed', function($q) use ($wardId) {
+                $q->where('ward_id', $wardId);
+            });
+        }
+        
+        $admissions = $admissionQuery->select(DB::raw('HOUR(admission_date) as hour'), DB::raw('COUNT(*) as count'))
             ->groupBy('hour')
             ->orderBy('count', 'desc')
             ->get();
@@ -251,9 +320,17 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get risk factor breakdown
      */
-    private function getRiskFactorBreakdown()
+    private function getRiskFactorBreakdown($wardId = null)
     {
-        $activeAdmissions = PatientAdmission::where('is_active', true)->get();
+        $admissionQuery = PatientAdmission::where('is_active', true);
+        
+        if ($wardId) {
+            $admissionQuery->whereHas('bed', function($q) use ($wardId) {
+                $q->where('ward_id', $wardId);
+            });
+        }
+        
+        $activeAdmissions = $admissionQuery->get();
         
         $riskFactors = [
             'fallrisk' => 0,
@@ -278,32 +355,50 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get chart data for visualizations
      */
-    private function getChartData()
+    private function getChartData($wardId = null, $dateRange = null)
     {
-        // Last 7 days admission/discharge data
-        $last7Days = [];
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $admissions = PatientAdmission::whereDate('admission_date', $date)->count();
-            $discharges = PatientDischarge::whereDate('discharge_date', $date)->count();
+        // Chart data based on date range or last 7 days
+        $startDate = $dateRange ? $dateRange['start'] : Carbon::now()->subDays(6);
+        $endDate = $dateRange ? $dateRange['end'] : Carbon::now();
+        
+        $chartData = [];
+        $currentDate = $startDate->copy();
+        
+        while ($currentDate <= $endDate) {
+            $admissionQuery = PatientAdmission::whereDate('admission_date', $currentDate);
+            $dischargeQuery = PatientDischarge::whereDate('discharge_date', $currentDate);
             
-            $last7Days[] = [
-                'date' => $date->format('M j'),
-                'admissions' => $admissions,
-                'discharges' => $discharges,
+            if ($wardId) {
+                $admissionQuery->whereHas('bed', function($q) use ($wardId) {
+                    $q->where('ward_id', $wardId);
+                });
+                $dischargeQuery->where('ward_id', $wardId);
+            }
+            
+            $chartData[] = [
+                'date' => $currentDate->format('M j'),
+                'admissions' => $admissionQuery->count(),
+                'discharges' => $dischargeQuery->count(),
             ];
+            
+            $currentDate->addDay();
         }
         
         // Bed status distribution
+        $bedQuery = Bed::query();
+        if ($wardId) {
+            $bedQuery->where('ward_id', $wardId);
+        }
+        
         $bedStatusDistribution = [
-            'occupied' => Bed::where('status', 'occupied')->count(),
-            'available' => Bed::where('status', 'available')->count(),
-            'cleaning_needed' => Bed::where('status', 'cleaning_needed')->count(),
-            'maintenance' => Bed::where('status', 'maintenance')->count(),
+            'occupied' => $bedQuery->where('status', 'occupied')->count(),
+            'available' => $bedQuery->where('status', 'available')->count(),
+            'cleaning_needed' => $bedQuery->where('status', 'cleaning_needed')->count(),
+            'maintenance' => $bedQuery->where('status', 'maintenance')->count(),
         ];
         
         return [
-            'last_7_days' => $last7Days,
+            'chart_data' => $chartData,
             'bed_status_distribution' => $bedStatusDistribution,
         ];
     }
@@ -311,7 +406,7 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get nurse call response time metrics
      */
-    private function getNurseCallResponseMetrics()
+    private function getNurseCallResponseMetrics($wardId = null, $dateRange = null)
     {
         // Get all alerts from last 30 days that have been resolved (with responses)
         $resolvedAlerts = PatientAlert::where('status', 'resolved')
@@ -391,7 +486,7 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get housekeeping and environment metrics
      */
-    private function getHousekeepingMetrics()
+    private function getHousekeepingMetrics($wardId = null, $dateRange = null)
     {
         // Calculate room cleaning turnaround time
         // For this, we need to track when beds go from 'cleaning_needed' to 'available'
@@ -448,7 +543,7 @@ class AnalyticsDashboardController extends Controller
     /**
      * Get patient feedback metrics
      */
-    private function getPatientFeedbackMetrics()
+    private function getPatientFeedbackMetrics($wardId = null, $dateRange = null)
     {
         // Get patient responses from last 30 days
         $recentResponses = PatientResponse::where('created_at', '>=', Carbon::now()->subDays(30))->get();
@@ -510,5 +605,62 @@ class AnalyticsDashboardController extends Controller
             'recent_feedback' => $recentFeedback,
             'sentiment_trend' => $sentimentTrend,
         ];
+    }
+
+    /**
+     * Get ward breakdown
+     */
+    private function getWardBreakdown($wardId = null)
+    {
+        $wardBreakdown = [];
+        $wards = Ward::with('beds')->get();
+        
+        foreach ($wards as $ward) {
+            $wardBeds = $ward->beds;
+            $occupied = $wardBeds->where('status', 'occupied')->count();
+            $total = $wardBeds->count();
+            
+            // Show all wards if no specific ward is selected, or just the selected ward
+            if ($wardId === null || $wardId == $ward->id) {
+                $wardBreakdown[] = [
+                    'ward_name' => $ward->name,
+                    'total_beds' => $total,
+                    'occupied_beds' => $occupied,
+                    'available_beds' => $wardBeds->where('status', 'available')->count(),
+                    'cleaning_needed' => $wardBeds->where('status', 'cleaning_needed')->count(),
+                    'occupancy_rate' => $total > 0 ? round(($occupied / $total) * 100, 1) : 0,
+                ];
+            }
+        }
+        
+        return $wardBreakdown;
+    }
+
+    /**
+     * Calculate bed turnover
+     */
+    private function calculateBedTurnover($wardId = null, $dateRange = null)
+    {
+        $startDate = $dateRange ? $dateRange['start'] : Carbon::now()->subDays(30);
+        $endDate = $dateRange ? $dateRange['end'] : Carbon::now();
+        
+        $dischargeQuery = PatientDischarge::whereBetween('discharge_date', [$startDate, $endDate]);
+        
+        if ($wardId) {
+            $dischargeQuery->where('ward_id', $wardId);
+        }
+        
+        $dischargesInRange = $dischargeQuery->count();
+        
+        $bedQuery = Bed::query();
+        if ($wardId) {
+            $bedQuery->where('ward_id', $wardId);
+        }
+        
+        $totalBeds = $bedQuery->count();
+        
+        $bedTurnover = $totalBeds > 0 ? round($dischargesInRange / $totalBeds, 2) : 0;
+        
+        return $bedTurnover;
     }
 } 

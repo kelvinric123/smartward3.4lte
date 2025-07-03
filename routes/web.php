@@ -43,7 +43,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // Admin Routes
 Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard', [AnalyticsDashboardController::class, 'index'])->name('admin.dashboard');
     Route::resource('hospitals', App\Http\Controllers\Admin\HospitalController::class)->names('admin.hospitals');
     Route::resource('specialties', SpecialtyController::class)->names('admin.specialties');
     Route::resource('consultants', ConsultantController::class)->names('admin.consultants');
