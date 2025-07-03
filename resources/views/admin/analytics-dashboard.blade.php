@@ -883,7 +883,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row">
+                                                <div class="row">
                             <div class="col-md-3">
                                 <div class="info-box">
                                     <span class="info-box-icon bg-success"><i class="fas fa-smile"></i></span>
@@ -897,8 +897,9 @@
                                 <div class="info-box">
                                     <span class="info-box-icon bg-primary"><i class="fas fa-comment"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Total Responses</span>
+                                        <span class="info-box-text">Total Surveys</span>
                                         <span class="info-box-number">{{ $patientFeedbackMetrics['total_responses_30_days'] }}</span>
+                                        <span class="info-box-text">Last 30 Days</span>
                                     </div>
                                 </div>
                             </div>
@@ -908,15 +909,22 @@
                                     <div class="info-box-content">
                                         <span class="info-box-text">Response Rate</span>
                                         <span class="info-box-number">{{ $patientFeedbackMetrics['response_rate'] }}%</span>
+                                        <span class="info-box-text">vs Discharges</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="info-box">
-                                    <span class="info-box-icon bg-success"><i class="fas fa-thumbs-up"></i></span>
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-star"></i></span>
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Positive Feedback</span>
-                                        <span class="info-box-number">{{ $patientFeedbackMetrics['positive_responses'] }}</span>
+                                        <span class="info-box-text">Avg Rating</span>
+                                        <span class="info-box-number">
+                                            @if(isset($patientFeedbackMetrics['average_ratings']))
+                                                {{ number_format(collect($patientFeedbackMetrics['average_ratings'])->avg(), 1) }}/5
+                                            @else
+                                                N/A
+                                            @endif
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -926,7 +934,50 @@
                             <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h3 class="card-title">Feedback by Category (Last 30 Days)</h3>
+                                        <h3 class="card-title">Average Ratings by Category</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        @if(isset($patientFeedbackMetrics['average_ratings']))
+                                            @foreach($patientFeedbackMetrics['average_ratings'] as $category => $rating)
+                                                <div class="progress-group mb-3">
+                                                    <span class="progress-text">
+                                                        @if($category === 'care_rating')
+                                                            <i class="fas fa-heart text-danger mr-2"></i>Care Quality
+                                                        @elseif($category === 'staff_rating')
+                                                            <i class="fas fa-user-friends text-success mr-2"></i>Staff Behavior
+                                                        @elseif($category === 'clean_rating')
+                                                            <i class="fas fa-bed text-info mr-2"></i>Room Cleanliness
+                                                        @elseif($category === 'comm_rating')
+                                                            <i class="fas fa-comments text-primary mr-2"></i>Communication
+                                                        @endif
+                                                    </span>
+                                                    <span class="float-right">
+                                                        <b>{{ $rating }}/5.0</b>
+                                                        @for($i = 1; $i <= 5; $i++)
+                                                            @if($i <= floor($rating))
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            @elseif($i <= $rating)
+                                                                <i class="fas fa-star-half-alt text-warning"></i>
+                                                            @else
+                                                                <i class="far fa-star text-muted"></i>
+                                                            @endif
+                                                        @endfor
+                                                    </span>
+                                                    <div class="progress progress-sm">
+                                                        <div class="progress-bar" style="width: {{ ($rating / 5) * 100 }}%; background-color: {{ $rating >= 4 ? '#28a745' : ($rating >= 3 ? '#ffc107' : '#dc3545') }};"></div>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @else
+                                            <p class="text-muted">No rating data available.</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Response Count by Category</h3>
                                     </div>
                                     <div class="card-body">
                                         @foreach($patientFeedbackMetrics['feedback_categories'] as $category => $count)
@@ -934,14 +985,14 @@
                                                 <span class="progress-text">
                                                     @if($category === 'care_quality')
                                                         <i class="fas fa-heart text-danger mr-2"></i>Care Quality
-                                                    @elseif($category === 'food_service')
-                                                        <i class="fas fa-utensils text-warning mr-2"></i>Food Service
-                                                    @elseif($category === 'room_comfort')
-                                                        <i class="fas fa-bed text-info mr-2"></i>Room Comfort
                                                     @elseif($category === 'staff_behavior')
                                                         <i class="fas fa-user-friends text-success mr-2"></i>Staff Behavior
+                                                    @elseif($category === 'room_comfort')
+                                                        <i class="fas fa-bed text-info mr-2"></i>Room Comfort
                                                     @elseif($category === 'communication')
                                                         <i class="fas fa-comments text-primary mr-2"></i>Communication
+                                                    @elseif($category === 'food_service')
+                                                        <i class="fas fa-utensils text-warning mr-2"></i>Food Service
                                                     @endif
                                                 </span>
                                                 <span class="float-right"><b>{{ $count }}</b> responses</span>
@@ -1003,9 +1054,10 @@
                                                     <tr>
                                                         <th>Date</th>
                                                         <th>Patient</th>
-                                                        <th>Category</th>
+                                                        <th>Ward</th>
+                                                        <th>Overall Rating</th>
                                                         <th>Sentiment</th>
-                                                        <th>Message</th>
+                                                        <th>Comments</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="feedbackTableBody">
@@ -1013,8 +1065,26 @@
                                                         <tr class="feedback-row {{ $index >= 5 ? 'feedback-row-hidden' : '' }}" style="{{ $index >= 5 ? 'display: none;' : '' }}">
                                                             <td>{{ $feedback->created_at->format('M j, H:i') }}</td>
                                                             <td>{{ $feedback->patient->name ?? 'N/A' }}</td>
+                                                            <td>{{ $feedback->ward->name ?? 'N/A' }}</td>
                                                             <td>
-                                                                <span class="badge badge-secondary">{{ ucfirst(str_replace('_', ' ', $feedback->category ?? 'general')) }}</span>
+                                                                @if($feedback->overall_rating)
+                                                                    <span class="d-flex align-items-center">
+                                                                        <strong>{{ number_format($feedback->overall_rating, 1) }}/5</strong>
+                                                                        <div class="ml-2">
+                                                                            @for($i = 1; $i <= 5; $i++)
+                                                                                @if($i <= floor($feedback->overall_rating))
+                                                                                    <i class="fas fa-star text-warning" style="font-size: 0.8rem;"></i>
+                                                                                @elseif($i <= $feedback->overall_rating)
+                                                                                    <i class="fas fa-star-half-alt text-warning" style="font-size: 0.8rem;"></i>
+                                                                                @else
+                                                                                    <i class="far fa-star text-muted" style="font-size: 0.8rem;"></i>
+                                                                                @endif
+                                                                            @endfor
+                                                                        </div>
+                                                                    </span>
+                                                                @else
+                                                                    <span class="text-muted">N/A</span>
+                                                                @endif
                                                             </td>
                                                             <td>
                                                                 @if($feedback->response_type === 'positive')
@@ -1025,7 +1095,7 @@
                                                                     <span class="badge badge-warning"><i class="fas fa-minus"></i> Neutral</span>
                                                                 @endif
                                                             </td>
-                                                            <td>{{ Str::limit($feedback->message ?? 'No message', 50) }}</td>
+                                                            <td>{{ Str::limit($feedback->message ?? 'No comments provided', 50) }}</td>
                                                         </tr>
                                                     @endforeach
                                                 </tbody>

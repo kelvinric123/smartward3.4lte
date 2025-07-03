@@ -179,6 +179,9 @@ Route::prefix('admin')->group(function () {
     // Patient Alert Route
     Route::post('patients/{patient}/alert', [PatientPanelController::class, 'sendAlert'])->name('admin.patients.alert.send');
     
+    // Patient Satisfaction Survey Route
+    Route::post('patients/{patient}/survey', [PatientPanelController::class, 'storeSurvey'])->name('admin.patients.survey.store');
+    
     // Patient Notification/Response Routes
     Route::get('patients/{patient}/responses', [PatientPanelController::class, 'getResponses'])->name('admin.patients.responses');
     Route::put('patients/responses/{responseId}/read', [PatientPanelController::class, 'markResponseAsRead'])->name('admin.patients.responses.read');

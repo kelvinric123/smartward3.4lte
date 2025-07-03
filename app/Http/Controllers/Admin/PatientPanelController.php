@@ -7,6 +7,7 @@ use App\Models\Patient;
 use App\Models\FoodMenu;
 use App\Models\FoodOrder;
 use App\Models\PatientAlert;
+use App\Models\PatientSatisfactionSurvey;
 use App\Models\Medication;
 use App\Models\MedicalHistory;
 use Illuminate\Http\Request;
@@ -204,6 +205,60 @@ class PatientPanelController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error sending alert: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Store a patient satisfaction survey
+     *
+     * @param Request $request
+     * @param Patient $patient
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function storeSurvey(Request $request, Patient $patient)
+    {
+        try {
+            $validated = $request->validate([
+                'care_rating' => 'nullable|integer|min:1|max:5',
+                'staff_rating' => 'nullable|integer|min:1|max:5',
+                'clean_rating' => 'nullable|integer|min:1|max:5',
+                'comm_rating' => 'nullable|integer|min:1|max:5',
+                'comments' => 'nullable|string|max:1000',
+            ]);
+            
+            // Get the active admission to determine ward
+            $activeAdmission = $patient->activeAdmission;
+            
+            if (!$activeAdmission) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Patient does not have an active admission.'
+                ], 400);
+            }
+            
+            // Create the survey record
+            $survey = PatientSatisfactionSurvey::create([
+                'patient_id' => $patient->id,
+                'ward_id' => $activeAdmission->ward_id,
+                'care_rating' => $validated['care_rating'],
+                'staff_rating' => $validated['staff_rating'],
+                'clean_rating' => $validated['clean_rating'],
+                'comm_rating' => $validated['comm_rating'],
+                'comments' => $validated['comments'],
+                'category' => 'general' // Default category
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Thank you for your feedback! Your survey has been submitted successfully.',
+                'survey_id' => $survey->id,
+                'overall_rating' => $survey->overall_rating
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error submitting survey: ' . $e->getMessage()
             ], 500);
         }
     }

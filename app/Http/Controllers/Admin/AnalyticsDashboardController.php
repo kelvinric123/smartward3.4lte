@@ -12,6 +12,7 @@ use App\Models\PatientMovement;
 use App\Models\VitalSign;
 use App\Models\PatientAlert;
 use App\Models\PatientResponse;
+use App\Models\PatientSatisfactionSurvey;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -535,47 +536,85 @@ class AnalyticsDashboardController extends Controller
      */
     private function getPatientFeedbackMetrics($wardId = null, $dateRange = null)
     {
-        // Get patient responses from last 30 days
-        $recentResponses = PatientResponse::where('created_at', '>=', Carbon::now()->subDays(30))->get();
+        // Build base query with ward filter if specified
+        $surveyQuery = PatientSatisfactionSurvey::with(['patient', 'ward']);
+        
+        if ($wardId) {
+            $surveyQuery->where('ward_id', $wardId);
+        }
+        
+        // Get satisfaction surveys from last 30 days
+        $recentSurveys = $surveyQuery->where('created_at', '>=', Carbon::now()->subDays(30))->get();
         
         // Calculate satisfaction metrics
-        $totalResponses = $recentResponses->count();
-        $positiveResponses = $recentResponses->where('response_type', 'positive')->count();
-        $negativeResponses = $recentResponses->where('response_type', 'negative')->count();
-        $neutralResponses = $recentResponses->where('response_type', 'neutral')->count();
+        $totalResponses = $recentSurveys->count();
+        $positiveResponses = $recentSurveys->where('response_type', 'positive')->count();
+        $negativeResponses = $recentSurveys->where('response_type', 'negative')->count();
+        $neutralResponses = $recentSurveys->where('response_type', 'neutral')->count();
         
         $satisfactionRate = $totalResponses > 0 ? round(($positiveResponses / $totalResponses) * 100, 1) : 0;
         
-        // Get feedback by category (assuming there's a category field)
+        // Calculate average ratings by category
+        $careRatingAvg = $recentSurveys->whereNotNull('care_rating')->avg('care_rating');
+        $staffRatingAvg = $recentSurveys->whereNotNull('staff_rating')->avg('staff_rating');
+        $cleanRatingAvg = $recentSurveys->whereNotNull('clean_rating')->avg('clean_rating');
+        $commRatingAvg = $recentSurveys->whereNotNull('comm_rating')->avg('comm_rating');
+        
+        // Count responses by rating category 
         $feedbackCategories = [
-            'care_quality' => $recentResponses->where('category', 'care_quality')->count(),
-            'food_service' => $recentResponses->where('category', 'food_service')->count(),
-            'room_comfort' => $recentResponses->where('category', 'room_comfort')->count(),
-            'staff_behavior' => $recentResponses->where('category', 'staff_behavior')->count(),
-            'communication' => $recentResponses->where('category', 'communication')->count(),
+            'care_quality' => $recentSurveys->whereNotNull('care_rating')->count(),
+            'staff_behavior' => $recentSurveys->whereNotNull('staff_rating')->count(),
+            'room_comfort' => $recentSurveys->whereNotNull('clean_rating')->count(),
+            'communication' => $recentSurveys->whereNotNull('comm_rating')->count(),
+            'food_service' => 0, // Not tracked in current survey
         ];
         
-        // Get recent feedback responses
-        $recentFeedback = PatientResponse::with(['patient'])
-            ->where('created_at', '>=', Carbon::now()->subDays(7))
-            ->orderBy('created_at', 'desc')
+        // Get recent feedback surveys with comments
+        $recentFeedback = PatientSatisfactionSurvey::with(['patient', 'ward'])
+            ->where('created_at', '>=', Carbon::now()->subDays(7));
+            
+        if ($wardId) {
+            $recentFeedback->where('ward_id', $wardId);
+        }
+        
+        $recentFeedback = $recentFeedback->orderBy('created_at', 'desc')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($survey) {
+                return (object) [
+                    'id' => $survey->id,
+                    'created_at' => $survey->created_at,
+                    'patient' => $survey->patient,
+                    'ward' => $survey->ward,
+                    'response_type' => $survey->response_type,
+                    'overall_rating' => $survey->overall_rating,
+                    'message' => $survey->comments,
+                    'category' => $survey->category,
+                ];
+            });
         
-        // Calculate response rate (responses vs total patients)
-        $totalCurrentPatients = Patient::whereHas('bed', function ($query) {
-            $query->where('status', 'occupied');
-        })->count();
+        // Calculate response rate (surveys vs total patients discharged in last 30 days)
+        $totalDischargedPatients = PatientDischarge::where('discharge_date', '>=', Carbon::now()->subDays(30));
+        if ($wardId) {
+            $totalDischargedPatients->where('ward_id', $wardId);
+        }
+        $totalDischargedPatients = $totalDischargedPatients->count();
         
-        $responseRate = $totalCurrentPatients > 0 ? round(($totalResponses / $totalCurrentPatients) * 100, 1) : 0;
+        $responseRate = $totalDischargedPatients > 0 ? round(($totalResponses / $totalDischargedPatients) * 100, 1) : 0;
         
         // Get sentiment trend over last 7 days
         $sentimentTrend = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
-            $dayResponses = PatientResponse::whereDate('created_at', $date)->get();
-            $dayPositive = $dayResponses->where('response_type', 'positive')->count();
-            $dayTotal = $dayResponses->count();
+            $daySurveyQuery = PatientSatisfactionSurvey::whereDate('created_at', $date);
+            
+            if ($wardId) {
+                $daySurveyQuery->where('ward_id', $wardId);
+            }
+            
+            $daySurveys = $daySurveyQuery->get();
+            $dayPositive = $daySurveys->where('response_type', 'positive')->count();
+            $dayTotal = $daySurveys->count();
             
             $sentimentTrend[] = [
                 'date' => $date->format('M j'),
@@ -594,6 +633,12 @@ class AnalyticsDashboardController extends Controller
             'feedback_categories' => $feedbackCategories,
             'recent_feedback' => $recentFeedback,
             'sentiment_trend' => $sentimentTrend,
+            'average_ratings' => [
+                'care_rating' => $careRatingAvg ? round($careRatingAvg, 2) : 0,
+                'staff_rating' => $staffRatingAvg ? round($staffRatingAvg, 2) : 0,
+                'clean_rating' => $cleanRatingAvg ? round($cleanRatingAvg, 2) : 0,
+                'comm_rating' => $commRatingAvg ? round($commRatingAvg, 2) : 0,
+            ],
         ];
     }
 

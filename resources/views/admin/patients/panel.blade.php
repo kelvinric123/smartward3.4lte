@@ -5043,20 +5043,69 @@
                     e.preventDefault();
                     
                     // Get all the rating values
-                    const careRating = document.querySelector('input[name="care_rating"]:checked')?.value || 0;
-                    const staffRating = document.querySelector('input[name="staff_rating"]:checked')?.value || 0;
-                    const cleanRating = document.querySelector('input[name="clean_rating"]:checked')?.value || 0;
-                    const commRating = document.querySelector('input[name="comm_rating"]:checked')?.value || 0;
+                    const careRating = document.querySelector('input[name="care_rating"]:checked')?.value || null;
+                    const staffRating = document.querySelector('input[name="staff_rating"]:checked')?.value || null;
+                    const cleanRating = document.querySelector('input[name="clean_rating"]:checked')?.value || null;
+                    const commRating = document.querySelector('input[name="comm_rating"]:checked')?.value || null;
                     const comments = document.getElementById('comments')?.value || '';
                     
-                    // Show thank you message
-                    showToast('Thank you for your feedback!');
+                    // Check if at least one rating is provided
+                    if (!careRating && !staffRating && !cleanRating && !commRating) {
+                        showToast('Please provide at least one rating before submitting.');
+                        return;
+                    }
                     
-                    // Close the survey modal
-                    closeSurveyModal();
+                    // Prepare the data to send
+                    const surveyData = {
+                        care_rating: careRating,
+                        staff_rating: staffRating,
+                        clean_rating: cleanRating,
+                        comm_rating: commRating,
+                        comments: comments,
+                        _token: '{{ csrf_token() }}'
+                    };
                     
-                    // Reset the form
-                    satisfactionForm.reset();
+                    // Disable submit button to prevent multiple submissions
+                    const submitBtn = satisfactionForm.querySelector('.submit-survey-btn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Submitting...';
+                    
+                    // Submit the survey data
+                    fetch('{{ route("admin.patients.survey.store", $patient->id) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(surveyData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            showToast(data.message || 'Thank you for your feedback!');
+                            
+                            // Close the survey modal
+                            closeSurveyModal();
+                            
+                            // Reset the form
+                            satisfactionForm.reset();
+                        } else {
+                            // Show error message
+                            showToast(data.message || 'Failed to submit survey. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error submitting survey:', error);
+                        showToast('An error occurred while submitting your feedback. Please try again.');
+                    })
+                    .finally(() => {
+                        // Re-enable submit button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    });
                 });
             }
         });
