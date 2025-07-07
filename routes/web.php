@@ -191,6 +191,23 @@ Route::prefix('admin')->group(function () {
     Route::get('patients/{patient}/notifications/count', [PatientController::class, 'getNotificationCount'])->name('admin.patients.notifications.count');
     Route::post('patients/{patient}/notifications/{notification}/read', [PatientController::class, 'markNotificationAsRead'])->name('admin.patients.notifications.read');
     
+    // PAC (Patient Admission Centre) Routes
+    Route::prefix('pac')->name('admin.pac.')->group(function () {
+        Route::get('dashboard', [App\Http\Controllers\Admin\PacController::class, 'dashboard'])->name('dashboard');
+        Route::get('available-beds', [App\Http\Controllers\Admin\PacController::class, 'getAvailableBeds'])->name('available-beds');
+        Route::get('admit/{wardId}', [App\Http\Controllers\Admin\PacController::class, 'admitPatient'])->name('admit');
+        Route::post('admit', [App\Http\Controllers\Admin\PacController::class, 'storeAdmission'])->name('admit.store');
+        Route::get('consultants-by-specialty', [App\Http\Controllers\Admin\PacController::class, 'getConsultantsBySpecialty'])->name('consultants-by-specialty');
+    });
+    
+    // Room Cleaning Routes
+    Route::prefix('cleaning')->name('admin.cleaning.')->group(function () {
+        Route::get('dashboard', [App\Http\Controllers\Admin\CleaningController::class, 'dashboard'])->name('dashboard');
+        Route::post('beds/{bedId}/mark-cleaned', [App\Http\Controllers\Admin\CleaningController::class, 'markAsCleaned'])->name('mark-cleaned');
+        Route::post('beds/mark-multiple-cleaned', [App\Http\Controllers\Admin\CleaningController::class, 'markMultipleAsCleaned'])->name('mark-multiple-cleaned');
+    Route::post('send-whatsapp-notification', [App\Http\Controllers\Admin\CleaningController::class, 'sendWhatsAppNotification'])->name('send-whatsapp-notification');
+    });
+    
     // Test route for creating alerts
     Route::post('beds/wards/{ward}/create-test-alert', function($ward) {
         $ward = \App\Models\Ward::findOrFail($ward);

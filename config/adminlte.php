@@ -461,6 +461,28 @@ return [
                 ],
             ],
         ],
+        [
+            'text' => 'Patient Admission Centre (PAC)',
+            'icon' => 'fas fa-fw fa-plus-circle',
+            'submenu' => [
+                [
+                    'text' => 'PAC Dashboard',
+                    'url' => 'admin/pac/dashboard',
+                    'icon' => 'fas fa-fw fa-tachometer-alt',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Room Cleaning',
+            'icon' => 'fas fa-fw fa-broom',
+            'submenu' => [
+                [
+                    'text' => 'Dashboard',
+                    'url' => 'admin/cleaning/dashboard',
+                    'icon' => 'fas fa-fw fa-tachometer-alt',
+                ],
+            ],
+        ],
     ],
 
     /*

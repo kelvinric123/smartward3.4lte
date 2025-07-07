@@ -209,7 +209,74 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+        }
+
+        /* Vital Signs Swipeable Interface Styles */
+        .vital-section {
+            transition: all 0.3s ease;
+            opacity: 1;
+        }
+
+        .vital-section.fade-out {
+            opacity: 0;
+        }
+
+        .section-nav-btn {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .section-nav-btn.active {
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        #swipe-container {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        #swipe-container:hover {
+            cursor: grab;
+        }
+
+        #swipe-container:active {
+            cursor: grabbing;
+        }
+
+        /* Smooth transitions for section changes */
+        .vital-section {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive design for mobile */
+        @media (max-width: 768px) {
+            .section-nav-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            
+            #swipe-container {
+                margin: 0 -10px;
+            }
+        }
         }
 
         .notifications-modal {
@@ -4147,7 +4214,10 @@
         });
 
         // Vital Signs Graph Variables
-        let vitalSignsChart = null;
+        let bpHrChart = null;
+        let spo2Chart = null;
+        let tempChart = null;
+        let currentSection = 'bp-hr';
 
         // Load Vital Signs Graph Data
         function loadVitalSignsGraph() {
@@ -4170,7 +4240,8 @@
                 if (data.success && data.vitals && data.vitals.length > 0) {
                     // Show graph content
                     document.getElementById('vital-graph-content').style.display = 'block';
-                    createVitalSignsChart(data.vitals);
+                    createVitalSignsCharts(data.vitals);
+                    setupSwipeHandlers();
                 } else {
                     showGraphError('No vital signs data available');
                 }
@@ -4182,10 +4253,8 @@
             });
         }
 
-        // Create Vital Signs Chart
-        function createVitalSignsChart(vitals) {
-            const ctx = document.getElementById('vitalSignsChart').getContext('2d');
-            
+        // Create Vital Signs Charts for all sections
+        function createVitalSignsCharts(vitals) {
             // Prepare data
             const labels = vitals.map(v => new Date(v.recorded_at).toLocaleDateString());
             const temperatures = vitals.map(v => parseFloat(v.temperature) || null);
@@ -4194,24 +4263,30 @@
             const diastolicBP = vitals.map(v => parseInt(v.diastolic_pressure || v.diastolic_bp) || null);
             const oxygenSat = vitals.map(v => parseFloat(v.oxygen_saturation) || null);
 
+            // Create BP & HR Chart
+            createBpHrChart(labels, heartRates, systolicBP, diastolicBP);
+            
+            // Create SpO2 Chart
+            createSpo2Chart(labels, oxygenSat);
+            
+            // Create Temperature Chart
+            createTempChart(labels, temperatures);
+        }
+
+        // Create Blood Pressure and Heart Rate Chart
+        function createBpHrChart(labels, heartRates, systolicBP, diastolicBP) {
+            const ctx = document.getElementById('bpHrChart').getContext('2d');
+            
             // Destroy existing chart if it exists
-            if (vitalSignsChart) {
-                vitalSignsChart.destroy();
+            if (bpHrChart) {
+                bpHrChart.destroy();
             }
 
-            vitalSignsChart = new Chart(ctx, {
+            bpHrChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'Temperature (°C)',
-                            data: temperatures,
-                            borderColor: '#dc3545',
-                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                            tension: 0.4,
-                            yAxisID: 'temp'
-                        },
                         {
                             label: 'Heart Rate (bpm)',
                             data: heartRates,
@@ -4235,14 +4310,6 @@
                             backgroundColor: 'rgba(23, 162, 184, 0.1)',
                             tension: 0.4,
                             yAxisID: 'bp'
-                        },
-                        {
-                            label: 'Oxygen Saturation (%)',
-                            data: oxygenSat,
-                            borderColor: '#6f42c1',
-                            backgroundColor: 'rgba(111, 66, 193, 0.1)',
-                            tension: 0.4,
-                            yAxisID: 'spo2'
                         }
                     ]
                 },
@@ -4250,14 +4317,6 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Vital Signs Trend',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        },
                         legend: {
                             position: 'bottom'
                         }
@@ -4269,22 +4328,9 @@
                                 text: 'Date'
                             }
                         },
-                        temp: {
-                            type: 'linear',
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: 'Temperature (°C)'
-                            },
-                            min: 35,
-                            max: 42,
-                            grid: {
-                                drawOnChartArea: false
-                            }
-                        },
                         hr: {
                             type: 'linear',
-                            position: 'right',
+                            position: 'left',
                             title: {
                                 display: true,
                                 text: 'Heart Rate (bpm)'
@@ -4297,26 +4343,13 @@
                         },
                         bp: {
                             type: 'linear',
-                            position: 'left',
+                            position: 'right',
                             title: {
                                 display: true,
                                 text: 'Blood Pressure (mmHg)'
                             },
                             min: 40,
                             max: 200,
-                            grid: {
-                                drawOnChartArea: false
-                            }
-                        },
-                        spo2: {
-                            type: 'linear',
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Oxygen Saturation (%)'
-                            },
-                            min: 85,
-                            max: 100,
                             grid: {
                                 drawOnChartArea: false
                             }
@@ -4328,6 +4361,215 @@
                     }
                 }
             });
+        }
+
+        // Create SpO2 Chart
+        function createSpo2Chart(labels, oxygenSat) {
+            const ctx = document.getElementById('spo2Chart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (spo2Chart) {
+                spo2Chart.destroy();
+            }
+
+            spo2Chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Oxygen Saturation (%)',
+                            data: oxygenSat,
+                            borderColor: '#6f42c1',
+                            backgroundColor: 'rgba(111, 66, 193, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Oxygen Saturation (%)'
+                            },
+                            min: 85,
+                            max: 100,
+                            grid: {
+                                drawOnChartArea: true
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Create Temperature Chart
+        function createTempChart(labels, temperatures) {
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (tempChart) {
+                tempChart.destroy();
+            }
+
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: temperatures,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)'
+                            },
+                            min: 35,
+                            max: 42,
+                            grid: {
+                                drawOnChartArea: true
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // Show specific section
+        function showSection(sectionName) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.vital-section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all nav buttons
+            const navButtons = document.querySelectorAll('.section-nav-btn');
+            navButtons.forEach(btn => {
+                btn.style.background = '#6c757d';
+            });
+            
+            // Show selected section
+            const selectedSection = document.getElementById(`section-${sectionName}-content`);
+            if (selectedSection) {
+                selectedSection.style.display = 'block';
+            }
+            
+            // Update active nav button
+            const activeButton = document.getElementById(`section-${sectionName}`);
+            if (activeButton) {
+                activeButton.style.background = '#28a745';
+            }
+            
+            currentSection = sectionName;
+        }
+
+        // Setup swipe handlers
+        function setupSwipeHandlers() {
+            const container = document.getElementById('swipe-container');
+            let startX = 0;
+            let endX = 0;
+            
+            container.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+            
+            container.addEventListener('touchend', (e) => {
+                endX = e.changedTouches[0].clientX;
+                handleSwipe();
+            });
+            
+            container.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                container.addEventListener('mouseup', handleMouseSwipe);
+            });
+            
+            function handleMouseSwipe(e) {
+                endX = e.clientX;
+                handleSwipe();
+                container.removeEventListener('mouseup', handleMouseSwipe);
+            }
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = startX - endX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swipe left - next section
+                        switch(currentSection) {
+                            case 'bp-hr':
+                                showSection('spo2');
+                                break;
+                            case 'spo2':
+                                showSection('temp');
+                                break;
+                            case 'temp':
+                                showSection('bp-hr');
+                                break;
+                        }
+                    } else {
+                        // Swipe right - previous section
+                        switch(currentSection) {
+                            case 'bp-hr':
+                                showSection('temp');
+                                break;
+                            case 'spo2':
+                                showSection('bp-hr');
+                                break;
+                            case 'temp':
+                                showSection('spo2');
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
         // Show Graph Error
@@ -5386,8 +5628,54 @@
                           <p style="margin-top: 20px; color: #666; font-size: 16px;">Loading trend data...</p>
                       </div>
                       
-                      <div id="vital-graph-content" style="display: none; padding: 25px; background: #f8f9fa; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                          <canvas id="vitalSignsChart" style="max-height: 400px; width: 100%;"></canvas>
+                      <div id="vital-graph-content" style="display: none;">
+                          <!-- Section Navigation -->
+                          <div style="display: flex; justify-content: center; margin-bottom: 20px; gap: 10px;">
+                              <button id="section-bp-hr" class="section-nav-btn active" onclick="showSection('bp-hr')" 
+                                  style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
+                                  <i class="fas fa-heartbeat"></i> BP & HR
+                              </button>
+                              <button id="section-spo2" class="section-nav-btn" onclick="showSection('spo2')" 
+                                  style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
+                                  <i class="fas fa-lungs"></i> SpO2
+                              </button>
+                              <button id="section-temp" class="section-nav-btn" onclick="showSection('temp')" 
+                                  style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease;">
+                                  <i class="fas fa-thermometer-half"></i> Temperature
+                              </button>
+                          </div>
+                          
+                          <!-- Swipeable Container -->
+                          <div id="swipe-container" style="position: relative; overflow: hidden; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                              <!-- Section 1: Blood Pressure and Heart Rate -->
+                              <div id="section-bp-hr-content" class="vital-section active" style="padding: 25px; background: #f8f9fa; min-height: 400px;">
+                                  <h5 style="text-align: center; margin-bottom: 20px; color: #28a745; font-weight: 600;">
+                                      <i class="fas fa-heartbeat"></i> Blood Pressure & Heart Rate
+                                  </h5>
+                                  <canvas id="bpHrChart" style="max-height: 350px; width: 100%;"></canvas>
+                              </div>
+                              
+                              <!-- Section 2: SpO2 -->
+                              <div id="section-spo2-content" class="vital-section" style="padding: 25px; background: #f8f9fa; min-height: 400px; display: none;">
+                                  <h5 style="text-align: center; margin-bottom: 20px; color: #6f42c1; font-weight: 600;">
+                                      <i class="fas fa-lungs"></i> Oxygen Saturation (SpO2)
+                                  </h5>
+                                  <canvas id="spo2Chart" style="max-height: 350px; width: 100%;"></canvas>
+                              </div>
+                              
+                              <!-- Section 3: Temperature -->
+                              <div id="section-temp-content" class="vital-section" style="padding: 25px; background: #f8f9fa; min-height: 400px; display: none;">
+                                  <h5 style="text-align: center; margin-bottom: 20px; color: #dc3545; font-weight: 600;">
+                                      <i class="fas fa-thermometer-half"></i> Temperature
+                                  </h5>
+                                  <canvas id="tempChart" style="max-height: 350px; width: 100%;"></canvas>
+                              </div>
+                          </div>
+                          
+                          <!-- Swipe Instructions -->
+                          <div style="text-align: center; margin-top: 15px; color: #666; font-size: 12px;">
+                              <i class="fas fa-hand-point-left"></i> Swipe left/right or use buttons above to navigate between sections
+                          </div>
                       </div>
                 </div>
             </div>
