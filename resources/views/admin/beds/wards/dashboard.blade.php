@@ -14,8 +14,19 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="wardViewDropdown">
                             @foreach($allWards as $availableWard)
+                                @php
+                                    $params = [];
+                                    if (request()->has('fullscreen')) {
+                                        $params['fullscreen'] = 'true';
+                                    }
+                                    if (request()->has('filters')) {
+                                        $params['filters'] = request()->get('filters');
+                                    }
+                                    $queryString = http_build_query($params);
+                                    $url = route('admin.beds.wards.dashboard', $availableWard) . ($queryString ? '?' . $queryString : '');
+                                @endphp
                                 <a class="dropdown-item {{ $ward->id == $availableWard->id ? 'active' : '' }}" 
-                                   href="{{ route('admin.beds.wards.dashboard', $availableWard) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}">
+                                   href="{{ $url }}">
                                     {{ $availableWard->name }} <small class="text-muted">({{ $availableWard->specialty->name }})</small>
                                 </a>
                             @endforeach
@@ -40,6 +51,44 @@
         <span class="nav-link">
             <i class="far fa-clock mr-1"></i> <span id="current-date-time-display"></span>
         </span>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link" href="#" id="bed-filter-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fas fa-filter"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="bed-filter-toggle" style="min-width: 200px;">
+            <h6 class="dropdown-header">Bed Filters</h6>
+            <div class="dropdown-item-text">
+                <div class="form-check">
+                    <input class="form-check-input bed-filter-checkbox" type="checkbox" value="all" id="filter-all" {{ in_array('all', $activeFilters) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="filter-all">
+                        All Beds
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input bed-filter-checkbox" type="checkbox" value="available" id="filter-available" {{ in_array('available', $activeFilters) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="filter-available">
+                        Available Beds
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input bed-filter-checkbox" type="checkbox" value="occupied" id="filter-occupied" {{ in_array('occupied', $activeFilters) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="filter-occupied">
+                        Occupied Beds
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input bed-filter-checkbox" type="checkbox" value="cleaning_needed" id="filter-cleaning" {{ in_array('cleaning_needed', $activeFilters) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="filter-cleaning">
+                        Cleaning Needed
+                    </label>
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" type="button" id="apply-filters">
+                <i class="fas fa-check"></i> Apply Filters
+            </button>
+        </div>
     </li>
     <li class="nav-item">
         <a class="nav-link" href="#" id="fullscreen-toggle" role="button">
@@ -105,7 +154,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row" id="beds-container">
-                            @forelse($ward->beds as $bed)
+                            @forelse($filteredBeds as $bed)
                                 @php
                                     // Default border color based on bed status
                                     $borderColor = match($bed->status) {
@@ -654,7 +703,7 @@
         
         /* Fixed footer in fullscreen mode */
         body.fullscreen-mode .stats-footer-row {
-            position: sticky;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
@@ -662,6 +711,14 @@
             z-index: 1000;
             background: #343a40;
             box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Ensure the main content has bottom padding to prevent overlap with fixed footer */
+        body.fullscreen-mode .card-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            padding-bottom: 90px; /* Add bottom padding to account for fixed footer height */
         }
         
         body.fullscreen-mode #fullscreen-toggle i {
@@ -1927,6 +1984,63 @@
         // Clear iframe src when modal is hidden
         $('#admitPatientModal').on('hidden.bs.modal', function () {
             $('#admitPatientIframe').attr('src', 'about:blank');
+        });
+
+        // Bed filter functionality
+        $(document).ready(function() {
+            // Handle "All Beds" checkbox logic
+            $('#filter-all').on('change', function() {
+                if ($(this).is(':checked')) {
+                    // Uncheck all other filters when "All Beds" is checked
+                    $('.bed-filter-checkbox:not(#filter-all)').prop('checked', false);
+                }
+            });
+            
+            // Handle other filter checkboxes
+            $('.bed-filter-checkbox:not(#filter-all)').on('change', function() {
+                if ($(this).is(':checked')) {
+                    // Uncheck "All Beds" when any specific filter is checked
+                    $('#filter-all').prop('checked', false);
+                }
+                
+                // If no specific filters are checked, check "All Beds"
+                if ($('.bed-filter-checkbox:not(#filter-all):checked').length === 0) {
+                    $('#filter-all').prop('checked', true);
+                }
+            });
+            
+            // Apply filters button
+            $('#apply-filters').on('click', function() {
+                var filters = [];
+                var checkedFilters = $('.bed-filter-checkbox:checked');
+                
+                checkedFilters.each(function() {
+                    filters.push($(this).val());
+                });
+                
+                // If no filters are selected, default to "all"
+                if (filters.length === 0) {
+                    filters = ['all'];
+                }
+                
+                // Build URL with filters
+                var url = new URL(window.location.href);
+                url.searchParams.delete('filters[]'); // Remove existing filters
+                
+                // Add new filters
+                filters.forEach(function(filter) {
+                    url.searchParams.append('filters[]', filter);
+                });
+                
+                // Preserve fullscreen parameter if it exists
+                var fullscreen = url.searchParams.get('fullscreen');
+                if (fullscreen) {
+                    url.searchParams.set('fullscreen', fullscreen);
+                }
+                
+                // Navigate to filtered URL
+                window.location.href = url.toString();
+            });
         });
 
         // Enable tooltips

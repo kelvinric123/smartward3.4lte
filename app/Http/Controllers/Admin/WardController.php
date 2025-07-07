@@ -121,7 +121,7 @@ class WardController extends Controller
     /**
      * Display the ward dashboard with bed layout.
      */
-    public function dashboard(Ward $ward)
+    public function dashboard(Request $request, Ward $ward)
     {
         // Load the ward with its relationships
         $ward->load(['hospital', 'specialty', 'beds.consultant', 'beds.nurse', 'beds.patient.latestVitalSigns']);
@@ -129,11 +129,28 @@ class WardController extends Controller
         // Get all active wards for the ward selector dropdown
         $allWards = Ward::where('is_active', true)->get();
         
-        // Get bed status counts for dashboard stats
+        // Get bed status counts for dashboard stats (always show full counts)
         $availableBeds = $ward->beds->where('status', 'available')->count();
         $cleaningNeededBeds = $ward->beds->where('status', 'cleaning_needed')->count();
         $totalBeds = $ward->beds->count();
         $occupiedBeds = $ward->beds->where('status', 'occupied')->count();
+        
+        // Get filter parameters
+        $filters = $request->get('filters', []);
+        $activeFilters = is_array($filters) ? $filters : [];
+        
+        // If no filters are active, show all beds
+        if (empty($activeFilters)) {
+            $activeFilters = ['all'];
+        }
+        
+        // Filter beds based on active filters
+        $filteredBeds = $ward->beds;
+        if (!in_array('all', $activeFilters)) {
+            $filteredBeds = $ward->beds->filter(function ($bed) use ($activeFilters) {
+                return in_array($bed->status, $activeFilters);
+            });
+        }
         
         // Get unique nurses assigned to this ward's beds
         $nursesOnDuty = $ward->beds->pluck('nurse_id')->filter()->unique()->count();
@@ -171,7 +188,9 @@ class WardController extends Controller
             'nursePatientRatio',
             'occupancyRate',
             'activeMovements',
-            'patientAlerts'
+            'patientAlerts',
+            'filteredBeds',
+            'activeFilters'
         ));
     }
     
