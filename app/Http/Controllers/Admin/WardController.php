@@ -139,6 +139,9 @@ class WardController extends Controller
         $filters = $request->get('filters', []);
         $activeFilters = is_array($filters) ? $filters : [];
         
+        // Get consultant filter
+        $consultantFilter = $request->get('consultant_id');
+        
         // If no filters are active, show all beds
         if (empty($activeFilters)) {
             $activeFilters = ['all'];
@@ -152,8 +155,20 @@ class WardController extends Controller
             });
         }
         
+        // Apply consultant filter if specified
+        if ($consultantFilter) {
+            $filteredBeds = $filteredBeds->filter(function ($bed) use ($consultantFilter) {
+                return $bed->consultant_id == $consultantFilter;
+            });
+        }
+        
         // Get unique nurses assigned to this ward's beds
         $nursesOnDuty = $ward->beds->pluck('nurse_id')->filter()->unique()->count();
+        
+        // Get consultants for this ward's specialty
+        $consultantsCount = \App\Models\Consultant::where('specialty_id', $ward->specialty_id)
+            ->where('is_active', true)
+            ->count();
         
         // Calculate occupancy rate
         $occupancyRate = $totalBeds > 0 ? round(($occupiedBeds / $totalBeds) * 100) : 0;
@@ -190,7 +205,9 @@ class WardController extends Controller
             'activeMovements',
             'patientAlerts',
             'filteredBeds',
-            'activeFilters'
+            'activeFilters',
+            'consultantsCount',
+            'consultantFilter'
         ));
     }
     
@@ -771,5 +788,43 @@ class WardController extends Controller
                 'message' => 'Error fetching available beds: ' . $e->getMessage()
             ], 500);
         }
+    }
+    
+    /**
+     * Show consultants list for the ward's specialty and hospital
+     */
+    public function showConsultants(Ward $ward)
+    {
+        // Get consultants from the same specialty as the ward
+        $specialtyConsultants = \App\Models\Consultant::where('specialty_id', $ward->specialty_id)
+            ->where('is_active', true)
+            ->with(['specialty'])
+            ->get()
+            ->map(function ($consultant) {
+                // Count patients for this consultant
+                $patientCount = \App\Models\Bed::where('consultant_id', $consultant->id)
+                    ->where('status', 'occupied')
+                    ->count();
+                
+                $consultant->patient_count = $patientCount;
+                return $consultant;
+            });
+        
+        // Get all other consultants from different specialties
+        $otherConsultants = \App\Models\Consultant::where('specialty_id', '!=', $ward->specialty_id)
+            ->where('is_active', true)
+            ->with(['specialty'])
+            ->get()
+            ->map(function ($consultant) {
+                // Count patients for this consultant
+                $patientCount = \App\Models\Bed::where('consultant_id', $consultant->id)
+                    ->where('status', 'occupied')
+                    ->count();
+                
+                $consultant->patient_count = $patientCount;
+                return $consultant;
+            });
+        
+        return view('admin.beds.wards.consultants_list', compact('ward', 'specialtyConsultants', 'otherConsultants'));
     }
 }

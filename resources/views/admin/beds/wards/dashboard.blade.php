@@ -22,6 +22,9 @@
                                     if (request()->has('filters')) {
                                         $params['filters'] = request()->get('filters');
                                     }
+                                    if (request()->has('consultant_id')) {
+                                        $params['consultant_id'] = request()->get('consultant_id');
+                                    }
                                     $queryString = http_build_query($params);
                                     $url = route('admin.beds.wards.dashboard', $availableWard) . ($queryString ? '?' . $queryString : '');
                                 @endphp
@@ -105,7 +108,18 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
-                            <h3 class="card-title">Beds Layout</h3>
+                            <h3 class="card-title">
+                                Beds Layout
+                                @if($consultantFilter)
+                                    <span class="badge badge-info ml-2">
+                                        <i class="fas fa-user-md"></i> 
+                                        Filtered by Consultant
+                                        <a href="{{ route('admin.beds.wards.dashboard', $ward) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="text-white ml-1" title="Clear filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                            </h3>
                             <div class="btn-group">
                                                 <button type="button" class="btn btn-warning" id="notification-btn" onclick="showNotificationsPanel()">
                                     <i class="fas fa-bell"></i> Notifications 
@@ -384,13 +398,13 @@
                 <div class="card bg-dark mb-0">
                     <div class="card-body py-2">
                         <div class="row">
-                            <div class="col-md-2 col-sm-4 col-6 text-center border-right">
+                            <div class="col-md-1 col-sm-4 col-6 text-center border-right">
                                 <div class="text-muted mb-1">AVAILABLE BEDS</div>
                                 <div class="h5 mb-0 text-success">
                                     <i class="fas fa-bed"></i> {{ $availableBeds }}
                                 </div>
                             </div>
-                            <div class="col-md-2 col-sm-4 col-6 text-center border-right">
+                            <div class="col-md-1 col-sm-4 col-6 text-center border-right">
                                 <div class="text-muted mb-1">CLEANING NEEDED</div>
                                 <div class="h5 mb-0 text-warning">
                                     <i class="fas fa-broom"></i> {{ $cleaningNeededBeds }}
@@ -401,6 +415,13 @@
                                 <div class="h5 mb-0 text-info">
                                     <i class="fas fa-user-injured"></i> {{ $occupiedBeds }}
                                 </div>
+                            </div>
+                            <div class="col-md-2 col-sm-4 col-6 text-center border-right" style="cursor: pointer;" onclick="openConsultantsModal()">
+                                <div class="text-muted mb-1">CONSULTANTS</div>
+                                <div class="h5 mb-0 text-purple">
+                                    <i class="fas fa-user-md"></i> {{ $consultantsCount }}
+                                </div>
+                                <small class="text-light">{{ $ward->specialty->name }}</small>
                             </div>
                             <div class="col-md-2 col-sm-4 col-6 text-center border-right">
                                 <div class="text-muted mb-1">NURSES ON DUTY</div>
@@ -558,6 +579,25 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consultants Modal -->
+    <div class="modal fade" id="consultantsModal" tabindex="-1" role="dialog" aria-labelledby="consultantsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-purple text-white">
+                    <h5 class="modal-title" id="consultantsModalLabel">
+                        <i class="fas fa-user-md"></i> Consultants - {{ $ward->name }}
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="consultantsFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
                 </div>
             </div>
         </div>
@@ -901,6 +941,12 @@
             
             // Check localStorage for fullscreen state
             if (localStorage.getItem('wardDashboardFullscreen') === 'true') {
+                setFullscreenMode(true);
+            }
+            
+            // Auto-enter fullscreen mode if consultant filter is applied
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('consultant_id')) {
                 setFullscreenMode(true);
             }
             
@@ -1949,6 +1995,13 @@
             });
         });
 
+        function openConsultantsModal() {
+            // Set iframe source and show modal
+            const consultantsUrl = '{{ route("admin.beds.wards.consultants", $ward) }}';
+            $('#consultantsFrame').attr('src', consultantsUrl);
+            $('#consultantsModal').modal('show');
+        }
+
         function openAdmitPatientModal(url) {
             // Create modal if it doesn't exist
             if (!$('#admitPatientModal').length) {
@@ -1984,6 +2037,44 @@
         // Clear iframe src when modal is hidden
         $('#admitPatientModal').on('hidden.bs.modal', function () {
             $('#admitPatientIframe').attr('src', 'about:blank');
+        });
+        
+        // Clear consultants iframe src when modal is hidden
+        $('#consultantsModal').on('hidden.bs.modal', function () {
+            $('#consultantsFrame').attr('src', 'about:blank');
+        });
+        
+        // Listen for messages from consultants iframe
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'filterByConsultant') {
+                const consultantId = event.data.consultantId;
+                const consultantName = event.data.consultantName;
+                
+                // Close the modal
+                $('#consultantsModal').modal('hide');
+                
+                // Build URL with consultant filter
+                const url = new URL(window.location.href);
+                url.searchParams.set('consultant_id', consultantId);
+                
+                // Preserve existing filters if any
+                const currentFilters = url.searchParams.getAll('filters[]');
+                if (currentFilters.length > 0) {
+                    url.searchParams.delete('filters[]');
+                    currentFilters.forEach(function(filter) {
+                        url.searchParams.append('filters[]', filter);
+                    });
+                }
+                
+                // Preserve fullscreen parameter if it exists
+                const fullscreen = url.searchParams.get('fullscreen');
+                if (fullscreen) {
+                    url.searchParams.set('fullscreen', fullscreen);
+                }
+                
+                // Navigate to filtered URL
+                window.location.href = url.toString();
+            }
         });
 
         // Bed filter functionality
