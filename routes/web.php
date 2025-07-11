@@ -212,6 +212,23 @@ Route::prefix('admin')->group(function () {
     Route::post('send-whatsapp-notification', [App\Http\Controllers\Admin\CleaningController::class, 'sendWhatsAppNotification'])->name('send-whatsapp-notification');
     });
     
+    // Integration Routes
+    Route::prefix('integration')->name('admin.integration.')->group(function () {
+        Route::get('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'admissionForm'])->name('admission');
+        Route::post('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'storeAdmission'])->name('admission.store');
+        Route::get('patient-details', [App\Http\Controllers\Admin\IntegrationController::class, 'getPatientDetails'])->name('patient-details');
+        Route::get('ward-beds', [App\Http\Controllers\Admin\IntegrationController::class, 'getWardBeds'])->name('ward-beds');
+        
+        // HL7 Profile Management Routes
+        Route::post('profiles', [App\Http\Controllers\Admin\IntegrationController::class, 'saveProfile'])->name('profiles.save');
+        Route::put('profiles/{id}', [App\Http\Controllers\Admin\IntegrationController::class, 'updateProfile'])->name('profiles.update');
+        Route::get('profiles/{id}', [App\Http\Controllers\Admin\IntegrationController::class, 'loadProfile'])->name('profiles.load');
+        Route::put('profiles/{id}/active', [App\Http\Controllers\Admin\IntegrationController::class, 'setActiveProfile'])->name('profiles.set-active');
+        Route::delete('profiles/{id}', [App\Http\Controllers\Admin\IntegrationController::class, 'deleteProfile'])->name('profiles.delete');
+        Route::get('profiles', [App\Http\Controllers\Admin\IntegrationController::class, 'getProfiles'])->name('profiles.list');
+        Route::post('profiles/default', [App\Http\Controllers\Admin\IntegrationController::class, 'createDefaultProfile'])->name('profiles.create-default');
+    });
+    
     // Test route for creating alerts
     Route::post('beds/wards/{ward}/create-test-alert', function($ward) {
         $ward = \App\Models\Ward::findOrFail($ward);

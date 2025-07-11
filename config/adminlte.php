@@ -483,6 +483,17 @@ return [
                 ],
             ],
         ],
+        [
+            'text' => 'Integration',
+            'icon' => 'fas fa-fw fa-exchange-alt',
+            'submenu' => [
+                [
+                    'text' => 'Admission',
+                    'url' => 'admin/integration/admission',
+                    'icon' => 'fas fa-fw fa-user-plus',
+                ],
+            ],
+        ],
     ],
 
     /*
