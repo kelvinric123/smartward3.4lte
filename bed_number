@@ -1,0 +1,1 @@
+'Bed: ' . $admission- . PHP_EOL;

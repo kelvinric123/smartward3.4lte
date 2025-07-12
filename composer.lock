@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb92055c2b1505e0c98a0524d0b6f1b8",
+    "content-hash": "b054f5178f564cb9788684f4a387b4fc",
     "packages": [
         {
             "name": "almasaeed2010/adminlte",
@@ -48,6 +48,60 @@
                 "source": "https://github.com/ColorlibHQ/AdminLTE/tree/v3.2.0"
             },
             "time": "2022-02-07T20:33:09+00:00"
+        },
+        {
+            "name": "aranyasen/hl7",
+            "version": "3.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/senaranya/HL7.git",
+                "reference": "d3113daff2a37908d2b9ece9663381417d014c7c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/senaranya/HL7/zipball/d3113daff2a37908d2b9ece9663381417d014c7c",
+                "reference": "d3113daff2a37908d2b9ece9663381417d014c7c",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "dms/phpunit-arraysubset-asserts": "^0.2",
+                "ext-pcntl": "*",
+                "ext-sockets": "*",
+                "phpunit/phpunit": "^9",
+                "squizlabs/php_codesniffer": "^3.6"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Aranyasen\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aranya Sen",
+                    "email": "sen.aranya@gmail.com",
+                    "role": "Owner"
+                }
+            ],
+            "description": "HL7 parser, generator and sender.",
+            "support": {
+                "issues": "https://github.com/senaranya/HL7/issues",
+                "source": "https://github.com/senaranya/HL7/tree/3.2.1"
+            },
+            "time": "2025-03-27T12:08:53+00:00"
         },
         {
             "name": "brick/math",
@@ -8288,12 +8342,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
 }

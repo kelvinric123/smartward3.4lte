@@ -269,7 +269,23 @@ Route::prefix('admin')->group(function () {
     // Patient Food Ordering Routes
     Route::post('patients/{patient}/food-order', [PatientPanelController::class, 'storeOrder'])->name('admin.patients.food-order.store');
     Route::delete('food-order/{orderId}/cancel', [PatientPanelController::class, 'cancelOrder'])->name('admin.food-order.cancel');
+
+    // HL7 Integration Routes
+    Route::prefix('hl7')->name('hl7.')->group(function () {
+        Route::get('messages', [App\Http\Controllers\HL7AdmissionController::class, 'messageHistory'])->name('message-history');
+        Route::get('messages/{id}', [App\Http\Controllers\HL7AdmissionController::class, 'messageDetails'])->name('message-details');
+        Route::get('dashboard-data', [App\Http\Controllers\HL7AdmissionController::class, 'getDashboardData'])->name('dashboard-data');
+        Route::post('messages/{id}/retry', [App\Http\Controllers\HL7AdmissionController::class, 'retryMessage'])->name('retry-message');
+        Route::post('test-message', [App\Http\Controllers\HL7AdmissionController::class, 'testMessage'])->name('test-message');
+        Route::post('manual-test', [App\Http\Controllers\HL7AdmissionController::class, 'manualTest'])->name('manual-test');
+        Route::post('cleanup-logs', [App\Http\Controllers\HL7AdmissionController::class, 'cleanupLogs'])->name('cleanup-logs');
+        Route::get('mapping-options', [App\Http\Controllers\HL7AdmissionController::class, 'getMappingOptions'])->name('mapping-options');
+    });
 });
+
+// Public HL7 API endpoint (outside auth middleware)
+Route::post('api/hl7/receive', [App\Http\Controllers\HL7AdmissionController::class, 'receiveMessage'])->name('hl7.receive');
+Route::get('api/hl7/status/{messageId}', [App\Http\Controllers\HL7AdmissionController::class, 'getMessageStatus'])->name('hl7.status');
 
 // Hospital Admin Routes
 Route::prefix('hospital')->group(function () {

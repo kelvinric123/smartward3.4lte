@@ -1,0 +1,1 @@
+'Admission ID in message: ' . ($message- ?? 'null') . PHP_EOL;

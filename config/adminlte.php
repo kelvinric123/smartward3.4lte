@@ -492,6 +492,22 @@ return [
                     'url' => 'admin/integration/admission',
                     'icon' => 'fas fa-fw fa-user-plus',
                 ],
+                [
+                    'text' => 'HL7 Integration',
+                    'icon' => 'fas fa-fw fa-code',
+                    'submenu' => [
+                        [
+                            'text' => 'Message History',
+                            'url' => 'admin/hl7/messages',
+                            'icon' => 'fas fa-fw fa-list',
+                        ],
+                        [
+                            'text' => 'Dashboard',
+                            'url' => 'admin/hl7/messages',
+                            'icon' => 'fas fa-fw fa-tachometer-alt',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
