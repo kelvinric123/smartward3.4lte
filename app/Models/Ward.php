@@ -15,7 +15,7 @@ class Ward extends Model
         'description',
         'capacity',
         'hospital_id',
-        'specialty_id',
+        'specialty_id', // Keep for backward compatibility during migration
         'is_active',
     ];
 
@@ -33,11 +33,20 @@ class Ward extends Model
     }
 
     /**
-     * Get the specialty associated with the ward.
+     * Get the specialty associated with the ward (legacy single relationship).
+     * This is kept for backward compatibility during migration.
      */
     public function specialty()
     {
         return $this->belongsTo(Specialty::class);
+    }
+    
+    /**
+     * Get the specialties associated with the ward (new many-to-many relationship).
+     */
+    public function specialties()
+    {
+        return $this->belongsToMany(Specialty::class, 'ward_specialty');
     }
     
     /**

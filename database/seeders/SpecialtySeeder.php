@@ -12,44 +12,20 @@ class SpecialtySeeder extends Seeder
     {
         $specialties = [
             [
-                'name' => 'Cardiology',
-                'description' => 'Specializes in heart and cardiovascular system disorders',
+                'name' => 'Medical',
+                'description' => 'General medical care and internal medicine',
             ],
             [
-                'name' => 'Neurology',
-                'description' => 'Specializes in disorders of the nervous system',
+                'name' => 'Surgical',
+                'description' => 'General surgery and surgical procedures',
             ],
             [
                 'name' => 'Orthopedics',
                 'description' => 'Specializes in musculoskeletal system disorders',
             ],
             [
-                'name' => 'Pediatrics',
+                'name' => 'Paediatrics',
                 'description' => 'Specializes in children\'s health and development',
-            ],
-            [
-                'name' => 'Obstetrics & Gynecology',
-                'description' => 'Specializes in women\'s health and pregnancy',
-            ],
-            [
-                'name' => 'Dermatology',
-                'description' => 'Specializes in skin disorders and diseases',
-            ],
-            [
-                'name' => 'Ophthalmology',
-                'description' => 'Specializes in eye disorders and vision care',
-            ],
-            [
-                'name' => 'ENT (Ear, Nose & Throat)',
-                'description' => 'Specializes in disorders of the ear, nose, and throat',
-            ],
-            [
-                'name' => 'Gastroenterology',
-                'description' => 'Specializes in digestive system disorders',
-            ],
-            [
-                'name' => 'Urology',
-                'description' => 'Specializes in urinary system disorders',
             ],
         ];
 

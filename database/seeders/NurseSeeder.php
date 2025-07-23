@@ -15,11 +15,11 @@ class NurseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get Qmed hospital 1
-        $hospital = Hospital::where('name', 'Qmed hospital 1')->first();
+        // Get all hospitals
+        $hospitals = Hospital::all();
         
-        if (!$hospital) {
-            $this->command->info('Qmed hospital 1 not found. Skipping nurse creation.');
+        if ($hospitals->isEmpty()) {
+            $this->command->info('No hospitals found. Skipping nurse creation.');
             return;
         }
         
@@ -31,92 +31,100 @@ class NurseSeeder extends Seeder
             return;
         }
         
-        // Create sample nurses for Qmed hospital 1
-        $nurses = [
-            [
-                'name' => 'Sarah Johnson',
-                'email' => 'sarah.johnson@qmed.hospital',
-                'phone' => '+601234567801',
-                'password' => '12345678',
+        // Create sample nurses for each hospital
+        $nursesByHospital = [
+            'Pantai HKL(DEMO)' => [
+                [
+                    'name' => 'Sarah Johnson',
+                    'email' => 'sarah.johnson@pantaihkl.com',
+                    'phone' => '+601234567801',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Michael Lee',
+                    'email' => 'michael.lee@pantaihkl.com',
+                    'phone' => '+601234567802',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Emily Wong',
+                    'email' => 'emily.wong@pantaihkl.com',
+                    'phone' => '+601234567803',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'David Chen',
+                    'email' => 'david.chen@pantaihkl.com',
+                    'phone' => '+601234567804',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Lisa Rahman',
+                    'email' => 'lisa.rahman@pantaihkl.com',
+                    'phone' => '+601234567805',
+                    'password' => '12345678',
+                ],
             ],
-            [
-                'name' => 'Michael Lee',
-                'email' => 'michael.lee@qmed.hospital',
-                'phone' => '+601234567802',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'Emily Wong',
-                'email' => 'emily.wong@qmed.hospital',
-                'phone' => '+601234567803',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'David Chen',
-                'email' => 'david.chen@qmed.hospital',
-                'phone' => '+601234567804',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'Lisa Rahman',
-                'email' => 'lisa.rahman@qmed.hospital',
-                'phone' => '+601234567805',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'James Tan',
-                'email' => 'james.tan@qmed.hospital',
-                'phone' => '+601234567806',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'Jennifer Lim',
-                'email' => 'jennifer.lim@qmed.hospital',
-                'phone' => '+601234567807',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'Robert Kumar',
-                'email' => 'robert.kumar@qmed.hospital',
-                'phone' => '+601234567808',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'Jessica Chong',
-                'email' => 'jessica.chong@qmed.hospital',
-                'phone' => '+601234567809',
-                'password' => '12345678',
-            ],
-            [
-                'name' => 'Daniel Ong',
-                'email' => 'daniel.ong@qmed.hospital',
-                'phone' => '+601234567810',
-                'password' => '12345678',
+            'Glenegle KL(DEMO)' => [
+                [
+                    'name' => 'James Tan',
+                    'email' => 'james.tan@gleneglekl.com',
+                    'phone' => '+601234567806',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Jennifer Lim',
+                    'email' => 'jennifer.lim@gleneglekl.com',
+                    'phone' => '+601234567807',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Robert Kumar',
+                    'email' => 'robert.kumar@gleneglekl.com',
+                    'phone' => '+601234567808',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Jessica Chong',
+                    'email' => 'jessica.chong@gleneglekl.com',
+                    'phone' => '+601234567809',
+                    'password' => '12345678',
+                ],
+                [
+                    'name' => 'Daniel Ong',
+                    'email' => 'daniel.ong@gleneglekl.com',
+                    'phone' => '+601234567810',
+                    'password' => '12345678',
+                ],
             ],
         ];
         
-        foreach ($nurses as $nurseData) {
-            // Check if the nurse already exists
-            $existingNurse = User::where('email', $nurseData['email'])->first();
+        foreach ($hospitals as $hospital) {
+            $nursesData = $nursesByHospital[$hospital->name] ?? [];
             
-            if (!$existingNurse) {
-                // Create the nurse
-                $nurse = User::create([
-                    'name' => $nurseData['name'],
-                    'email' => $nurseData['email'],
-                    'phone' => $nurseData['phone'],
-                    'password' => Hash::make($nurseData['password']),
-                    'active' => true,
-                    'hospital_id' => $hospital->id,
-                    'email_verified_at' => now(),
-                ]);
+            foreach ($nursesData as $nurseData) {
+                // Check if the nurse already exists
+                $existingNurse = User::where('email', $nurseData['email'])->first();
                 
-                // Assign nurse role
-                $nurse->roles()->attach($nurseRole);
-                
-                $this->command->info("Created nurse: {$nurse->name}");
-            } else {
-                $this->command->info("Nurse with email {$nurseData['email']} already exists. Skipping.");
+                if (!$existingNurse) {
+                    // Create the nurse
+                    $nurse = User::create([
+                        'name' => $nurseData['name'],
+                        'email' => $nurseData['email'],
+                        'phone' => $nurseData['phone'],
+                        'password' => Hash::make($nurseData['password']),
+                        'active' => true,
+                        'hospital_id' => $hospital->id,
+                        'email_verified_at' => now(),
+                    ]);
+                    
+                    // Assign nurse role
+                    $nurse->roles()->attach($nurseRole);
+                    
+                    $this->command->info("Created nurse: {$nurse->name} at {$hospital->name}");
+                } else {
+                    $this->command->info("Nurse with email {$nurseData['email']} already exists. Skipping.");
+                }
             }
         }
     }

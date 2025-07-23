@@ -93,18 +93,24 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="specialty_id">Specialty <span class="text-danger">*</span></label>
-                                        <select name="specialty_id" id="specialty_id" class="form-control @error('specialty_id') is-invalid @enderror" required>
-                                            <option value="">Select Specialty</option>
+                                        <label for="specialties">Specialties <span class="text-danger">*</span></label>
+                                        <select name="specialties[]" id="specialties" class="form-control @error('specialties') is-invalid @enderror" multiple required>
                                             @foreach ($specialties as $specialty)
-                                                <option value="{{ $specialty->id }}" {{ old('specialty_id') == $specialty->id ? 'selected' : '' }}>
+                                                <option value="{{ $specialty->id }}" {{ old('specialties') && in_array($specialty->id, old('specialties')) ? 'selected' : '' }}>
                                                     {{ $specialty->name }} ({{ $specialty->hospital->name }})
                                                 </option>
                                             @endforeach
                                         </select>
-                                        @error('specialty_id')
+                                        <small class="form-text text-muted">Hold Ctrl (Cmd on Mac) to select multiple specialties</small>
+                                        @error('specialties')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
+                                        @error('specialties.*')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                        
+                                        <!-- Keep legacy specialty_id field for backward compatibility - set to first selected specialty -->
+                                        <input type="hidden" name="specialty_id" id="legacy_specialty_id" value="{{ old('specialty_id') }}">
                                     </div>
                                 </div>
                             </div>
@@ -146,22 +152,40 @@
         $(document).ready(function() {
             $('#hospital_id').change(function() {
                 let hospitalId = $(this).val();
+                let currentSpecialties = [];
+                
+                // Get currently selected specialties
+                $('#specialties option:selected').each(function() {
+                    currentSpecialties.push($(this).val());
+                });
                 
                 // Clear and disable specialty dropdown if no hospital selected
                 if (!hospitalId) {
-                    $('#specialty_id').empty().append('<option value="">Select Specialty</option>').prop('disabled', true);
+                    $('#specialties').empty().prop('disabled', true);
                     return;
                 }
                 
                 // Filter specialties based on selected hospital
-                $('#specialty_id').empty().append('<option value="">Select Specialty</option>');
+                $('#specialties').empty();
                 @foreach ($specialties as $specialty)
                     if ('{{ $specialty->hospital_id }}' == hospitalId) {
-                        $('#specialty_id').append(`<option value="{{ $specialty->id }}">{{ $specialty->name }}</option>`);
+                        let isSelected = currentSpecialties.includes('{{ $specialty->id }}') ? 'selected' : '';
+                        $('#specialties').append(`<option value="{{ $specialty->id }}" ${isSelected}>{{ $specialty->name }}</option>`);
                     }
                 @endforeach
                 
-                $('#specialty_id').prop('disabled', false);
+                $('#specialties').prop('disabled', false);
+            });
+            
+            // Update legacy specialty_id field when specialties selection changes
+            $('#specialties').change(function() {
+                let selectedSpecialties = $(this).val();
+                if (selectedSpecialties && selectedSpecialties.length > 0) {
+                    // Set the first selected specialty as the legacy specialty_id
+                    $('#legacy_specialty_id').val(selectedSpecialties[0]);
+                } else {
+                    $('#legacy_specialty_id').val('');
+                }
             });
             
             // Trigger change event on load if a hospital is already selected

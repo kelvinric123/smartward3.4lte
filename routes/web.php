@@ -219,7 +219,18 @@ Route::prefix('admin')->group(function () {
         
         // HL7 ADT Integrator route - matches frontend expectation
         Route::post('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'processHL7IntegratorAdmission'])->name('admission.hl7');
+        
+        // Nurse Schedule Routes
+        Route::get('nurse-schedule', [App\Http\Controllers\Admin\NurseScheduleController::class, 'index'])->name('nurse-schedule');
+        Route::post('nurse-schedule', [App\Http\Controllers\Admin\NurseScheduleController::class, 'store'])->name('nurse-schedule.store');
+        Route::get('nurse-schedule/{id}', [App\Http\Controllers\Admin\NurseScheduleController::class, 'show'])->name('nurse-schedule.show');
+        Route::get('nurse-schedule/{id}/iframe', [App\Http\Controllers\Admin\NurseScheduleController::class, 'iframe'])->name('nurse-schedule.iframe');
+        Route::post('nurse-schedule/{id}/toggle', [App\Http\Controllers\Admin\NurseScheduleController::class, 'toggle'])->name('nurse-schedule.toggle');
+        Route::delete('nurse-schedule/{id}', [App\Http\Controllers\Admin\NurseScheduleController::class, 'destroy'])->name('nurse-schedule.destroy');
     });
+    
+    // Ward Nurses Route (for dashboard integration)
+    Route::get('beds/wards/{wardId}/nurses', [App\Http\Controllers\Admin\NurseScheduleController::class, 'wardNurses'])->name('admin.beds.wards.nurses');
 
     
     // Test route for creating alerts

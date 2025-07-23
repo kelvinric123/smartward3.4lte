@@ -30,13 +30,29 @@
                                 @endphp
                                 <a class="dropdown-item {{ $ward->id == $availableWard->id ? 'active' : '' }}" 
                                    href="{{ $url }}">
-                                    {{ $availableWard->name }} <small class="text-muted">({{ $availableWard->specialty->name }})</small>
+                                    {{ $availableWard->name }} 
+                                    <small class="text-muted">
+                                        @if($availableWard->specialties->count() > 0)
+                                            ({{ $availableWard->specialties->pluck('name')->join(', ') }})
+                                        @elseif($availableWard->specialty)
+                                            ({{ $availableWard->specialty->name }})
+                                        @endif
+                                    </small>
                                 </a>
                             @endforeach
                         </div>
                     </div>
                 </div>
-                <span class="badge badge-secondary">{{ $ward->specialty->name }} Ward</span>
+                <div class="ward-specialties">
+                    @if($ward->specialties->count() > 0)
+                        @foreach($ward->specialties as $specialty)
+                            <span class="badge badge-secondary mr-1">{{ $specialty->name }}</span>
+                        @endforeach
+                    @elseif($ward->specialty)
+                        <!-- Fallback to legacy single specialty if no many-to-many specialties are set -->
+                        <span class="badge badge-secondary">{{ $ward->specialty->name }} Ward</span>
+                    @endif
+                </div>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -421,9 +437,15 @@
                                 <div class="h5 mb-0 text-purple">
                                     <i class="fas fa-user-md"></i> {{ $consultantsCount }}
                                 </div>
-                                <small class="text-light">{{ $ward->specialty->name }}</small>
+                                <small class="text-light">
+                                    @if($ward->specialties->count() > 0)
+                                        {{ $ward->specialties->pluck('name')->join(', ') }}
+                                    @elseif($ward->specialty)
+                                        {{ $ward->specialty->name }}
+                                    @endif
+                                </small>
                             </div>
-                            <div class="col-md-2 col-sm-4 col-6 text-center border-right">
+                            <div class="col-md-2 col-sm-4 col-6 text-center border-right" style="cursor: pointer;" onclick="showNursesOnDuty()">
                                 <div class="text-muted mb-1">NURSES ON DUTY</div>
                                 <div class="h5 mb-0 text-primary">
                                     <i class="fas fa-user-nurse"></i> {{ $nursesOnDuty }}
@@ -686,6 +708,13 @@
             display: none !important;
         }
         
+        /* Fix topbar full extension in fullscreen mode */
+        body.fullscreen-mode .main-header {
+            width: 100% !important;
+            left: 0 !important;
+            margin-left: 0 !important;
+        }
+        
         body.fullscreen-mode .content-wrapper {
             margin-left: 0 !important;
             height: 100vh;
@@ -708,15 +737,32 @@
             padding: 0;
         }
         
-        /* Fixed header in fullscreen mode */
+        /* Fixed header in fullscreen mode - Dark theme compatible */
         body.fullscreen-mode .content-header {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: #fff;
+            background: var(--bs-body-bg, #ffffff);
+            color: var(--bs-body-color, #212529);
             margin: 0;
             padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Dark theme support for content header */
+        [data-bs-theme="dark"] body.fullscreen-mode .content-header,
+        body.dark-mode.fullscreen-mode .content-header {
+            background: #2c3e50 !important;
+            color: #ecf0f1 !important;
+            border-bottom: 1px solid #34495e !important;
+        }
+        
+        /* Ward name visibility in fullscreen */
+        body.fullscreen-mode .content-header h1 {
+            color: inherit !important;
+            margin: 0 !important;
+            font-weight: 600 !important;
         }
         
         /* Scrollable bed grid container */
@@ -726,19 +772,37 @@
             height: 100%;
             display: flex;
             flex-direction: column;
+            background: var(--bs-body-bg, #ffffff);
         }
         
         body.fullscreen-mode .card-header {
             position: sticky;
             top: 0;
             z-index: 999;
-            background: #fff;
+            background: var(--bs-body-bg, #ffffff);
+            color: var(--bs-body-color, #212529);
+            border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+        }
+        
+        /* Dark theme support for card elements */
+        [data-bs-theme="dark"] body.fullscreen-mode .card,
+        body.dark-mode.fullscreen-mode .card {
+            background: #2c3e50 !important;
+            color: #ecf0f1 !important;
+        }
+        
+        [data-bs-theme="dark"] body.fullscreen-mode .card-header,
+        body.dark-mode.fullscreen-mode .card-header {
+            background: #34495e !important;
+            color: #ecf0f1 !important;
+            border-bottom: 1px solid #2c3e50 !important;
         }
         
         body.fullscreen-mode .card-body {
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
+            padding-bottom: 90px; /* Add bottom padding to account for fixed footer height */
         }
         
         /* Fixed footer in fullscreen mode */
@@ -753,14 +817,6 @@
             box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
         }
         
-        /* Ensure the main content has bottom padding to prevent overlap with fixed footer */
-        body.fullscreen-mode .card-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            padding-bottom: 90px; /* Add bottom padding to account for fixed footer height */
-        }
-        
         body.fullscreen-mode #fullscreen-toggle i {
             transform: rotate(180deg);
         }
@@ -772,6 +828,119 @@
         /* Hide pushmenu toggle button in fullscreen mode */
         body.fullscreen-mode [data-widget="pushmenu"] {
             display: none !important;
+        }
+        
+        /* Fix dropdown visibility in fullscreen mode */
+        body.fullscreen-mode .dropdown {
+            position: relative !important;
+            z-index: 9999 !important;
+        }
+        
+        body.fullscreen-mode .dropdown-menu {
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            z-index: 10000 !important;
+            display: none;
+            min-width: 250px !important;
+            max-height: 400px !important;
+            overflow-y: auto !important;
+            background: var(--bs-dropdown-bg, #ffffff) !important;
+            border: 1px solid var(--bs-border-color, #dee2e6) !important;
+            border-radius: 0.375rem !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+            margin: 0 !important;
+            padding: 0.5rem 0 !important;
+            transform: none !important;
+            will-change: auto !important;
+        }
+        
+        body.fullscreen-mode .dropdown-menu.show {
+            display: block !important;
+        }
+        
+        body.fullscreen-mode .dropdown-toggle {
+            position: relative !important;
+            z-index: 9998 !important;
+        }
+        
+        /* Ensure dropdown doesn't get clipped */
+        body.fullscreen-mode .content-header {
+            overflow: visible !important;
+        }
+        
+        body.fullscreen-mode .container-fluid {
+            overflow: visible !important;
+        }
+        
+        body.fullscreen-mode .d-flex {
+            overflow: visible !important;
+        }
+        
+        /* Dark theme support for dropdowns */
+        [data-bs-theme="dark"] body.fullscreen-mode .dropdown-menu,
+        body.dark-mode.fullscreen-mode .dropdown-menu {
+            background: #34495e !important;
+            border: 1px solid #2c3e50 !important;
+            color: #ecf0f1 !important;
+        }
+        
+        [data-bs-theme="dark"] body.fullscreen-mode .dropdown-item,
+        body.dark-mode.fullscreen-mode .dropdown-item {
+            color: #ecf0f1 !important;
+            padding: 0.5rem 1rem !important;
+            white-space: nowrap !important;
+        }
+        
+        [data-bs-theme="dark"] body.fullscreen-mode .dropdown-item:hover,
+        [data-bs-theme="dark"] body.fullscreen-mode .dropdown-item:focus,
+        body.dark-mode.fullscreen-mode .dropdown-item:hover,
+        body.dark-mode.fullscreen-mode .dropdown-item:focus {
+            background: #3498db !important;
+            color: #ffffff !important;
+        }
+        
+        [data-bs-theme="dark"] body.fullscreen-mode .dropdown-item.active,
+        body.dark-mode.fullscreen-mode .dropdown-item.active {
+            background: #2980b9 !important;
+            color: #ffffff !important;
+        }
+        
+        /* Light theme dropdown items */
+        body.fullscreen-mode .dropdown-item {
+            color: #212529 !important;
+            padding: 0.5rem 1rem !important;
+            white-space: nowrap !important;
+        }
+        
+        body.fullscreen-mode .dropdown-item:hover,
+        body.fullscreen-mode .dropdown-item:focus {
+            background: #f8f9fa !important;
+            color: #16181b !important;
+        }
+        
+        body.fullscreen-mode .dropdown-item.active {
+            background: #007bff !important;
+            color: #ffffff !important;
+        }
+        
+        /* Ensure Change Ward button is visible */
+        body.fullscreen-mode .btn-outline-secondary {
+            border-color: var(--bs-border-color, #6c757d);
+            color: var(--bs-body-color, #6c757d);
+        }
+        
+        [data-bs-theme="dark"] body.fullscreen-mode .btn-outline-secondary,
+        body.dark-mode.fullscreen-mode .btn-outline-secondary {
+            border-color: #95a5a6 !important;
+            color: #95a5a6 !important;
+        }
+        
+        [data-bs-theme="dark"] body.fullscreen-mode .btn-outline-secondary:hover,
+        body.dark-mode.fullscreen-mode .btn-outline-secondary:hover {
+            background: #3498db !important;
+            border-color: #3498db !important;
+            color: #ffffff !important;
         }
         
         /* 5 beds horizontal in fullscreen mode */
@@ -925,10 +1094,86 @@
                     body.addClass('fullscreen-mode');
                     fullscreenToggle.find('i').removeClass('fa-expand').addClass('fa-compress');
                     localStorage.setItem('wardDashboardFullscreen', 'true');
+                    
+                    // Force navbar to extend full width
+                    setTimeout(function() {
+                        $('.main-header').css({
+                            'width': '100%',
+                            'left': '0',
+                            'margin-left': '0'
+                        });
+                    }, 100);
+                    
+                    // Ensure dropdowns work properly in fullscreen
+                    $('.dropdown-menu').css('z-index', '10000');
+                    
+                    // Fix dropdown positioning in fullscreen mode
+                    setTimeout(function() {
+                        $('#wardViewDropdown').off('click.bs.dropdown').on('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const $dropdown = $(this);
+                            const $menu = $dropdown.next('.dropdown-menu');
+                            
+                            // Toggle dropdown visibility
+                            if ($menu.hasClass('show')) {
+                                $menu.removeClass('show').hide();
+                                $dropdown.attr('aria-expanded', 'false');
+                            } else {
+                                // Hide other dropdowns first
+                                $('.dropdown-menu.show').removeClass('show').hide();
+                                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                                
+                                // Show current dropdown
+                                $menu.addClass('show').show();
+                                $dropdown.attr('aria-expanded', 'true');
+                                
+                                // Position dropdown correctly
+                                const buttonRect = $dropdown[0].getBoundingClientRect();
+                                $menu.css({
+                                    'position': 'fixed',
+                                    'top': (buttonRect.bottom + 5) + 'px',
+                                    'left': buttonRect.left + 'px',
+                                    'z-index': '10000'
+                                });
+                            }
+                        });
+                        
+                        // Close dropdown when clicking outside
+                        $(document).on('click.dropdown-fullscreen', function(e) {
+                            if (!$(e.target).closest('.dropdown').length) {
+                                $('.dropdown-menu.show').removeClass('show').hide();
+                                $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                            }
+                        });
+                        
+                    }, 200);
+                    
                 } else {
                     body.removeClass('fullscreen-mode');
                     fullscreenToggle.find('i').removeClass('fa-compress').addClass('fa-expand');
                     localStorage.removeItem('wardDashboardFullscreen');
+                    
+                    // Reset navbar styling
+                    $('.main-header').css({
+                        'width': '',
+                        'left': '',
+                        'margin-left': ''
+                    });
+                    
+                    // Reset dropdown z-index and restore normal behavior
+                    $('.dropdown-menu').css('z-index', '').removeClass('show').hide();
+                    $('.dropdown-toggle[aria-expanded="true"]').attr('aria-expanded', 'false');
+                    
+                    // Remove custom click handlers and restore Bootstrap dropdown
+                    $('#wardViewDropdown').off('click.bs.dropdown');
+                    $(document).off('click.dropdown-fullscreen');
+                    
+                    // Re-enable Bootstrap dropdown
+                    setTimeout(function() {
+                        $('#wardViewDropdown').dropdown();
+                    }, 100);
                 }
             }
             
@@ -2187,6 +2432,49 @@
                     });
                 }
             });
+
+            // Nurses on Duty functionality
+            window.showNursesOnDuty = function() {
+                const nursesModal = $('#nursesOnDutyModal');
+                const nursesIframe = $('#nursesOnDutyIframe');
+                
+                // Set the iframe source
+                nursesIframe.attr('src', '{{ route("admin.beds.wards.nurses", $ward->id) }}');
+                
+                // Show the modal
+                nursesModal.modal('show');
+            };
         });
     </script>
+
+    <!-- Nurses on Duty Modal -->
+    <div class="modal fade" id="nursesOnDutyModal" tabindex="-1" role="dialog" aria-labelledby="nursesOnDutyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nursesOnDutyModalLabel">
+                        <i class="fas fa-user-nurse mr-2"></i>
+                        Nurses on Duty - {{ $ward->name }}
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="nursesOnDutyIframe" 
+                            src=""
+                            style="width: 100%; height: 70vh; border: none;">
+                    </iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i> Close
+                    </button>
+                    <a href="{{ route('admin.integration.nurse-schedule') }}" class="btn btn-primary" target="_blank">
+                        <i class="fas fa-cog mr-1"></i> Manage Schedules
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 @stop 

@@ -83,7 +83,17 @@
                                             <td>{{ $ward->id }}</td>
                                             <td>{{ $ward->name }}</td>
                                             <td>{{ $ward->hospital->name }}</td>
-                                            <td>{{ $ward->specialty->name }}</td>
+                                            <td>
+                                                @if($ward->specialties->count() > 0)
+                                                    @foreach($ward->specialties as $specialty)
+                                                        <span class="badge badge-info mr-1">{{ $specialty->name }}</span>
+                                                    @endforeach
+                                                @elseif($ward->specialty)
+                                                    <span class="badge badge-info">{{ $ward->specialty->name }}</span>
+                                                @else
+                                                    <span class="text-muted">No specialty assigned</span>
+                                                @endif
+                                            </td>
                                             <td>{{ $ward->capacity }}</td>
                                             <td>
                                                 @if ($ward->is_active)

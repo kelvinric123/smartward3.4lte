@@ -16,7 +16,14 @@
                             @foreach($allWards as $availableWard)
                                 <a class="dropdown-item {{ $ward->id == $availableWard->id ? 'active' : '' }}" 
                                    href="{{ route('admin.beds.wards.show', $availableWard) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}">
-                                    {{ $availableWard->name }} <small class="text-muted">({{ $availableWard->specialty->name }})</small>
+                                    {{ $availableWard->name }} 
+                                    <small class="text-muted">
+                                        @if($availableWard->specialties->count() > 0)
+                                            ({{ $availableWard->specialties->pluck('name')->join(', ') }})
+                                        @elseif($availableWard->specialty)
+                                            ({{ $availableWard->specialty->name }})
+                                        @endif
+                                    </small>
                                 </a>
                             @endforeach
                         </div>

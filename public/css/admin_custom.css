@@ -70,9 +70,244 @@ html::before,
     visibility: hidden !important;
 }
 
+/* Enhanced Sidebar Styling to Match Sample Image */
+.main-sidebar {
+    background-color: #2c3e50 !important;
+    border-right: 1px solid #34495e;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link {
+    color: #b0bec5 !important;
+    border-radius: 6px !important;
+    margin: 2px 8px !important;
+    padding: 8px 12px !important;
+    transition: all 0.3s ease !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: #34495e !important;
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: #3498db !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3) !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: #3498db !important;
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link {
+    color: #95a5a6 !important;
+    padding-left: 2.5rem !important;
+    margin: 1px 8px !important;
+    border-radius: 4px !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+    background-color: #2980b9 !important;
+    color: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link:hover {
+    background-color: #34495e !important;
+    color: #ffffff !important;
+}
+
+/* User Panel Styling */
+.user-panel {
+    background-color: #34495e !important;
+    border-bottom: 1px solid #2c3e50 !important;
+    padding: 15px !important;
+}
+
+.user-panel .info {
+    margin-left: 15px !important;
+}
+
+.user-panel .info a {
+    color: #ecf0f1 !important;
+    font-weight: 600 !important;
+}
+
+.user-panel .info p {
+    color: #95a5a6 !important;
+    font-size: 0.85rem !important;
+    margin: 0 !important;
+}
+
+/* Brand Logo Styling */
+.brand-link {
+    background-color: #2c3e50 !important;
+    border-bottom: 1px solid #34495e !important;
+    color: #ecf0f1 !important;
+}
+
+.brand-link .brand-text {
+    color: #ecf0f1 !important;
+    font-weight: 600 !important;
+}
+
+/* Menu Icons */
+.nav-sidebar .nav-link i {
+    width: 20px !important;
+    text-align: center !important;
+    margin-right: 10px !important;
+}
+
+/* Scrollbar Styling */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #2c3e50;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #34495e;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #3498db;
+}
+
+/* Fullscreen Mode Enhancements */
+body.fullscreen-mode .main-header.navbar {
+    width: 100% !important;
+    left: 0 !important;
+    margin-left: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 1030 !important;
+}
+
+/* Dark mode navbar in fullscreen */
+body.fullscreen-mode .navbar-dark {
+    background-color: #2c3e50 !important;
+    border-bottom: 1px solid #34495e !important;
+}
+
+/* Ensure fullscreen content starts below navbar */
+body.fullscreen-mode .content-wrapper {
+    padding-top: 56px !important; /* Height of navbar */
+}
+
+/* Ward name and button visibility improvements */
+body.fullscreen-mode .content-header .d-flex {
+    align-items: center !important;
+}
+
+body.fullscreen-mode .content-header h1 {
+    color: inherit !important;
+    text-shadow: none !important;
+    font-size: 1.8rem !important;
+}
+
+/* Dropdown improvements for fullscreen mode */
+body.fullscreen-mode .dropdown-toggle::after {
+    color: inherit !important;
+}
+
+body.fullscreen-mode .dropdown-menu {
+    border-radius: 0.375rem !important;
+    padding: 0.5rem 0 !important;
+    min-width: 280px !important;
+    max-width: 400px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+body.fullscreen-mode .dropdown-item {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.fullscreen-mode .dropdown-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Force dropdown to stay visible */
+body.fullscreen-mode .dropdown.show .dropdown-menu,
+body.fullscreen-mode .dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    pointer-events: auto !important;
+}
+
+/* Ensure proper stacking */
+body.fullscreen-mode .dropdown {
+    z-index: 9999 !important;
+}
+
+body.fullscreen-mode .dropdown-menu {
+    z-index: 10001 !important;
+}
+
+/* Dark mode specific dropdown styling in fullscreen */
+[data-bs-theme="dark"] body.fullscreen-mode .dropdown-item,
+body.dark-mode.fullscreen-mode .dropdown-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] body.fullscreen-mode .dropdown-menu,
+body.dark-mode.fullscreen-mode .dropdown-menu {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Button styling in fullscreen */
+body.fullscreen-mode .btn {
+    border-radius: 0.375rem !important;
+}
+
+/* Ensure text visibility in all themes */
+[data-bs-theme="dark"] body.fullscreen-mode,
+body.dark-mode.fullscreen-mode {
+    color: #ecf0f1 !important;
+}
+
+[data-bs-theme="dark"] body.fullscreen-mode h1,
+[data-bs-theme="dark"] body.fullscreen-mode h2,
+[data-bs-theme="dark"] body.fullscreen-mode h3,
+body.dark-mode.fullscreen-mode h1,
+body.dark-mode.fullscreen-mode h2,
+body.dark-mode.fullscreen-mode h3 {
+    color: #ecf0f1 !important;
+}
+
 /* Add specific targeting for the large left arrow from the image */
 .wrapper > .left-arrow-large,
 .wrapper > div:first-child:not(.main-sidebar):not(.navbar):not(.content-wrapper),
 body > div:not(#app):not(.wrapper):not([class]):first-child {
     display: none !important;
+}
+
+/* Hide duplicate navbar user elements and malformed search widgets */
+.navbar-nav .nav-item:has(.navbar-search),
+.navbar-nav .nav-item .navbar-search,
+.navbar-nav .nav-link:has(.fa-search),
+.navbar-nav .nav-link .fa-search,
+.nav-item.navbar-search-item,
+.nav-link.navbar-search-link {
+    display: none !important;
+}
+
+/* Hide any duplicate user info elements in navbar */
+.navbar-nav .nav-item:not(.dropdown):has(img[src*="user"]),
+.navbar-nav .nav-item:not(.dropdown):has(.fa-user-circle),
+.navbar-nav .nav-item .nav-link:has(.user-image),
+.navbar-nav .nav-item .nav-link .user-image {
+    display: none !important;
+}
+
+/* Ensure only the proper user dropdown menu is visible */
+.navbar-nav .nav-item.dropdown:has(.dropdown-menu) .nav-link {
+    display: flex !important;
 } 

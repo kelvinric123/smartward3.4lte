@@ -180,7 +180,12 @@
             <ul class="nav nav-tabs" id="patientTabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="details-tab" data-toggle="tab" href="#details" role="tab" aria-controls="details" aria-selected="true">
-                        <i class="fas fa-user"></i> Patient Details
+                        <i class="fas fa-user"></i> Patient ID
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="additional-info-tab" data-toggle="tab" href="#additional-info" role="tab" aria-controls="additional-info" aria-selected="false">
+                        <i class="fas fa-info-circle"></i> Additional Info
                     </a>
                 </li>
                 <li class="nav-item">
@@ -280,9 +285,11 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Clinical Information Section -->
-                    @if($activeAdmission)
+
+                </div>
+                
+                <!-- Additional Info Tab -->
+                <div class="tab-pane fade" id="additional-info" role="tabpanel" aria-labelledby="additional-info-tab">
                     <form id="clinicalInfoForm" action="{{ route('admin.beds.wards.patient.updateClinicalInfo', ['ward' => $ward->id, 'bedId' => $bed->id]) }}" method="POST">
                         @csrf
                         @method('PUT')
@@ -290,7 +297,6 @@
                         <!-- Clinical Classification -->
                         <div class="row">
                             <div class="col-md-12">
-                                <hr>
                                 <h5 class="text-muted mb-3">
                                     <i class="fas fa-clipboard-list"></i> Clinical Classification
                                     <button type="submit" class="btn btn-primary btn-sm float-right">
@@ -305,7 +311,7 @@
                                     <label for="patient_class">Patient Class <small class="text-muted">(HL7 PV1.2)</small></label>
                                     <select class="form-control" id="patient_class" name="patient_class">
                                         @foreach(\App\Models\PatientAdmission::getPatientClassOptions() as $code => $description)
-                                            <option value="{{ $code }}" {{ ($activeAdmission->patient_class ?? 'I') == $code ? 'selected' : '' }}>
+                                            <option value="{{ $code }}" {{ (($activeAdmission ? $activeAdmission->patient_class : 'I') == $code) ? 'selected' : '' }}>
                                                 {{ $code }} - {{ $description }}
                                             </option>
                                         @endforeach
@@ -318,7 +324,7 @@
                                     <select class="form-control" id="diet_type" name="diet_type">
                                         <option value="">Not specified</option>
                                         @foreach(\App\Models\PatientAdmission::getDietTypeOptions() as $code => $description)
-                                            <option value="{{ $code }}" {{ $activeAdmission->diet_type == $code ? 'selected' : '' }}>
+                                            <option value="{{ $code }}" {{ ($activeAdmission && $activeAdmission->diet_type == $code) ? 'selected' : '' }}>
                                                 {{ $code }} - {{ $description }}
                                             </option>
                                         @endforeach
@@ -339,14 +345,14 @@
                                 <div class="form-group">
                                     <label for="expected_discharge_date">Expected Discharge Date & Time</label>
                                     <input type="datetime-local" class="form-control" id="expected_discharge_date" name="expected_discharge_date" 
-                                           value="{{ $activeAdmission->expected_discharge_date ? $activeAdmission->expected_discharge_date->format('Y-m-d\TH:i') : '' }}">
+                                           value="{{ ($activeAdmission && $activeAdmission->expected_discharge_date) ? $activeAdmission->expected_discharge_date->format('Y-m-d\TH:i') : '' }}">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="expected_length_of_stay">Expected Length of Stay (days)</label>
                                     <input type="number" class="form-control" id="expected_length_of_stay" name="expected_length_of_stay" 
-                                           min="1" max="365" value="{{ $activeAdmission->expected_length_of_stay }}">
+                                           min="1" max="365" value="{{ $activeAdmission ? $activeAdmission->expected_length_of_stay : '' }}">
                                 </div>
                             </div>
                         </div>
@@ -364,7 +370,7 @@
                                     <label for="fall_risk_alert">ZAT: Fall Risk Alert</label>
                                     <select class="form-control" id="fall_risk_alert" name="fall_risk_alert">
                                         @foreach(\App\Models\PatientAdmission::getFallRiskAlertOptions() as $code => $description)
-                                            <option value="{{ $code }}" {{ ($activeAdmission->fall_risk_alert ?? 'NO') == $code ? 'selected' : '' }}>
+                                            <option value="{{ $code }}" {{ (($activeAdmission ? $activeAdmission->fall_risk_alert : 'NO') == $code) ? 'selected' : '' }}>
                                                 {{ $code }} - {{ $description }}
                                             </option>
                                         @endforeach
@@ -377,7 +383,7 @@
                                     <label for="isolation_precautions">ZIT: Isolation Precautions</label>
                                     <select class="form-control" id="isolation_precautions" name="isolation_precautions">
                                         @foreach(\App\Models\PatientAdmission::getIsolationPrecautionsOptions() as $code => $description)
-                                            <option value="{{ $code }}" {{ ($activeAdmission->isolation_precautions ?? 'NONE') == $code ? 'selected' : '' }}>
+                                            <option value="{{ $code }}" {{ (($activeAdmission ? $activeAdmission->isolation_precautions : 'NONE') == $code) ? 'selected' : '' }}>
                                                 {{ $code }} - {{ $description }}
                                             </option>
                                         @endforeach
@@ -395,7 +401,7 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="dnr" name="risk_factors[]" value="dnr" {{ isset($activeAdmission->risk_factors) && in_array('dnr', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                                <input type="checkbox" class="custom-control-input" id="dnr" name="risk_factors[]" value="dnr" {{ ($activeAdmission && isset($activeAdmission->risk_factors) && in_array('dnr', $activeAdmission->risk_factors ?? [])) ? 'checked' : '' }}>
                                                 <label class="custom-control-label" for="dnr">
                                                     <i class="fas fa-heart text-danger"></i> DNR
                                                 </label>
@@ -403,7 +409,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="fallrisk_checkbox" name="risk_factors[]" value="fallrisk" {{ isset($activeAdmission->risk_factors) && in_array('fallrisk', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                                <input type="checkbox" class="custom-control-input" id="fallrisk_checkbox" name="risk_factors[]" value="fallrisk" {{ ($activeAdmission && isset($activeAdmission->risk_factors) && in_array('fallrisk', $activeAdmission->risk_factors ?? [])) ? 'checked' : '' }}>
                                                 <label class="custom-control-label" for="fallrisk_checkbox">
                                                     <i class="fas fa-exclamation-triangle text-warning"></i> Fall Risk
                                                 </label>
@@ -411,7 +417,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="intubated" name="risk_factors[]" value="intubated" {{ isset($activeAdmission->risk_factors) && in_array('intubated', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                                <input type="checkbox" class="custom-control-input" id="intubated" name="risk_factors[]" value="intubated" {{ ($activeAdmission && isset($activeAdmission->risk_factors) && in_array('intubated', $activeAdmission->risk_factors ?? [])) ? 'checked' : '' }}>
                                                 <label class="custom-control-label" for="intubated">
                                                     <i class="fas fa-lungs text-primary"></i> Intubated
                                                 </label>
@@ -419,7 +425,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input" id="isolation_checkbox" name="risk_factors[]" value="isolation" {{ isset($activeAdmission->risk_factors) && in_array('isolation', $activeAdmission->risk_factors ?? []) ? 'checked' : '' }}>
+                                                <input type="checkbox" class="custom-control-input" id="isolation_checkbox" name="risk_factors[]" value="isolation" {{ ($activeAdmission && isset($activeAdmission->risk_factors) && in_array('isolation', $activeAdmission->risk_factors ?? [])) ? 'checked' : '' }}>
                                                 <label class="custom-control-label" for="isolation_checkbox">
                                                     <i class="fas fa-shield-virus text-info"></i> Isolation
                                                 </label>
@@ -442,7 +448,7 @@
                                 <div class="form-group">
                                     <label for="clinical_alerts">Clinical Alerts & Special Instructions</label>
                                     <textarea class="form-control" id="clinical_alerts" name="clinical_alerts" rows="3" 
-                                              placeholder="Enter any additional clinical alerts, special instructions, or important notes...">{{ $activeAdmission->clinical_alerts }}</textarea>
+                                              placeholder="Enter any additional clinical alerts, special instructions, or important notes...">{{ $activeAdmission ? $activeAdmission->clinical_alerts : '' }}</textarea>
                                     <small class="form-text text-muted">Additional clinical information for staff awareness</small>
                                 </div>
                             </div>
@@ -542,7 +548,6 @@
                             </div>
                         </div>
                     </div>
-                    @endif
                     @endif
                 </div>
                 

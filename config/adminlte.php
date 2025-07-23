@@ -134,10 +134,10 @@ return [
     */
 
     'usermenu_enabled' => true,
-    'usermenu_header' => false,
-    'usermenu_header_class' => 'bg-primary',
-    'usermenu_image' => false,
-    'usermenu_desc' => false,
+    'usermenu_header' => true,
+    'usermenu_header_class' => 'bg-dark text-light',
+    'usermenu_image' => true,
+    'usermenu_desc' => true,
     'usermenu_profile_url' => false,
 
     /*
@@ -190,15 +190,15 @@ return [
     |
     */
 
-    'classes_body' => '',
-    'classes_brand' => '',
-    'classes_brand_text' => '',
+    'classes_body' => 'sidebar-mini layout-fixed',
+    'classes_brand' => 'navbar-dark',
+    'classes_brand_text' => 'text-light font-weight-light',
     'classes_content_wrapper' => '',
     'classes_content_header' => '',
     'classes_content' => '',
     'classes_sidebar' => 'sidebar-dark-primary elevation-4',
-    'classes_sidebar_nav' => '',
-    'classes_topnav' => 'navbar-white navbar-light',
+    'classes_sidebar_nav' => 'nav-flat nav-legacy',
+    'classes_topnav' => 'navbar-dark navbar-primary',
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
 
@@ -301,8 +301,7 @@ return [
     'menu' => [
         // Navbar items:
         [
-            'type' => 'navbar-search',
-            'text' => 'search',
+            'type' => 'darkmode-widget',
             'topnav_right' => true,
         ],
 
@@ -491,6 +490,11 @@ return [
                     'text' => 'Admission',
                     'url' => 'admin/integration/admission',
                     'icon' => 'fas fa-fw fa-sign-in-alt',
+                ],
+                [
+                    'text' => 'Nurse Schedule',
+                    'url' => 'admin/integration/nurse-schedule',
+                    'icon' => 'fas fa-fw fa-calendar-alt',
                 ],
             ],
         ],

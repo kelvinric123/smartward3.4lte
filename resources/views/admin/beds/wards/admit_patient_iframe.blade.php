@@ -146,6 +146,32 @@
                                 @enderror
                             </div>
                         </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="expected_discharge_date">Expected Discharge Date & Time <small class="text-muted">(Optional)</small></label>
+                                <input type="datetime-local" name="expected_discharge_date" id="expected_discharge_date" 
+                                    class="form-control @error('expected_discharge_date') is-invalid @enderror"
+                                    value="{{ old('expected_discharge_date') }}">
+                                @error('expected_discharge_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="expected_length_of_stay">Expected Length of Stay (days) <small class="text-muted">(Optional)</small></label>
+                                <input type="number" name="expected_length_of_stay" id="expected_length_of_stay" 
+                                    class="form-control @error('expected_length_of_stay') is-invalid @enderror"
+                                    min="1" max="365" value="{{ old('expected_length_of_stay') }}">
+                                @error('expected_length_of_stay')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Enter number of days (1-365)</small>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -233,12 +259,21 @@
                     url: $(this).attr('action'),
                     method: 'POST',
                     data: $(this).serialize(),
-                    success: function(response) {
-                        // Close the modal and refresh the parent page
-                        window.parent.closeAdmitPatientModal();
-                        window.parent.location.reload();
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
                     },
-                    error: function(xhr) {
+                    success: function(response) {
+                        // Check if response indicates success
+                        if (response.success) {
+                            // Close the modal and refresh the parent page
+                            window.parent.closeAdmitPatientModal();
+                            window.parent.location.reload();
+                        } else {
+                            alert('Admission failed: ' + (response.message || 'Unknown error'));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        
                         // Handle validation errors
                         if (xhr.status === 422) {
                             let response = xhr.responseJSON;
@@ -286,7 +321,23 @@
                                 $('#admitPatientForm').prepend(errorHtml);
                             }
                         } else {
-                            alert('An error occurred while admitting the patient.');
+                            // Show more detailed error information
+                            let errorMessage = 'An error occurred while admitting the patient.';
+                            if (xhr.status === 404) {
+                                errorMessage += ' (Route not found - Status 404)';
+                            } else if (xhr.status === 500) {
+                                errorMessage += ' (Server error - Status 500)';
+                            } else if (xhr.status === 403) {
+                                errorMessage += ' (Access forbidden - Status 403)';
+                            } else {
+                                errorMessage += ` (HTTP Status: ${xhr.status})`;
+                            }
+                            
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage += '\nDetails: ' + xhr.responseJSON.message;
+                            }
+                            
+                            alert(errorMessage);
                         }
                     }
                 });

@@ -26,7 +26,7 @@ class WardController extends Controller
      */
     public function index(Request $request)
     {
-        $wards = Ward::with(['hospital', 'specialty'])
+        $wards = Ward::with(['hospital', 'specialty', 'specialties'])
             ->when($request->has('search'), function ($query) use ($request) {
                 return $query->where('name', 'like', '%' . $request->search . '%');
             })
@@ -57,11 +57,21 @@ class WardController extends Controller
             'description' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
             'hospital_id' => 'required|exists:hospitals,id',
-            'specialty_id' => 'required|exists:specialties,id',
+            'specialties' => 'required|array|min:1',
+            'specialties.*' => 'exists:specialties,id',
+            'specialty_id' => 'nullable|exists:specialties,id', // Keep for backward compatibility
             'is_active' => 'boolean',
         ]);
 
-        Ward::create($validated);
+        // Set the legacy specialty_id to the first selected specialty for backward compatibility
+        if (empty($validated['specialty_id']) && !empty($validated['specialties'])) {
+            $validated['specialty_id'] = $validated['specialties'][0];
+        }
+
+        $ward = Ward::create($validated);
+        
+        // Attach the selected specialties to the ward
+        $ward->specialties()->attach($validated['specialties']);
 
         return redirect()->route('admin.beds.wards.index')
             ->with('success', 'Ward created successfully');
@@ -72,8 +82,11 @@ class WardController extends Controller
      */
     public function show(Ward $ward)
     {
+        // Load ward relationships
+        $ward->load(['hospital', 'specialty', 'specialties']);
+        
         // Get all active wards for the ward selector dropdown
-        $allWards = Ward::where('is_active', true)->get();
+        $allWards = Ward::where('is_active', true)->with(['specialty', 'specialties'])->get();
         
         return view('admin.beds.wards.show', compact('ward', 'allWards'));
     }
@@ -99,11 +112,21 @@ class WardController extends Controller
             'description' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
             'hospital_id' => 'required|exists:hospitals,id',
-            'specialty_id' => 'required|exists:specialties,id',
+            'specialties' => 'required|array|min:1',
+            'specialties.*' => 'exists:specialties,id',
+            'specialty_id' => 'nullable|exists:specialties,id', // Keep for backward compatibility
             'is_active' => 'boolean',
         ]);
 
+        // Set the legacy specialty_id to the first selected specialty for backward compatibility
+        if (empty($validated['specialty_id']) && !empty($validated['specialties'])) {
+            $validated['specialty_id'] = $validated['specialties'][0];
+        }
+
         $ward->update($validated);
+        
+        // Sync the selected specialties to the ward (this will remove old ones and add new ones)
+        $ward->specialties()->sync($validated['specialties']);
 
         return redirect()->route('admin.beds.wards.index')
             ->with('success', 'Ward updated successfully');
@@ -126,10 +149,10 @@ class WardController extends Controller
     public function dashboard(Request $request, Ward $ward)
     {
         // Load the ward with its relationships
-        $ward->load(['hospital', 'specialty', 'beds.consultant', 'beds.nurse', 'beds.patient.latestVitalSigns']);
+        $ward->load(['hospital', 'specialty', 'specialties', 'beds.consultant', 'beds.nurse', 'beds.patient.latestVitalSigns']);
         
         // Get all active wards for the ward selector dropdown
-        $allWards = Ward::where('is_active', true)->get();
+        $allWards = Ward::where('is_active', true)->with(['specialty', 'specialties'])->get();
         
         // Get bed status counts for dashboard stats (always show full counts)
         $availableBeds = $ward->beds->where('status', 'available')->count();
@@ -167,10 +190,20 @@ class WardController extends Controller
         // Get unique nurses assigned to this ward's beds
         $nursesOnDuty = $ward->beds->pluck('nurse_id')->filter()->unique()->count();
         
-        // Get consultants for this ward's specialty
-        $consultantsCount = \App\Models\Consultant::where('specialty_id', $ward->specialty_id)
-            ->where('is_active', true)
-            ->count();
+        // Get consultants for this ward's specialties
+        $wardSpecialtyIds = collect();
+        if ($ward->specialties->count() > 0) {
+            $wardSpecialtyIds = $ward->specialties->pluck('id');
+        } elseif ($ward->specialty_id) {
+            $wardSpecialtyIds->push($ward->specialty_id);
+        }
+        
+        $consultantsCount = 0;
+        if ($wardSpecialtyIds->count() > 0) {
+            $consultantsCount = \App\Models\Consultant::whereIn('specialty_id', $wardSpecialtyIds->toArray())
+                ->where('is_active', true)
+                ->count();
+        }
         
         // Calculate occupancy rate
         $occupancyRate = $totalBeds > 0 ? round(($occupiedBeds / $totalBeds) * 100) : 0;
@@ -270,12 +303,29 @@ class WardController extends Controller
             // Clinical fields
             'diet_type' => 'nullable|in:REG,NPO,CLF,FLF,LCH,LCS,LNS,DBT,VEG,VGN,HSL,KSH,RST,CAR,SFT,BLD,PUR',
             'patient_class' => 'nullable|in:I,O,A,E,N,R,B,C,U',
-            'expected_discharge_date' => 'nullable|date|after:admission_date',
+            'expected_discharge_date' => 'nullable|date',
             'expected_length_of_stay' => 'nullable|integer|min:1|max:365',
             'fall_risk_alert' => 'nullable|in:NO,LOW,MOD,HIGH,FR',
             'isolation_precautions' => 'nullable|in:NONE,STD,CON,DROP,AIR,DAC,DC,AC,AD',
             'clinical_alerts' => 'nullable|string|max:1000',
         ]);
+
+        // Custom validation: if both admission_date and expected_discharge_date are provided,
+        // expected_discharge_date should be after or equal to admission_date
+        if (!empty($validated['admission_date']) && !empty($validated['expected_discharge_date'])) {
+            $admissionDate = \Carbon\Carbon::parse($validated['admission_date']);
+            $expectedDischargeDate = \Carbon\Carbon::parse($validated['expected_discharge_date']);
+            
+            if ($expectedDischargeDate->lt($admissionDate)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Expected discharge date must be after or equal to admission date.',
+                    'errors' => [
+                        'expected_discharge_date' => ['Expected discharge date must be after or equal to admission date.']
+                    ]
+                ], 422);
+            }
+        }
         
         // Find the patient
         $patient = \App\Models\Patient::findOrFail($validated['patient_id']);
@@ -344,7 +394,17 @@ class WardController extends Controller
             'is_active' => true,
         ] + $clinicalData);
         
-        // Preserve fullscreen mode if it was enabled
+        // Check if this is an AJAX request (from iframe modal)
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient admitted successfully',
+                'ward_name' => $ward->name,
+                'bed_number' => $bed->bed_number
+            ]);
+        }
+        
+        // Preserve fullscreen mode if it was enabled (for non-AJAX requests)
         $redirectRoute = route('admin.beds.wards.dashboard', $ward);
         if ($request->has('fullscreen') && $request->fullscreen == 'true') {
             $redirectRoute .= '?fullscreen=true';
@@ -897,27 +957,45 @@ class WardController extends Controller
     }
     
     /**
-     * Show consultants list for the ward's specialty and hospital
+     * Show consultants list for the ward's specialties and hospital
      */
     public function showConsultants(Ward $ward)
     {
-        // Get consultants from the same specialty as the ward
-        $specialtyConsultants = \App\Models\Consultant::where('specialty_id', $ward->specialty_id)
-            ->where('is_active', true)
-            ->with(['specialty'])
-            ->get()
-            ->map(function ($consultant) {
-                // Count patients for this consultant
-                $patientCount = \App\Models\Bed::where('consultant_id', $consultant->id)
-                    ->where('status', 'occupied')
-                    ->count();
-                
-                $consultant->patient_count = $patientCount;
-                return $consultant;
-            });
+        // Load ward specialties
+        $ward->load(['specialties', 'specialty']);
+        
+        // Get specialty IDs from both new and legacy relationships
+        $wardSpecialtyIds = collect();
+        
+        // Add from many-to-many relationship
+        if ($ward->specialties->count() > 0) {
+            $wardSpecialtyIds = $ward->specialties->pluck('id');
+        }
+        // Add from legacy single relationship if no many-to-many specialties
+        elseif ($ward->specialty_id) {
+            $wardSpecialtyIds->push($ward->specialty_id);
+        }
+        
+        // Get consultants from the ward's specialties
+        $specialtyConsultants = collect();
+        if ($wardSpecialtyIds->count() > 0) {
+            $specialtyConsultants = \App\Models\Consultant::whereIn('specialty_id', $wardSpecialtyIds->toArray())
+                ->where('is_active', true)
+                ->with(['specialty'])
+                ->get()
+                ->map(function ($consultant) {
+                    // Count patients for this consultant
+                    $patientCount = \App\Models\Bed::where('consultant_id', $consultant->id)
+                        ->where('status', 'occupied')
+                        ->count();
+                    
+                    $consultant->patient_count = $patientCount;
+                    return $consultant;
+                });
+        }
         
         // Get all other consultants from different specialties
-        $otherConsultants = \App\Models\Consultant::where('specialty_id', '!=', $ward->specialty_id)
+        $otherConsultants = \App\Models\Consultant::whereNotIn('specialty_id', $wardSpecialtyIds->toArray())
             ->where('is_active', true)
             ->with(['specialty'])
             ->get()

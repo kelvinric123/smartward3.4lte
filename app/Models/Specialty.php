@@ -29,4 +29,12 @@ class Specialty extends Model
     {
         return $this->hasMany(Consultant::class);
     }
+    
+    /**
+     * Get the wards associated with this specialty (many-to-many relationship).
+     */
+    public function wards()
+    {
+        return $this->belongsToMany(Ward::class, 'ward_specialty');
+    }
 } 

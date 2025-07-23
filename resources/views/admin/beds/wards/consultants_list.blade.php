@@ -272,7 +272,15 @@
 <body>
     <div class="header">
         <h1><i class="fas fa-user-md"></i> Consultants</h1>
-        <p>{{ $ward->name }} - {{ $ward->specialty->name }} Ward</p>
+        <p>{{ $ward->name }} - 
+            @if($ward->specialties->count() > 0)
+                {{ $ward->specialties->pluck('name')->join(', ') }} Ward
+            @elseif($ward->specialty)
+                {{ $ward->specialty->name }} Ward
+            @else
+                Ward
+            @endif
+        </p>
     </div>
 
     <!-- Search Bar -->
@@ -292,7 +300,15 @@
     <!-- Specialty Consultants Section -->
     <div class="section">
         <div class="section-header">
-            <span><i class="fas fa-stethoscope"></i> {{ $ward->specialty->name }} Consultants</span>
+            <span><i class="fas fa-stethoscope"></i> 
+                @if($ward->specialties->count() > 0)
+                    {{ $ward->specialties->pluck('name')->join(', ') }} Consultants
+                @elseif($ward->specialty)
+                    {{ $ward->specialty->name }} Consultants
+                @else
+                    Ward Consultants
+                @endif
+            </span>
             <span class="badge">{{ $specialtyConsultants->count() }}</span>
         </div>
         

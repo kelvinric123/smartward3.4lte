@@ -15,36 +15,34 @@ class WardSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get Qmed hospital 1
-        $hospital = Hospital::where('name', 'Qmed hospital 1')->first();
+        // Get all hospitals
+        $hospitals = Hospital::all();
         
-        if (!$hospital) {
-            $this->command->info('Qmed hospital 1 not found. Skipping ward creation.');
+        if ($hospitals->isEmpty()) {
+            $this->command->info('No hospitals found. Skipping ward creation.');
             return;
         }
 
-        // Get all specialties for this hospital
-        $specialties = Specialty::where('hospital_id', $hospital->id)->get();
-        
-        foreach ($specialties as $specialty) {
-            // Create two wards for each specialty
-            Ward::create([
-                'name' => $specialty->name . ' Ward A',
-                'description' => 'Primary ward for ' . $specialty->name . ' department',
-                'capacity' => 20,
-                'hospital_id' => $hospital->id,
-                'specialty_id' => $specialty->id,
-                'is_active' => true,
-            ]);
+        foreach ($hospitals as $hospital) {
+            // Get all specialties for this hospital
+            $specialties = Specialty::where('hospital_id', $hospital->id)->get();
             
-            Ward::create([
-                'name' => $specialty->name . ' Ward B',
-                'description' => 'Secondary ward for ' . $specialty->name . ' department',
-                'capacity' => 15,
-                'hospital_id' => $hospital->id,
-                'specialty_id' => $specialty->id,
-                'is_active' => true,
-            ]);
+            foreach ($specialties as $specialty) {
+                // Create one ward for each specialty
+                $ward = Ward::create([
+                    'name' => $specialty->name . ' Ward',
+                    'description' => 'Ward for ' . $specialty->name . ' department',
+                    'capacity' => 20,
+                    'hospital_id' => $hospital->id,
+                    'specialty_id' => $specialty->id,
+                    'is_active' => true,
+                ]);
+                
+                // Attach the specialty to the ward using the new many-to-many relationship
+                $ward->specialties()->attach($specialty->id);
+                
+                $this->command->info("Created ward: {$ward->name} at {$hospital->name}");
+            }
         }
     }
 }
