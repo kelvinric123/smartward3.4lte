@@ -72,6 +72,7 @@ class BedController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'code' => 'nullable|string|max:20|unique:beds',
             'bed_number' => 'required|string|max:10',
             'status' => 'required|in:' . implode(',', array_keys(Bed::getStatuses())),
             'ward_id' => 'required|exists:wards,id',
@@ -153,6 +154,7 @@ class BedController extends Controller
     public function update(Request $request, Bed $bed)
     {
         $validated = $request->validate([
+            'code' => 'nullable|string|max:20|unique:beds,code,' . $bed->id,
             'bed_number' => 'required|string|max:10',
             'status' => 'required|in:' . implode(',', array_keys(Bed::getStatuses())),
             'ward_id' => 'required|exists:wards,id',

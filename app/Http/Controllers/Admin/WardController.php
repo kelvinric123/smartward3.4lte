@@ -52,6 +52,7 @@ class WardController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'code' => 'nullable|string|max:20|unique:wards',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
@@ -93,6 +94,7 @@ class WardController extends Controller
     public function update(Request $request, Ward $ward)
     {
         $validated = $request->validate([
+            'code' => 'nullable|string|max:20|unique:wards,code,' . $ward->id,
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'capacity' => 'required|integer|min:1',

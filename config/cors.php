@@ -15,11 +15,21 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => [
+        'api/*', 
+        'sanctum/csrf-cookie',
+        'admin/integration/*',  // Add admin integration routes
+        'admin/integration/admission'  // Specifically allow the admission endpoint
+    ],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:3000',  // Frontend URL
+        'http://127.0.0.1:3000',  // Alternative localhost
+        'http://localhost:9000',  // ADT Integrator
+        '*'  // Allow all origins for development
+    ],
 
     'allowed_origins_patterns' => [],
 

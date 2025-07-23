@@ -43,6 +43,16 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
+                                        <label for="code">Bed Code</label>
+                                        <input type="text" name="code" id="code" class="form-control @error('code') is-invalid @enderror" value="{{ old('code') }}" placeholder="e.g., B1, B2, BED001">
+                                        @error('code')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                        <small class="form-text text-muted">Unique code for HL7 integration (optional)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
                                         <label for="bed_number">Bed Number <span class="text-danger">*</span></label>
                                         <input type="text" name="bed_number" id="bed_number" class="form-control @error('bed_number') is-invalid @enderror" value="{{ old('bed_number') }}" required>
                                         @error('bed_number')
@@ -50,6 +60,9 @@
                                         @enderror
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="status">Status <span class="text-danger">*</span></label>

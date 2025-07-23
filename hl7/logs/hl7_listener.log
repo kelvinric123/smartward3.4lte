@@ -1,0 +1,253 @@
+[2025-07-12 20:53:27] [INFO] Laravel application loaded successfully
+[2025-07-12 20:53:27] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 20:53:27] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 20:53:27] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 20:53:27] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 20:53:27] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 20:53:48] [INFO] Received HL7 message via TCP
+[2025-07-12 20:53:48] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712125348001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 20:53:48] [ERROR] Admission processing failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'first_name' in 'field list'
+[2025-07-12 20:53:48] [INFO] HL7 message logged: HL7-1752324828-68725adc95317
+[2025-07-12 20:53:49] [INFO] Received HL7 message via TCP
+[2025-07-12 20:53:49] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712125349002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 20:53:49] [ERROR] Admission processing failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'first_name' in 'field list'
+[2025-07-12 20:53:49] [INFO] HL7 message logged: HL7-1752324829-68725add97cb5
+[2025-07-12 20:53:50] [INFO] Received HL7 message via TCP
+[2025-07-12 20:53:50] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712125350003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 20:53:50] [ERROR] Admission processing failed: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'first_name' in 'field list'
+[2025-07-12 20:53:50] [INFO] HL7 message logged: HL7-1752324830-68725ade9b677
+[2025-07-12 20:58:10] [INFO] Laravel application loaded successfully
+[2025-07-12 20:58:10] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 20:58:10] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 20:58:10] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 20:58:10] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 20:58:10] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 20:58:23] [INFO] Received HL7 message via TCP
+[2025-07-12 20:58:23] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712125823001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 20:58:23] [ERROR] Admission processing failed: Ward not found or not available
+[2025-07-12 20:58:23] [INFO] HL7 message logged: HL7-1752325103-68725befa547a
+[2025-07-12 20:58:24] [INFO] Received HL7 message via TCP
+[2025-07-12 20:58:24] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712125824002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 20:58:24] [ERROR] Admission processing failed: SQLSTATE[22007]: Invalid datetime format: 1292 Incorrect datetime value: '' for column 'admission_date' at row 1
+[2025-07-12 20:58:24] [INFO] HL7 message logged: HL7-1752325104-68725bf0a9d5b
+[2025-07-12 20:58:25] [INFO] Received HL7 message via TCP
+[2025-07-12 20:58:25] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712125825003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 20:58:25] [ERROR] Admission processing failed: SQLSTATE[22007]: Invalid datetime format: 1292 Incorrect datetime value: '' for column 'admission_date' at row 1
+[2025-07-12 20:58:25] [INFO] HL7 message logged: HL7-1752325105-68725bf1aebaf
+[2025-07-12 21:02:59] [INFO] Received HL7 message via TCP
+[2025-07-12 21:02:59] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130259001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:02:59] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:02:59] [INFO] HL7 message logged: HL7-1752325379-68725d034e61b
+[2025-07-12 21:03:00] [INFO] Received HL7 message via TCP
+[2025-07-12 21:03:00] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130300002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:03:00] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:03:00] [INFO] HL7 message logged: HL7-1752325380-68725d0453f06
+[2025-07-12 21:03:01] [INFO] Received HL7 message via TCP
+[2025-07-12 21:03:01] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130301003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:03:01] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:03:01] [INFO] HL7 message logged: HL7-1752325381-68725d05571c7
+[2025-07-12 21:03:16] [INFO] Laravel application loaded successfully
+[2025-07-12 21:03:16] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 21:03:16] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 21:03:16] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 21:03:16] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 21:03:16] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 21:03:17] [INFO] Received HL7 message via TCP
+[2025-07-12 21:03:17] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130317001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:03:17] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:03:17] [INFO] HL7 message logged: HL7-1752325397-68725d15436d3
+[2025-07-12 21:03:18] [INFO] Received HL7 message via TCP
+[2025-07-12 21:03:18] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130318002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:03:18] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:03:18] [INFO] HL7 message logged: HL7-1752325398-68725d1646248
+[2025-07-12 21:03:19] [INFO] Received HL7 message via TCP
+[2025-07-12 21:03:19] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130319003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:03:19] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:03:19] [INFO] HL7 message logged: HL7-1752325399-68725d174c12f
+[2025-07-12 21:04:39] [INFO] Received HL7 message via TCP
+[2025-07-12 21:04:39] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130439001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:04:39] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:04:39] [INFO] HL7 message logged: HL7-1752325479-68725d676895e
+[2025-07-12 21:04:40] [INFO] Received HL7 message via TCP
+[2025-07-12 21:04:40] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130440002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:04:40] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:04:40] [INFO] HL7 message logged: HL7-1752325480-68725d686c675
+[2025-07-12 21:04:41] [INFO] Received HL7 message via TCP
+[2025-07-12 21:04:41] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130441003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:04:41] [ERROR] Admission processing failed: Undefined array key "is_admitted"
+[2025-07-12 21:04:41] [INFO] HL7 message logged: HL7-1752325481-68725d696f6d4
+[2025-07-12 21:05:27] [INFO] Laravel application loaded successfully
+[2025-07-12 21:05:27] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 21:05:27] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 21:05:27] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 21:05:27] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 21:05:27] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 21:05:31] [INFO] Received HL7 message via TCP
+[2025-07-12 21:05:31] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130531001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:05:31] [ERROR] Admission processing failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smartward36lte.patient_allergies' doesn't exist
+[2025-07-12 21:05:31] [INFO] HL7 message logged: HL7-1752325531-68725d9bf3ab9
+[2025-07-12 21:05:33] [INFO] Received HL7 message via TCP
+[2025-07-12 21:05:33] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130533002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:05:33] [ERROR] Admission processing failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smartward36lte.patient_allergies' doesn't exist
+[2025-07-12 21:05:33] [INFO] HL7 message logged: HL7-1752325533-68725d9d04ea2
+[2025-07-12 21:05:34] [INFO] Received HL7 message via TCP
+[2025-07-12 21:05:34] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130534003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:05:34] [ERROR] Admission processing failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smartward36lte.patient_allergies' doesn't exist
+[2025-07-12 21:05:34] [INFO] HL7 message logged: HL7-1752325534-68725d9e07aa9
+[2025-07-12 21:06:01] [INFO] Received HL7 message via TCP
+[2025-07-12 21:06:01] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130601001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:06:01] [ERROR] Admission processing failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smartward36lte.patient_allergies' doesn't exist
+[2025-07-12 21:06:01] [INFO] HL7 message logged: HL7-1752325561-68725db9dd04a
+[2025-07-12 21:06:02] [INFO] Received HL7 message via TCP
+[2025-07-12 21:06:02] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130602002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:06:02] [ERROR] Admission processing failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smartward36lte.patient_allergies' doesn't exist
+[2025-07-12 21:06:02] [INFO] HL7 message logged: HL7-1752325562-68725dbae1782
+[2025-07-12 21:06:03] [INFO] Received HL7 message via TCP
+[2025-07-12 21:06:03] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130603003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:06:03] [ERROR] Admission processing failed: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'smartward36lte.patient_allergies' doesn't exist
+[2025-07-12 21:06:03] [INFO] HL7 message logged: HL7-1752325563-68725dbbe4b45
+[2025-07-12 21:06:21] [INFO] Laravel application loaded successfully
+[2025-07-12 21:06:21] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 21:06:21] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 21:06:21] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 21:06:21] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 21:06:21] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 21:06:23] [INFO] Received HL7 message via TCP
+[2025-07-12 21:06:23] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130623001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:06:23] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 21:06:23] [INFO] Patient admission successful - MRN: MRN12345, Admission ID: 26, Bed: B01
+[2025-07-12 21:06:23] [INFO] HL7 message logged: HL7-1752325583-68725dcfb7a36
+[2025-07-12 21:06:24] [INFO] Received HL7 message via TCP
+[2025-07-12 21:06:24] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130624002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:06:24] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 21:06:24] [INFO] Patient admission successful - MRN: MRN67890, Admission ID: 27, Bed: 2
+[2025-07-12 21:06:24] [INFO] HL7 message logged: HL7-1752325584-68725dd0baadb
+[2025-07-12 21:06:25] [INFO] Received HL7 message via TCP
+[2025-07-12 21:06:25] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712130625003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:06:25] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 21:06:25] [INFO] Patient admission successful - MRN: MRN11111, Admission ID: 28, Bed: B01
+[2025-07-12 21:06:25] [INFO] HL7 message logged: HL7-1752325585-68725dd1bfd58
+[2025-07-12 21:09:47] [INFO] Received HL7 message via TCP
+[2025-07-12 21:09:47] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: TEST001, Patient:  (MRN999)
+[2025-07-12 21:09:47] [ERROR] Admission processing failed: SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+[2025-07-12 21:09:47] [INFO] HL7 message logged: HL7-1752325787-68725e9bc79c3
+[2025-07-12 21:12:23] [INFO] Laravel application loaded successfully
+[2025-07-12 21:12:23] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 21:12:23] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 21:12:23] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 21:12:23] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 21:12:23] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 21:12:38] [INFO] Received HL7 message via TCP
+[2025-07-12 21:12:38] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712131238001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:12:38] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 21:12:38] [INFO] HL7 message logged: HL7-1752325958-68725f46edb41
+[2025-07-12 21:12:39] [INFO] Received HL7 message via TCP
+[2025-07-12 21:12:39] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712131239002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:12:39] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 21:12:39] [INFO] HL7 message logged: HL7-1752325959-68725f47f2fb1
+[2025-07-12 21:12:41] [INFO] Received HL7 message via TCP
+[2025-07-12 21:12:41] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712131241003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:12:41] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 21:12:41] [INFO] HL7 message logged: HL7-1752325961-68725f4901467
+[2025-07-12 21:14:50] [INFO] Received HL7 message via TCP
+[2025-07-12 21:14:50] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712131450001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 21:14:50] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 21:14:50] [INFO] Patient admission successful - MRN: MRN12345, Admission ID: 29, Bed: B01
+[2025-07-12 21:14:50] [INFO] HL7 message logged: HL7-1752326090-68725fca08a15
+[2025-07-12 21:14:51] [INFO] Received HL7 message via TCP
+[2025-07-12 21:14:51] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712131451002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 21:14:51] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 21:14:51] [INFO] HL7 message logged: HL7-1752326091-68725fcb0dd14
+[2025-07-12 21:14:52] [INFO] Received HL7 message via TCP
+[2025-07-12 21:14:52] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712131452003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 21:14:52] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 21:14:52] [INFO] HL7 message logged: HL7-1752326092-68725fcc10498
+[2025-07-12 21:19:01] [INFO] Laravel application loaded successfully
+[2025-07-12 21:19:01] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 21:19:01] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 21:19:01] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 21:19:01] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 21:19:01] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:23:02] [INFO] Laravel application loaded successfully
+[2025-07-12 22:23:02] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:23:02] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:23:02] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:23:02] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:23:02] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:24:07] [INFO] Received HL7 message via TCP
+[2025-07-12 22:30:22] [INFO] Laravel application loaded successfully
+[2025-07-12 22:30:22] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:30:22] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:30:22] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:30:22] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:30:22] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:30:24] [INFO] Received HL7 message via TCP
+[2025-07-12 22:36:13] [INFO] Laravel application loaded successfully
+[2025-07-12 22:36:13] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:36:13] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:36:13] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:36:13] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:36:13] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:36:16] [INFO] Received HL7 message via TCP
+[2025-07-12 22:36:16] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712143616001, Patient: JANE MARIE DOE (MRN12345)
+[2025-07-12 22:36:16] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 22:36:16] [INFO] Patient admission successful - MRN: MRN12345, Admission ID: 30, Bed: B02
+[2025-07-12 22:36:16] [INFO] HL7 message logged: HL7-1752330976-687272e056f52
+[2025-07-12 22:36:17] [INFO] Received HL7 message via TCP
+[2025-07-12 22:36:17] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712143617002, Patient: AHMAD BIN IBRAHIM (MRN67890)
+[2025-07-12 22:36:17] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 22:36:17] [INFO] HL7 message logged: HL7-1752330977-687272e15a398
+[2025-07-12 22:36:18] [INFO] Received HL7 message via TCP
+[2025-07-12 22:36:18] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: MSG20250712143618003, Patient: RAJESH S/O KUMAR (MRN11111)
+[2025-07-12 22:36:18] [ERROR] Admission processing failed: Patient is already admitted
+[2025-07-12 22:36:18] [INFO] HL7 message logged: HL7-1752330978-687272e25dc8e
+[2025-07-12 22:36:35] [INFO] Received HL7 message via TCP
+[2025-07-12 22:38:05] [INFO] Laravel application loaded successfully
+[2025-07-12 22:38:05] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:38:05] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:38:05] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:38:05] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:38:05] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:38:08] [INFO] Received HL7 message via TCP
+[2025-07-12 22:40:25] [INFO] Laravel application loaded successfully
+[2025-07-12 22:40:25] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:40:25] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:40:25] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:40:25] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:40:25] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:40:29] [INFO] Received HL7 message via TCP
+[2025-07-12 22:40:29] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: 20250227715411, Patient: Mr. John M Doe (PHKL-1752331229190)
+[2025-07-12 22:40:29] [ERROR] Admission processing failed: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'fall_risk_alert' at row 1
+[2025-07-12 22:40:29] [INFO] HL7 message logged: HL7-1752331229-687273dd7022b
+[2025-07-12 22:42:45] [INFO] Laravel application loaded successfully
+[2025-07-12 22:42:45] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:42:45] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:42:45] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:42:45] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:42:45] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:42:49] [INFO] Received HL7 message via TCP
+[2025-07-12 22:42:49] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: 20250227715411, Patient: Mr. John M Doe (PHKL-1752331369388)
+[2025-07-12 22:42:49] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 22:42:49] [INFO] Patient admission successful - MRN: PHKL-1752331369388, Admission ID: 31, Bed: B01
+[2025-07-12 22:42:49] [INFO] HL7 message logged: HL7-1752331369-687274695a3d6
+[2025-07-12 22:44:38] [INFO] Laravel application loaded successfully
+[2025-07-12 22:44:38] [INFO] Database connection established: smartward36lte@127.0.0.1
+[2025-07-12 22:44:38] [INFO] Enhanced HL7 Listener starting...
+[2025-07-12 22:44:38] [INFO] Mode: tcp, Port: 2575, Host: 0.0.0.0
+[2025-07-12 22:44:38] [INFO] Starting TCP server on 0.0.0.0:2575
+[2025-07-12 22:44:38] [INFO] TCP server listening on 0.0.0.0:2575
+[2025-07-12 22:44:47] [INFO] Received HL7 message via TCP
+[2025-07-12 22:44:47] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: 20250227715411, Patient: Mr. John M Doe (PHKL-1752331487691)
+[2025-07-12 22:44:47] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 22:44:48] [INFO] Patient admission successful - MRN: PHKL-1752331487691, Admission ID: 32, Bed: B02
+[2025-07-12 22:44:48] [INFO] HL7 message logged: HL7-1752331488-687274e001745
+[2025-07-12 22:45:19] [INFO] Received HL7 message via TCP
+[2025-07-12 22:45:19] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: 20250227715411, Patient: Mr. John M Doe (PHKL-1752331519695)
+[2025-07-12 22:45:19] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 22:45:19] [INFO] Patient admission successful - MRN: PHKL-1752331519695, Admission ID: 33, Bed: B03
+[2025-07-12 22:45:19] [INFO] HL7 message logged: HL7-1752331519-687274ffb12c9
+[2025-07-12 22:46:16] [INFO] Received HL7 message via TCP
+[2025-07-12 22:46:16] [INFO] HL7 message parsed successfully - Type: ADT, Control ID: 20250227715411, Patient: Mr. John M Doe (PHKL-1752331576674)
+[2025-07-12 22:46:16] [WARNING] Patient allergies table does not exist - skipping allergy processing
+[2025-07-12 22:46:16] [INFO] Patient admission successful - MRN: PHKL-1752331576674, Admission ID: 34, Bed: B04
+[2025-07-12 22:46:16] [INFO] HL7 message logged: HL7-1752331576-6872753888cb5

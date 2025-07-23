@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'admin/integration/*',  // Exclude HL7 integration endpoints from CSRF
+        'admin/integration/admission',  // Specifically for HL7 ADT integrator
     ];
 }

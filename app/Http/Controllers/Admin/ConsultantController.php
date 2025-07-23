@@ -25,6 +25,7 @@ class ConsultantController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'code' => 'nullable|string|max:20|unique:consultants',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:consultants',
             'phone' => 'nullable|string|max:20',
@@ -56,6 +57,7 @@ class ConsultantController extends Controller
     public function update(Request $request, Consultant $consultant)
     {
         $validated = $request->validate([
+            'code' => 'nullable|string|max:20|unique:consultants,code,' . $consultant->id,
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:consultants,email,' . $consultant->id,
             'phone' => 'nullable|string|max:20',

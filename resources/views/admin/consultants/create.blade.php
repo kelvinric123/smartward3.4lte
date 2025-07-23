@@ -19,6 +19,15 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label for="code">Code</label>
+                                    <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code') }}" placeholder="e.g., DOCTOR0, DOCTOR1">
+                                    @error('code')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                    <small class="form-text text-muted">Unique code for HL7 integration (optional)</small>
+                                </div>
+
+                                <div class="form-group">
                                     <label for="name">Name</label>
                                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
                                     @error('name')

@@ -211,23 +211,16 @@ Route::prefix('admin')->group(function () {
         Route::post('beds/mark-multiple-cleaned', [App\Http\Controllers\Admin\CleaningController::class, 'markMultipleAsCleaned'])->name('mark-multiple-cleaned');
     Route::post('send-whatsapp-notification', [App\Http\Controllers\Admin\CleaningController::class, 'sendWhatsAppNotification'])->name('send-whatsapp-notification');
     });
-    
+
     // Integration Routes
     Route::prefix('integration')->name('admin.integration.')->group(function () {
-        Route::get('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'admissionForm'])->name('admission');
-        Route::post('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'storeAdmission'])->name('admission.store');
-        Route::get('patient-details', [App\Http\Controllers\Admin\IntegrationController::class, 'getPatientDetails'])->name('patient-details');
-        Route::get('ward-beds', [App\Http\Controllers\Admin\IntegrationController::class, 'getWardBeds'])->name('ward-beds');
+        Route::get('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'admission'])->name('admission');
+        Route::post('admission/process', [App\Http\Controllers\Admin\IntegrationController::class, 'processAdmission'])->name('admission.process');
         
-        // HL7 Profile Management Routes
-        Route::post('profiles', [App\Http\Controllers\Admin\IntegrationController::class, 'saveProfile'])->name('profiles.save');
-        Route::put('profiles/{id}', [App\Http\Controllers\Admin\IntegrationController::class, 'updateProfile'])->name('profiles.update');
-        Route::get('profiles/{id}', [App\Http\Controllers\Admin\IntegrationController::class, 'loadProfile'])->name('profiles.load');
-        Route::put('profiles/{id}/active', [App\Http\Controllers\Admin\IntegrationController::class, 'setActiveProfile'])->name('profiles.set-active');
-        Route::delete('profiles/{id}', [App\Http\Controllers\Admin\IntegrationController::class, 'deleteProfile'])->name('profiles.delete');
-        Route::get('profiles', [App\Http\Controllers\Admin\IntegrationController::class, 'getProfiles'])->name('profiles.list');
-        Route::post('profiles/default', [App\Http\Controllers\Admin\IntegrationController::class, 'createDefaultProfile'])->name('profiles.create-default');
+        // HL7 ADT Integrator route - matches frontend expectation
+        Route::post('admission', [App\Http\Controllers\Admin\IntegrationController::class, 'processHL7IntegratorAdmission'])->name('admission.hl7');
     });
+
     
     // Test route for creating alerts
     Route::post('beds/wards/{ward}/create-test-alert', function($ward) {
@@ -270,22 +263,10 @@ Route::prefix('admin')->group(function () {
     Route::post('patients/{patient}/food-order', [PatientPanelController::class, 'storeOrder'])->name('admin.patients.food-order.store');
     Route::delete('food-order/{orderId}/cancel', [PatientPanelController::class, 'cancelOrder'])->name('admin.food-order.cancel');
 
-    // HL7 Integration Routes
-    Route::prefix('hl7')->name('hl7.')->group(function () {
-        Route::get('messages', [App\Http\Controllers\HL7AdmissionController::class, 'messageHistory'])->name('message-history');
-        Route::get('messages/{id}', [App\Http\Controllers\HL7AdmissionController::class, 'messageDetails'])->name('message-details');
-        Route::get('dashboard-data', [App\Http\Controllers\HL7AdmissionController::class, 'getDashboardData'])->name('dashboard-data');
-        Route::post('messages/{id}/retry', [App\Http\Controllers\HL7AdmissionController::class, 'retryMessage'])->name('retry-message');
-        Route::post('test-message', [App\Http\Controllers\HL7AdmissionController::class, 'testMessage'])->name('test-message');
-        Route::post('manual-test', [App\Http\Controllers\HL7AdmissionController::class, 'manualTest'])->name('manual-test');
-        Route::post('cleanup-logs', [App\Http\Controllers\HL7AdmissionController::class, 'cleanupLogs'])->name('cleanup-logs');
-        Route::get('mapping-options', [App\Http\Controllers\HL7AdmissionController::class, 'getMappingOptions'])->name('mapping-options');
-    });
+
 });
 
-// Public HL7 API endpoint (outside auth middleware)
-Route::post('api/hl7/receive', [App\Http\Controllers\HL7AdmissionController::class, 'receiveMessage'])->name('hl7.receive');
-Route::get('api/hl7/status/{messageId}', [App\Http\Controllers\HL7AdmissionController::class, 'getMessageStatus'])->name('hl7.status');
+
 
 // Hospital Admin Routes
 Route::prefix('hospital')->group(function () {

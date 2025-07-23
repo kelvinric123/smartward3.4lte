@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartWard Integration Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+        .log-info { background-color: #d1ecf1; }
+        .log-success { background-color: #d4edda; }
+        .log-error { background-color: #f8d7da; }
+        .log-debug { background-color: #f5f5f5; }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏥 SmartWard Integration Test</h1>
+    <p>This page tests the integration between the HL7 ADT frontend and SmartWard system.</p>
+    
+    <button onclick="testIntegration()">Test Integration</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testIntegration() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>🔄 Testing integration...</p>';
+            
+            // Test data matching what the frontend sends
+            const testData = {
+                message_id: 'test-' + Date.now(),
+                message_type: 'ADT',
+                trigger_event: 'A01',
+                message_control_id: 'CTRL-' + Date.now(),
+                parsed_data: {
+                    segments: {
+                        MSH: {
+                            sending_application: 'HIS',
+                            sending_facility: 'PHKL',
+                            message_type: 'ADT',
+                            trigger_event: 'A01'
+                        },
+                        PID: {
+                            patient_id: '123456789',
+                            patient_identifier_list: '88888',
+                            patient_name: 'Doe^John^^^Mr.',
+                            date_time_of_birth: '19850615',
+                            administrative_sex: 'M',
+                            patient_mrn: 'MRN123456'  // Added required MRN
+                        },
+                        PV1: {
+                            patient_class: 'I',
+                            admit_date_time: new Date().toISOString().replace(/[-:]/g, '').slice(0, 14)
+                        }
+                    }
+                },
+                raw_message: 'MSH|^~\\&|HIS|PHKL|ADT|12333|20250227145411|xxx|ADT^A01^ADT_A01|test-ctrl-123|P|2.8\rPID||123456789^^^MYS^MR|88888|Doe^John^^^Mr.||19850615|M\rPV1||I|||||||||||||||||||||||||||',
+                timestamp: new Date().toISOString(),
+                source: 'Integration_Test'
+            };
+            
+            try {
+                console.log('🏥 Sending test data to SmartWard...', testData);
+                
+                const response = await fetch('http://localhost:8000/admin/integration/admission', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                let resultHtml = `
+                    <h3>📊 Integration Test Results</h3>
+                    <p><strong>Status:</strong> ${response.ok ? '✅ Success' : '❌ Failed'}</p>
+                    <p><strong>HTTP Status:</strong> ${response.status}</p>
+                    <p><strong>Processing Time:</strong> ${data.processing_time || 'N/A'}</p>
+                    <p><strong>Message:</strong> ${data.message || 'No message'}</p>
+                `;
+                
+                if (data.logs && data.logs.length > 0) {
+                    resultHtml += '<h4>📋 Integration Logs:</h4>';
+                    data.logs.forEach(log => {
+                        const logClass = 'log-' + log.level.toLowerCase();
+                        resultHtml += `<div class="log-entry ${logClass}">
+                            <strong>${log.level}:</strong> ${log.message}
+                            <small style="float: right;">${new Date(log.time).toLocaleTimeString()}</small>
+                        </div>`;
+                    });
+                }
+                
+                if (data.patient_info) {
+                    resultHtml += `
+                        <h4>👤 Patient Info:</h4>
+                        <p>Name: ${data.patient_info.name}</p>
+                        <p>MRN: ${data.patient_info.mrn}</p>
+                    `;
+                }
+                
+                if (data.admission_info) {
+                    resultHtml += `
+                        <h4>🏨 Admission Info:</h4>
+                        <p>Ward: ${data.admission_info.ward}</p>
+                        <p>Bed: ${data.admission_info.bed_number}</p>
+                        <p>Date: ${data.admission_info.admission_date}</p>
+                    `;
+                }
+                
+                resultDiv.innerHTML = resultHtml;
+                
+            } catch (error) {
+                console.error('❌ Integration test failed:', error);
+                resultDiv.innerHTML = `
+                    <h3>❌ Integration Test Failed</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Details:</strong> ${error.toString()}</p>
+                    <p>Check the browser console for more details.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 
