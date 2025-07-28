@@ -1,1 +1,0 @@
-'Bed occupied by patient ID: ' . $bed- . PHP_EOL;

@@ -1,1 +1,0 @@
-'Admission ID: ' . $admission- . PHP_EOL;
