@@ -122,6 +122,9 @@ Route::prefix('admin')->group(function () {
         Route::post('wards/{ward}/bed/{bedId}/risk-factors', [App\Http\Controllers\Admin\WardController::class, 'updateRiskFactors'])->name('wards.patient.updateRiskFactors');
         Route::put('wards/{ward}/bed/{bedId}/clinical-info', [App\Http\Controllers\Admin\WardController::class, 'updateClinicalInfo'])->name('wards.patient.updateClinicalInfo');
         
+        // Nurses Passover in Ward
+        Route::get('wards/{ward}/bed/{bedId}/nurses/passover/iframe', [App\Http\Controllers\Admin\WardController::class, 'iframeNursesPassover'])->name('wards.nurses.passover.iframe');
+        
         // Patient Movement
         Route::post('wards/{ward}/bed/{bedId}/movement', [PatientMovementController::class, 'scheduleMovement'])->name('wards.patient.scheduleMovement');
         

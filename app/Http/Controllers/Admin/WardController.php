@@ -671,6 +671,59 @@ class WardController extends Controller
     }
 
     /**
+     * Show nurses passover information for a bed in an iframe.
+     */
+    public function iframeNursesPassover(Ward $ward, $bedId)
+    {
+        try {
+            // Find the bed within this ward
+            $bed = $ward->beds()->findOrFail($bedId);
+            
+            // Get current nurse schedule for this ward
+            $nurseSchedule = \App\Models\NurseSchedule::where('ward_id', $ward->id)
+                ->where('is_active', true)
+                ->first();
+            
+            // Get current and next shift information
+            $currentShiftNurses = [];
+            $nextShiftNurses = [];
+            
+            if ($nurseSchedule) {
+                // Get current shift nurses for today
+                $currentShiftNurses = $nurseSchedule->getCurrentNurses();
+                
+                // Get next shift nurses for tomorrow or next shift
+                $tomorrow = now()->addDay()->format('Y-m-d');
+                $nextShiftNurses = $nurseSchedule->getScheduleForDate($tomorrow);
+            }
+            
+            // Get all nurses in the ward (fallback if no schedule)
+            $wardNurses = \App\Models\User::whereHas('roles', function ($query) {
+                $query->where('name', 'nurse');
+            })->whereHas('beds', function ($query) use ($ward) {
+                $query->where('ward_id', $ward->id);
+            })->get();
+            
+            // Get bed's assigned nurse
+            $assignedNurse = $bed->nurse;
+            
+            return view('admin.beds.wards.iframe_nurses_passover', compact(
+                'ward', 
+                'bed', 
+                'nurseSchedule',
+                'currentShiftNurses',
+                'nextShiftNurses',
+                'wardNurses',
+                'assignedNurse'
+            ));
+        } catch (\Exception $e) {
+            return response()->view('layouts.iframe_error', [
+                'message' => 'An error occurred while loading nurses passover: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Get patient alerts for a ward
      * Used for AJAX polling to update the notification display
      */

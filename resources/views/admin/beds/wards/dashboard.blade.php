@@ -348,8 +348,8 @@
                                                     <a href="{{ route('admin.vital-signs.iframe-trend', $bed->patient->id) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary text-danger btn-vital-signs" data-patient-name="{{ $bed->patient->name }}">
                                                         <i class="fas fa-heart"></i>
                                                     </a>
-                                                    <a href="{{ route('admin.beds.wards.patient.iframe', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary btn-patient-details" data-patient-name="{{ $bed->patient->name }}">
-                                                        <i class="fas fa-chart-line"></i>
+                                                    <a href="{{ route('admin.beds.wards.nurses.passover.iframe', ['ward' => $ward, 'bedId' => $bed->id]) }}{{ request()->has('fullscreen') ? '?fullscreen=true' : '' }}" class="btn btn-outline-secondary btn-nurses-passover" data-patient-name="{{ $bed->patient->name }}">
+                                                        <i class="fas fa-user-nurse"></i>
                                                     </a>
                                                 </div>
                                             @elseif($bed->status == 'available')
@@ -499,6 +499,23 @@
                 </div>
                 <div class="modal-body p-0">
                     <iframe id="patientDetailsFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Nurses Passover Modal -->
+    <div class="modal fade" id="nursesPassoverModal" tabindex="-1" role="dialog" aria-labelledby="nursesPassoverModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nursesPassoverModalLabel">Nurses Passover</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="nursesPassoverFrame" src="" style="width: 100%; height: 80vh; border: none;"></iframe>
                 </div>
             </div>
         </div>
@@ -1221,6 +1238,20 @@
             // Clear iframe when modal is closed to prevent memory issues
             $('#patientDetailsModal').on('hidden.bs.modal', function () {
                 $('#patientDetailsFrame').attr('src', '');
+            });
+            
+            // Nurses Passover Modal functionality
+            $('.btn-nurses-passover').on('click', function(e) {
+                e.preventDefault();
+                const url = $(this).attr('href');
+                $('#nursesPassoverFrame').attr('src', url);
+                $('#nursesPassoverModalLabel').text('Nurses Passover: ' + $(this).data('patient-name'));
+                $('#nursesPassoverModal').modal('show');
+            });
+            
+            // Clear iframe when modal is closed to prevent memory issues
+            $('#nursesPassoverModal').on('hidden.bs.modal', function () {
+                $('#nursesPassoverFrame').attr('src', '');
             });
             
             // Function for handling new alerts
