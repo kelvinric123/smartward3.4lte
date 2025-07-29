@@ -72,11 +72,21 @@ class NurseScheduleController extends Controller
         
         // Get assignments for the specified date using the model helper
         $dateAssignments = $schedule->getScheduleForDate($date);
+        
+        // Get current shift information if viewing today's schedule
+        $currentShift = null;
+        $currentShiftNurses = collect();
+        if ($date === now()->format('Y-m-d')) {
+            $currentShift = $schedule->getCurrentShift();
+            $currentShiftNurses = $schedule->getCurrentShiftNurses();
+        }
 
         return view('admin.integration.nurse-schedule.iframe', [
             'schedule' => $schedule,
             'todayAssignments' => $dateAssignments,
-            'today' => $date
+            'today' => $date,
+            'currentShift' => $currentShift,
+            'currentShiftNurses' => $currentShiftNurses
         ]);
     }
 
@@ -85,28 +95,51 @@ class NurseScheduleController extends Controller
         $ward = Ward::findOrFail($wardId);
         $date = request()->get('date', now()->format('Y-m-d'));
         
+        // Find the schedule that covers the requested date
         $activeSchedule = NurseSchedule::where('ward_id', $wardId)
             ->where('is_active', true)
-            ->latest()
+            ->where('schedule_start_date', '<=', $date)
+            ->where('schedule_end_date', '>=', $date)
+            ->orderBy('created_at', 'desc')
             ->first();
+
+        // If no schedule covers the requested date, try the most recent active schedule
+        if (!$activeSchedule) {
+            $activeSchedule = NurseSchedule::where('ward_id', $wardId)
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
 
         if (!$activeSchedule) {
             return view('admin.integration.nurse-schedule.iframe', [
                 'schedule' => null,
                 'todayAssignments' => collect(),
                 'today' => $date,
-                'ward' => $ward
+                'ward' => $ward,
+                'currentShift' => null,
+                'currentShiftNurses' => collect()
             ]);
         }
 
         // Get assignments for the specified date using the model helper
         $dateAssignments = $activeSchedule->getScheduleForDate($date);
+        
+        // Get current shift information if viewing today's schedule
+        $currentShift = null;
+        $currentShiftNurses = collect();
+        if ($date === now()->format('Y-m-d')) {
+            $currentShift = $activeSchedule->getCurrentShift();
+            $currentShiftNurses = $activeSchedule->getCurrentShiftNurses();
+        }
 
         return view('admin.integration.nurse-schedule.iframe', [
             'schedule' => $activeSchedule,
             'todayAssignments' => $dateAssignments,
             'today' => $date,
-            'ward' => $ward
+            'ward' => $ward,
+            'currentShift' => $currentShift,
+            'currentShiftNurses' => $currentShiftNurses
         ]);
     }
 

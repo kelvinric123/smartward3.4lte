@@ -187,8 +187,40 @@ class WardController extends Controller
             });
         }
         
-        // Get unique nurses assigned to this ward's beds
-        $nursesOnDuty = $ward->beds->pluck('nurse_id')->filter()->unique()->count();
+        // Get nurses on duty from active nurse schedule for this ward
+        $nursesOnDuty = 0;
+        $today = now()->format('Y-m-d');
+        
+        // Find the schedule that covers today's date
+        $activeSchedule = \App\Models\NurseSchedule::where('ward_id', $ward->id)
+            ->where('is_active', true)
+            ->where('schedule_start_date', '<=', $today)
+            ->where('schedule_end_date', '>=', $today)
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        if ($activeSchedule) {
+            // Count nurses for current shift only
+            $nursesOnDuty = $activeSchedule->getCurrentShiftNursesCount();
+        }
+        
+        // Fallback: If no schedule covers today's date, try the most recent active schedule
+        if ($nursesOnDuty == 0) {
+            $fallbackSchedule = \App\Models\NurseSchedule::where('ward_id', $ward->id)
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->first();
+                
+            if ($fallbackSchedule) {
+                $nursesOnDuty = $fallbackSchedule->getCurrentShiftNursesCount();
+            }
+        }
+        
+        // Final fallback: If no active schedule, count unique nurses assigned to beds (old method)
+        if ($nursesOnDuty == 0) {
+            $fallbackCount = $ward->beds->pluck('nurse_id')->filter()->unique()->count();
+            $nursesOnDuty = $fallbackCount;
+        }
         
         // Get consultants for this ward's specialties
         $wardSpecialtyIds = collect();
@@ -679,22 +711,48 @@ class WardController extends Controller
             // Find the bed within this ward
             $bed = $ward->beds()->findOrFail($bedId);
             
-            // Get current nurse schedule for this ward
+            $today = now()->format('Y-m-d');
+            
+            // Get the active schedule that covers today's date
             $nurseSchedule = \App\Models\NurseSchedule::where('ward_id', $ward->id)
                 ->where('is_active', true)
+                ->where('schedule_start_date', '<=', $today)
+                ->where('schedule_end_date', '>=', $today)
+                ->orderBy('created_at', 'desc')
                 ->first();
             
+            // Fallback: If no schedule covers today's date, try the most recent active schedule
+            if (!$nurseSchedule) {
+                $nurseSchedule = \App\Models\NurseSchedule::where('ward_id', $ward->id)
+                    ->where('is_active', true)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+            }
+            
             // Get current and next shift information
-            $currentShiftNurses = [];
-            $nextShiftNurses = [];
+            $currentShiftNurses = collect();
+            $nextShiftNurses = collect();
+            $currentShift = null;
+            $nextShift = null;
             
             if ($nurseSchedule) {
-                // Get current shift nurses for today
-                $currentShiftNurses = $nurseSchedule->getCurrentNurses();
+                // Get current shift and its nurses
+                $currentShift = $nurseSchedule->getCurrentShift();
+                if ($currentShift) {
+                    $todayAssignments = $nurseSchedule->getScheduleForDate($today);
+                    $currentShiftNurses = $todayAssignments->get($currentShift['name'], collect());
+                }
                 
-                // Get next shift nurses for tomorrow or next shift
-                $tomorrow = now()->addDay()->format('Y-m-d');
-                $nextShiftNurses = $nurseSchedule->getScheduleForDate($tomorrow);
+                // Get next shift information
+                $allShifts = $nurseSchedule->getShiftSlots();
+                $nextShift = $this->getNextShift($allShifts, $currentShift);
+                
+                // Get next shift nurses (could be today if it's an upcoming shift, or tomorrow)
+                if ($nextShift) {
+                    $nextShiftDate = $this->getNextShiftDate($currentShift, $nextShift);
+                    $nextShiftAssignments = $nurseSchedule->getScheduleForDate($nextShiftDate);
+                    $nextShiftNurses = $nextShiftAssignments->get($nextShift['name'], collect());
+                }
             }
             
             // Get all nurses in the ward (fallback if no schedule)
@@ -713,6 +771,8 @@ class WardController extends Controller
                 'nurseSchedule',
                 'currentShiftNurses',
                 'nextShiftNurses',
+                'currentShift',
+                'nextShift',
                 'wardNurses',
                 'assignedNurse'
             ));
@@ -721,6 +781,54 @@ class WardController extends Controller
                 'message' => 'An error occurred while loading nurses passover: ' . $e->getMessage()
             ]);
         }
+    }
+    
+    /**
+     * Helper method to get the next shift
+     */
+    private function getNextShift($allShifts, $currentShift)
+    {
+        if (!$currentShift || $allShifts->isEmpty()) {
+            return null;
+        }
+        
+        // Convert to array and sort by start time
+        $shifts = $allShifts->sortBy('start_time')->values();
+        $currentShiftId = $currentShift['id'];
+        
+        // Find current shift index
+        $currentIndex = $shifts->search(function ($shift) use ($currentShiftId) {
+            return $shift['id'] == $currentShiftId;
+        });
+        
+        if ($currentIndex === false) {
+            return $shifts->first();
+        }
+        
+        // Get next shift (wrap around if it's the last shift)
+        $nextIndex = ($currentIndex + 1) % $shifts->count();
+        return $shifts->get($nextIndex);
+    }
+    
+    /**
+     * Helper method to determine the date for the next shift
+     */
+    private function getNextShiftDate($currentShift, $nextShift)
+    {
+        if (!$currentShift || !$nextShift) {
+            return now()->addDay()->format('Y-m-d');
+        }
+        
+        $currentTime = now()->format('H:i');
+        $nextShiftTime = $nextShift['start_time'];
+        
+        // If next shift starts later today, use today's date
+        if ($nextShiftTime > $currentTime) {
+            return now()->format('Y-m-d');
+        }
+        
+        // Otherwise, it's tomorrow
+        return now()->addDay()->format('Y-m-d');
     }
 
     /**

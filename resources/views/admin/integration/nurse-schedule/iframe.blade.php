@@ -135,6 +135,7 @@
         .stat-icon.shifts { background-color: #28a745; }
         .stat-icon.ward { background-color: #17a2b8; }
         .stat-icon.date { background-color: #6c757d; }
+        .stat-icon.nurses-total { background-color: #6c757d; }
         
         .stat-number {
             font-size: 28px;
@@ -151,6 +152,12 @@
             letter-spacing: 0.5px;
         }
         
+        .stat-sublabel {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
         .shifts-container {
             display: grid;
             gap: 20px;
@@ -158,10 +165,27 @@
         
         .shift-card {
             background: #fff;
-            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            margin-bottom: 20px;
             overflow: hidden;
-            box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
-            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .shift-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .shift-card.current-shift {
+            border: 2px solid #28a745;
+            box-shadow: 0 4px 16px rgba(40, 167, 69, 0.2);
+            background: linear-gradient(135deg, #fff 0%, #f8fff9 100%);
+        }
+        
+        .shift-card.current-shift:hover {
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
         }
         
         .shift-header {
@@ -448,6 +472,19 @@
             background-color: #0056b3;
             border-color: #0056b3;
         }
+
+        .current-shift-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -475,7 +512,7 @@
                 @if($schedule)
                     @if($todayAssignments && $todayAssignments->count() > 0)
                         @php
-                            // Calculate total unique nurses on duty
+                            // Calculate total unique nurses on duty (all shifts)
                             $uniqueNurses = collect();
                             foreach($todayAssignments as $shiftName => $nurses) {
                                 foreach($nurses as $assignment) {
@@ -485,6 +522,19 @@
                                 }
                             }
                             $totalNursesOnDuty = $uniqueNurses->count();
+                            
+                            // Calculate current shift nurses count
+                            $currentShiftNursesCount = 0;
+                            if ($currentShift && isset($todayAssignments[$currentShift['name']])) {
+                                $currentShiftAssignments = $todayAssignments[$currentShift['name']];
+                                $currentShiftUniqueNurses = collect();
+                                foreach($currentShiftAssignments as $assignment) {
+                                    if(isset($assignment['member']['employee_id'])) {
+                                        $currentShiftUniqueNurses->put($assignment['member']['employee_id'], $assignment['member']);
+                                    }
+                                }
+                                $currentShiftNursesCount = $currentShiftUniqueNurses->count();
+                            }
                         @endphp
 
                         <!-- Statistics Overview -->
@@ -493,8 +543,18 @@
                                 <div class="stat-icon nurses">
                                     <i class="fas fa-user-nurse"></i>
                                 </div>
+                                <div class="stat-number">{{ $currentShiftNursesCount }}</div>
+                                <div class="stat-label">Current Shift Nurses</div>
+                                @if($currentShift)
+                                    <div class="stat-sublabel">{{ $currentShift['name'] }} ({{ $currentShift['formatted_time_range'] }})</div>
+                                @endif
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon nurses-total">
+                                    <i class="fas fa-users"></i>
+                                </div>
                                 <div class="stat-number">{{ $totalNursesOnDuty }}</div>
-                                <div class="stat-label">Nurses on Duty</div>
+                                <div class="stat-label">Total Nurses Today</div>
                             </div>
                             <div class="stat-card">
                                 <div class="stat-icon shifts">
@@ -502,13 +562,6 @@
                                 </div>
                                 <div class="stat-number">{{ $todayAssignments->count() }}</div>
                                 <div class="stat-label">Active Shifts</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-icon ward">
-                                    <i class="fas fa-hospital"></i>
-                                </div>
-                                <div class="stat-number">1</div>
-                                <div class="stat-label">Ward</div>
                             </div>
                             <div class="stat-card">
                                 <div class="stat-icon date">
@@ -542,12 +595,20 @@
                         <!-- Shifts Container -->
                         <div class="shifts-container">
                             @foreach($orderedAssignments as $shiftName => $nurses)
-                                <div class="shift-card">
+                                @php
+                                    $isCurrentShift = $currentShift && $currentShift['name'] === $shiftName;
+                                @endphp
+                                <div class="shift-card {{ $isCurrentShift ? 'current-shift' : '' }}">
                                     <div class="shift-header">
                                         <div class="shift-title-row">
                                             <h3 class="shift-title">
                                                 <i class="fas fa-clock"></i>
                                                 {{ $shiftName }}
+                                                @if($isCurrentShift)
+                                                    <span class="current-shift-badge">
+                                                        <i class="fas fa-dot-circle"></i> ACTIVE
+                                                    </span>
+                                                @endif
                                             </h3>
                                             <div class="shift-badge">
                                                 {{ $nurses->count() }} {{ $nurses->count() == 1 ? 'Nurse' : 'Nurses' }}

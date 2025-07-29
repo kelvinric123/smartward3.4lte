@@ -458,6 +458,303 @@
                 gap: 5px;
             }
         }
+        
+        /* Nurse selection form styling */
+        .form-label {
+            font-weight: 600;
+            color: var(--bs-body-color, #495057);
+            margin-bottom: 8px;
+        }
+        
+        [data-bs-theme="dark"] .form-label,
+        body.dark-mode .form-label {
+            color: #ecf0f1 !important;
+        }
+        
+        .form-control {
+            border: 2px solid var(--bs-border-color, #e3e6f0);
+            border-radius: 0.375rem;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            outline: 0;
+        }
+        
+        [data-bs-theme="dark"] .form-control,
+        body.dark-mode .form-control {
+            background-color: #34495e !important;
+            border-color: #2c3e50 !important;
+            color: #ecf0f1 !important;
+        }
+        
+        [data-bs-theme="dark"] .form-control:focus,
+        body.dark-mode .form-control:focus {
+            border-color: #3498db !important;
+            background-color: #34495e !important;
+        }
+        
+        .selected-nurse-info .nurse-item {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+            border: 2px solid #28a745;
+            margin-top: 8px;
+        }
+        
+        [data-bs-theme="dark"] .selected-nurse-info .nurse-item,
+        body.dark-mode .selected-nurse-info .nurse-item {
+            background: linear-gradient(135deg, #1e3a1e 0%, #2d4a2d 100%) !important;
+            border-color: #28a745 !important;
+        }
+        
+        .btn {
+            border-radius: 0.375rem;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Small text styling */
+        .text-muted {
+            font-size: 0.85rem;
+        }
+        
+        [data-bs-theme="dark"] .text-muted,
+        body.dark-mode .text-muted {
+            color: #95a5a6 !important;
+        }
+
+        /* Procedure selection styling */
+        .procedure-item {
+            background: var(--bs-gray-50, #f8f9fa);
+            border: 1px solid var(--bs-border-color, #e3e6f0);
+            border-radius: 0.375rem;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        [data-bs-theme="dark"] .procedure-item,
+        body.dark-mode .procedure-item {
+            background: #34495e !important;
+            border: 1px solid #2c3e50 !important;
+            color: #ecf0f1 !important;
+        }
+        
+        .procedure-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #17a2b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+        
+        .procedure-details {
+            flex: 1;
+        }
+        
+        .procedure-name {
+            font-weight: 500;
+            color: var(--bs-body-color, #495057);
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+        }
+        
+        [data-bs-theme="dark"] .procedure-name,
+        body.dark-mode .procedure-name {
+            color: #ecf0f1 !important;
+        }
+        
+        .procedure-description {
+            font-size: 0.8rem;
+            color: var(--bs-text-muted, #6c757d);
+        }
+        
+        [data-bs-theme="dark"] .procedure-description,
+        body.dark-mode .procedure-description {
+            color: #95a5a6 !important;
+        }
+        
+        .procedure-time {
+            font-size: 0.75rem;
+            color: #6f42c1;
+            font-weight: 500;
+        }
+        
+        .add-procedure-form {
+            background: var(--bs-gray-50, #f8f9fa);
+            border: 2px dashed var(--bs-border-color, #dee2e6);
+            border-radius: 0.375rem;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        [data-bs-theme="dark"] .add-procedure-form,
+        body.dark-mode .add-procedure-form {
+            background: #2c3e50 !important;
+            border-color: #34495e !important;
+        }
+        
+        .selected-procedures-list {
+            margin-top: 10px;
+        }
+
+        /* Procedure filters styling */
+        .procedure-filters .btn {
+            border-radius: 0.375rem;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        .procedure-filters .btn.active {
+            background-color: var(--bs-primary, #007bff);
+            color: white;
+            border-color: var(--bs-primary, #007bff);
+        }
+
+        .procedure-filters .btn.active:hover {
+            background-color: var(--bs-primary, #0056b3);
+            border-color: var(--bs-primary, #0056b3);
+        }
+
+        .procedure-filters .badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            margin-left: 5px;
+        }
+        
+        /* Procedure status styling */
+        .procedure-status {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+        
+        .procedure-status.pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .procedure-status.completed {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .procedure-status.cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* Procedure actions */
+        .procedure-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            margin-left: auto;
+        }
+        
+        .procedure-item {
+            align-items: flex-start;
+        }
+        
+        .procedure-item.completed {
+            opacity: 0.8;
+        }
+        
+        .procedure-item.cancelled {
+            opacity: 0.6;
+        }
+        
+        .procedure-item.hidden {
+            display: none !important;
+        }
+        
+        /* Status reason styling */
+        .procedure-reason {
+            font-size: 0.75rem;
+            color: var(--bs-text-muted, #6c757d);
+            font-style: italic;
+            margin-top: 3px;
+        }
+        
+        [data-bs-theme="dark"] .procedure-reason,
+        body.dark-mode .procedure-reason {
+            color: #95a5a6 !important;
+        }
+        
+        /* Action button styling */
+        .action-btn {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            min-width: auto;
+        }
+        
+        /* Existing procedure styling */
+        .existing-procedure {
+            position: relative;
+        }
+        
+        .existing-procedure.completed {
+            opacity: 0.85;
+        }
+        
+        .existing-procedure.cancelled {
+            opacity: 0.6;
+            background-color: var(--bs-gray-100, #f8f9fa) !important;
+        }
+        
+        [data-bs-theme="dark"] .existing-procedure.cancelled,
+        body.dark-mode .existing-procedure.cancelled {
+            background-color: #1a252f !important;
+        }
+        
+        .existing-procedure.hidden {
+            display: none !important;
+        }
+        
+        .completion-reason {
+            margin-top: 8px;
+        }
+        
+        .completion-reason small {
+            color: var(--bs-text-muted, #6c757d);
+            font-style: italic;
+        }
+        
+        [data-bs-theme="dark"] .completion-reason small,
+        body.dark-mode .completion-reason small {
+            color: #95a5a6 !important;
+        }
     </style>
 @endsection
 
@@ -474,116 +771,217 @@
         </div>
         
         <div class="card-body">
-            <!-- 1. Nurses on Duty Section -->
+            <!-- 1. Nurse Passover Form Section -->
             <div class="passover-section">
                 <div class="section-header">
                     <div>
-                        <i class="fas fa-user-nurse mr-2"></i>Nurses on Duty
+                        <i class="fas fa-exchange-alt mr-2"></i>Nurse Passover Selection
                     </div>
                     <span class="shift-time">{{ now()->format('H:i') }} - Today</span>
                 </div>
                 <div class="section-content">
-                    @if($assignedNurse)
-                        <div class="nurse-item">
-                            <div class="nurse-avatar">
-                                {{ strtoupper(substr($assignedNurse->name, 0, 2)) }}
-                            </div>
-                            <div class="nurse-info">
-                                <div class="nurse-name">
-                                    {{ $assignedNurse->name }}
-                                    <span class="current-nurse-badge">Assigned to Bed</span>
-                                </div>
-                                <div class="nurse-details">
-                                    <i class="fas fa-envelope mr-1"></i>{{ $assignedNurse->email }}
-                                    @if($assignedNurse->phone)
-                                        <span class="mx-2">|</span>
-                                        <i class="fas fa-phone mr-1"></i>{{ $assignedNurse->phone }}
+                    <form id="nursePassoverForm" class="mb-4">
+                        <div class="row">
+                            <!-- Nurse On Duty Selection -->
+                            <div class="col-md-6">
+                                <label for="nurseOnDuty" class="form-label">
+                                    <i class="fas fa-user-nurse mr-1"></i>Nurse On Duty
+                                    @if($currentShift)
+                                        <small class="text-muted">({{ $currentShift['name'] }} - {{ $currentShift['formatted_time_range'] }})</small>
                                     @endif
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                    
-                    @if($currentShiftNurses && $currentShiftNurses->count() > 0)
-                        @foreach($currentShiftNurses as $shiftName => $nurses)
-                            <div class="mb-2">
-                                <small class="text-muted font-weight-bold">{{ ucfirst($shiftName) }} Shift:</small>
-                                @foreach($nurses as $nurse)
-                                    @if(!$assignedNurse || $nurse['nurse']['name'] !== $assignedNurse->name)
-                                        <div class="nurse-item mt-1">
-                                            <div class="nurse-avatar">
-                                                {{ strtoupper(substr($nurse['nurse']['name'], 0, 2)) }}
-                                            </div>
-                                            <div class="nurse-info">
-                                                <div class="nurse-name">{{ $nurse['nurse']['name'] }}</div>
-                                                <div class="nurse-details">
-                                                    <i class="fas fa-id-badge mr-1"></i>{{ $nurse['nurse']['registration_number'] ?? 'N/A' }}
-                                                    @if(isset($nurse['shift_slot']['start_time']) && isset($nurse['shift_slot']['end_time']))
-                                                        <span class="mx-2">|</span>
-                                                        <i class="fas fa-clock mr-1"></i>{{ $nurse['shift_slot']['start_time'] }} - {{ $nurse['shift_slot']['end_time'] }}
-                                                    @endif
-                                                </div>
-                                            </div>
+                                </label>
+                                <select id="nurseOnDuty" name="nurse_on_duty" class="form-control" required>
+                                    <option value="">Select Nurse On Duty...</option>
+                                    @if($currentShiftNurses && $currentShiftNurses->count() > 0)
+                                        @foreach($currentShiftNurses as $assignment)
+                                            @if(isset($assignment['member']))
+                                                <option value="{{ $assignment['member']['employee_id'] }}" 
+                                                        data-name="{{ $assignment['member']['name'] }}"
+                                                        data-position="{{ $assignment['member']['position'] ?? 'Nurse' }}">
+                                                    {{ $assignment['member']['name'] }} - {{ $assignment['member']['position'] ?? 'Nurse' }}
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                    
+                                    @if($assignedNurse)
+                                        <option value="bed_assigned_{{ $assignedNurse->id }}" 
+                                                data-name="{{ $assignedNurse->name }}"
+                                                data-position="Bed Assigned Nurse"
+                                                {{ !$currentShiftNurses || $currentShiftNurses->count() == 0 ? 'selected' : '' }}>
+                                            {{ $assignedNurse->name }} - Bed Assigned Nurse
+                                        </option>
+                                    @endif
+                                </select>
+                                <div class="selected-nurse-info mt-2 d-none">
+                                    <div class="nurse-item">
+                                        <div class="nurse-avatar">
+                                            <span id="selectedOnDutyInitials"></span>
                                         </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        @endforeach
-                    @elseif($wardNurses && $wardNurses->count() > 0 && !$assignedNurse)
-                        @foreach($wardNurses as $nurse)
-                            <div class="nurse-item">
-                                <div class="nurse-avatar">
-                                    {{ strtoupper(substr($nurse->name, 0, 2)) }}
-                                </div>
-                                <div class="nurse-info">
-                                    <div class="nurse-name">{{ $nurse->name }}</div>
-                                    <div class="nurse-details">
-                                        <i class="fas fa-envelope mr-1"></i>{{ $nurse->email }}
-                                        @if($nurse->phone)
-                                            <span class="mx-2">|</span>
-                                            <i class="fas fa-phone mr-1"></i>{{ $nurse->phone }}
-                                        @endif
+                                        <div class="nurse-info">
+                                            <div class="nurse-name" id="selectedOnDutyName"></div>
+                                            <div class="nurse-details" id="selectedOnDutyDetails"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    @elseif(!$assignedNurse)
-                        <div class="no-content">
-                            <i class="fas fa-info-circle mb-2" style="font-size: 2rem;"></i>
-                            <p>No current shift nurses assigned to this ward.</p>
-                        </div>
-                    @endif
-
-                    <!-- Next Shift Nurses -->
-                    @if($nextShiftNurses && $nextShiftNurses->count() > 0)
-                        <div class="mt-3">
-                            <small class="text-muted font-weight-bold d-block mb-2">
-                                <i class="fas fa-forward mr-1"></i>Next Shift (Tomorrow):
-                            </small>
-                            @foreach($nextShiftNurses as $shiftName => $nurses)
-                                <div class="mb-2">
-                                    <small class="text-muted">{{ ucfirst($shiftName) }} Shift:</small>
-                                    @foreach($nurses as $nurse)
-                                        <div class="nurse-item mt-1">
-                                            <div class="nurse-avatar">
-                                                {{ strtoupper(substr($nurse['nurse']['name'], 0, 2)) }}
-                                            </div>
-                                            <div class="nurse-info">
-                                                <div class="nurse-name">{{ $nurse['nurse']['name'] }}</div>
-                                                <div class="nurse-details">
-                                                    <i class="fas fa-id-badge mr-1"></i>{{ $nurse['nurse']['registration_number'] ?? 'N/A' }}
-                                                    @if(isset($nurse['shift_slot']['start_time']) && isset($nurse['shift_slot']['end_time']))
-                                                        <span class="mx-2">|</span>
-                                                        <i class="fas fa-clock mr-1"></i>{{ $nurse['shift_slot']['start_time'] }} - {{ $nurse['shift_slot']['end_time'] }}
-                                                    @endif
-                                                </div>
-                                            </div>
+                            
+                            <!-- Nurse Receive Passover Selection -->
+                            <div class="col-md-6">
+                                <label for="nurseReceivePassover" class="form-label">
+                                    <i class="fas fa-user-check mr-1"></i>Nurse Receive Passover
+                                    @if($nextShift)
+                                        <small class="text-muted">({{ $nextShift['name'] }} - {{ $nextShift['formatted_time_range'] }})</small>
+                                    @endif
+                                </label>
+                                <select id="nurseReceivePassover" name="nurse_receive_passover" class="form-control" required>
+                                    <option value="">Select Nurse to Receive Passover...</option>
+                                    @if($nextShiftNurses && $nextShiftNurses->count() > 0)
+                                        @foreach($nextShiftNurses as $assignment)
+                                            @if(isset($assignment['member']))
+                                                <option value="{{ $assignment['member']['employee_id'] }}" 
+                                                        data-name="{{ $assignment['member']['name'] }}"
+                                                        data-position="{{ $assignment['member']['position'] ?? 'Nurse' }}">
+                                                    {{ $assignment['member']['name'] }} - {{ $assignment['member']['position'] ?? 'Nurse' }}
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <option value="" disabled>No next shift nurses scheduled</option>
+                                    @endif
+                                </select>
+                                <div class="selected-nurse-info mt-2 d-none">
+                                    <div class="nurse-item">
+                                        <div class="nurse-avatar">
+                                            <span id="selectedReceiveInitials"></span>
                                         </div>
-                                    @endforeach
+                                        <div class="nurse-info">
+                                            <div class="nurse-name" id="selectedReceiveName"></div>
+                                            <div class="nurse-details" id="selectedReceiveDetails"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                            @endforeach
+                            </div>
                         </div>
-                    @endif
+                        
+                        <!-- Minor Procedures Section -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fas fa-tasks mr-1"></i>Minor Procedures
+                                </label>
+                                
+                                <!-- Filter buttons for minor procedures -->
+                                <div class="procedure-filters mb-2">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-secondary active" data-filter="all" data-type="minor">
+                                            All <span class="badge badge-light" id="minorAllCount">0</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning" data-filter="pending" data-type="minor">
+                                            Pending <span class="badge badge-light" id="minorPendingCount">0</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" data-filter="completed" data-type="minor">
+                                            Completed <span class="badge badge-light" id="minorCompletedCount">0</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" data-filter="cancelled" data-type="minor">
+                                            Cancelled <span class="badge badge-light" id="minorCancelledCount">0</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="selected-procedures-list" id="selectedMinorProcedures"></div>
+                                <div class="add-procedure-form">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <select id="minorProcedureSelect" class="form-control">
+                                                <option value="">Select a minor procedure...</option>
+                                                <option value="iv_insertion">IV Line Insertion</option>
+                                                <option value="iv_infusion_saline">IV Infusion - Normal Saline</option>
+                                                <option value="iv_infusion_dextrose">IV Infusion - 5% Dextrose</option>
+                                                <option value="blood_sample">Blood Sample Collection</option>
+                                                <option value="wound_dressing">Wound Dressing Change</option>
+                                                <option value="vital_signs">Vital Signs Monitoring</option>
+                                                <option value="medication_admin">Medication Administration</option>
+                                                <option value="catheter_care">Catheter Care</option>
+                                                <option value="oxygen_therapy">Oxygen Therapy</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-4">
+                                            <button type="button" class="btn btn-outline-primary btn-sm w-100" id="addMinorProcedureBtn">
+                                                <i class="fas fa-plus mr-1"></i>Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <textarea id="minorProcedureNotes" class="form-control" rows="2" placeholder="Add notes for this procedure..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Major Procedures Section -->
+                            <div class="col-md-6">
+                                <label class="form-label">
+                                    <i class="fas fa-procedures mr-1"></i>Major Procedures
+                                </label>
+                                
+                                <!-- Filter buttons for major procedures -->
+                                <div class="procedure-filters mb-2">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-secondary active" data-filter="all" data-type="major">
+                                            All <span class="badge badge-light" id="majorAllCount">0</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning" data-filter="pending" data-type="major">
+                                            Pending <span class="badge badge-light" id="majorPendingCount">0</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success" data-filter="completed" data-type="major">
+                                            Completed <span class="badge badge-light" id="majorCompletedCount">0</span>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" data-filter="cancelled" data-type="major">
+                                            Cancelled <span class="badge badge-light" id="majorCancelledCount">0</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="selected-procedures-list" id="selectedMajorProcedures"></div>
+                                <div class="add-procedure-form">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <select id="majorProcedureSelect" class="form-control">
+                                                <option value="">Select a major procedure...</option>
+                                                <option value="chest_xray">Chest X-Ray</option>
+                                                <option value="ecg_monitoring">ECG Monitoring</option>
+                                                <option value="ct_scan">CT Scan</option>
+                                                <option value="mri_scan">MRI Scan</option>
+                                                <option value="ultrasound">Ultrasound</option>
+                                                <option value="endoscopy">Endoscopy</option>
+                                                <option value="bronchoscopy">Bronchoscopy</option>
+                                                <option value="chest_tube">Chest Tube Insertion</option>
+                                                <option value="surgery_prep">Surgery Preparation</option>
+                                                <option value="dialysis">Dialysis</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-4">
+                                            <button type="button" class="btn btn-outline-primary btn-sm w-100" id="addMajorProcedureBtn">
+                                                <i class="fas fa-plus mr-1"></i>Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <textarea id="majorProcedureNotes" class="form-control" rows="2" placeholder="Add notes for this procedure..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary" id="confirmPassoverBtn" disabled>
+                                <i class="fas fa-check mr-1"></i>Confirm Nurse Passover
+                            </button>
+                            <button type="button" class="btn btn-secondary ml-2" id="resetFormBtn">
+                                <i class="fas fa-undo mr-1"></i>Reset
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -650,8 +1048,29 @@
                     <span class="shift-time">Today's Activities</span>
                 </div>
                 <div class="section-content">
+                    <!-- Filter buttons for existing minor procedures -->
+                    <div class="procedure-filters mb-3">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" data-filter="all" data-section="existing-minor">
+                                All <span class="badge badge-light" id="existingMinorAllCount">5</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" data-filter="pending" data-section="existing-minor">
+                                Pending <span class="badge badge-light" id="existingMinorPendingCount">2</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-filter="completed" data-section="existing-minor">
+                                Completed <span class="badge badge-light" id="existingMinorCompletedCount">2</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-info" data-filter="ongoing" data-section="existing-minor">
+                                Ongoing <span class="badge badge-light" id="existingMinorOngoingCount">1</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" data-filter="cancelled" data-section="existing-minor">
+                                Cancelled <span class="badge badge-light" id="existingMinorCancelledCount">0</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- IV Line Procedures -->
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="completed" data-procedure-id="minor-1">
                         <div class="content-icon">
                             <i class="fas fa-syringe"></i>
                         </div>
@@ -673,12 +1092,21 @@
                                     <div class="iv-detail-item"><strong>Condition:</strong> Patent</div>
                                     <div class="iv-detail-item"><strong>Next Check:</strong> {{ now()->addHours(4)->format('H:i') }}</div>
                                 </div>
+                                <div class="completion-reason mt-2">
+                                    <small class="text-muted"><strong>Completion Notes:</strong> Procedure completed successfully. No complications.</small>
+                                </div>
                             </div>
+                        </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="minor-1" data-section="existing-minor" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
 
                     <!-- IV Infusion - Normal Saline -->
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="ongoing" data-procedure-id="minor-2">
                         <div class="content-icon">
                             <i class="fas fa-tint"></i>
                         </div>
@@ -702,10 +1130,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-success btn-sm action-btn complete-existing-procedure-btn" 
+                                    data-procedure-id="minor-2" data-section="existing-minor" title="Mark as Complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm action-btn cancel-existing-procedure-btn" 
+                                    data-procedure-id="minor-2" data-section="existing-minor" title="Cancel Procedure">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="minor-2" data-section="existing-minor" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- IV Infusion - Dextrose -->
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="pending" data-procedure-id="minor-3">
                         <div class="content-icon">
                             <i class="fas fa-prescription-bottle"></i>
                         </div>
@@ -729,10 +1171,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-success btn-sm action-btn complete-existing-procedure-btn" 
+                                    data-procedure-id="minor-3" data-section="existing-minor" title="Mark as Complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm action-btn cancel-existing-procedure-btn" 
+                                    data-procedure-id="minor-3" data-section="existing-minor" title="Cancel Procedure">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="minor-3" data-section="existing-minor" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Blood Sample Collection -->
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="completed" data-procedure-id="minor-4">
                         <div class="content-icon">
                             <i class="fas fa-vial"></i>
                         </div>
@@ -748,11 +1204,20 @@
                             </div>
                             <div class="content-description">
                                 Routine blood collection for lab work. Sample sent to laboratory for analysis.
+                                <div class="completion-reason mt-2">
+                                    <small class="text-muted"><strong>Completion Notes:</strong> All required samples collected. Sent to lab for analysis.</small>
+                                </div>
                             </div>
+                        </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="minor-4" data-section="existing-minor" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="pending" data-procedure-id="minor-5">
                         <div class="content-icon">
                             <i class="fas fa-band-aid"></i>
                         </div>
@@ -770,6 +1235,20 @@
                                 Scheduled wound dressing change. Check for signs of infection and document healing progress.
                             </div>
                         </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-success btn-sm action-btn complete-existing-procedure-btn" 
+                                    data-procedure-id="minor-5" data-section="existing-minor" title="Mark as Complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm action-btn cancel-existing-procedure-btn" 
+                                    data-procedure-id="minor-5" data-section="existing-minor" title="Cancel Procedure">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="minor-5" data-section="existing-minor" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -783,8 +1262,29 @@
                     <span class="shift-time">Scheduled & Completed</span>
                 </div>
                 <div class="section-content">
+                    <!-- Filter buttons for existing major procedures -->
+                    <div class="procedure-filters mb-3">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" data-filter="all" data-section="existing-major">
+                                All <span class="badge badge-light" id="existingMajorAllCount">2</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" data-filter="pending" data-section="existing-major">
+                                Pending <span class="badge badge-light" id="existingMajorPendingCount">0</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-success" data-filter="completed" data-section="existing-major">
+                                Completed <span class="badge badge-light" id="existingMajorCompletedCount">1</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-info" data-filter="ongoing" data-section="existing-major">
+                                Ongoing <span class="badge badge-light" id="existingMajorOngoingCount">1</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" data-filter="cancelled" data-section="existing-major">
+                                Cancelled <span class="badge badge-light" id="existingMajorCancelledCount">0</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Sample procedures - replace with actual data when available -->
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="completed" data-procedure-id="major-1">
                         <div class="content-icon">
                             <i class="fas fa-x-ray"></i>
                         </div>
@@ -800,11 +1300,20 @@
                             </div>
                             <div class="content-description">
                                 Routine chest X-ray completed. Results pending review by radiologist. Patient tolerated procedure well.
+                                <div class="completion-reason mt-2">
+                                    <small class="text-muted"><strong>Completion Notes:</strong> X-ray completed successfully. Images clear, results sent to radiologist for review.</small>
+                                </div>
                             </div>
+                        </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="major-1" data-section="existing-major" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="content-item">
+                    <div class="content-item existing-procedure" data-status="ongoing" data-procedure-id="major-2">
                         <div class="content-icon">
                             <i class="fas fa-heartbeat"></i>
                         </div>
@@ -821,6 +1330,20 @@
                             <div class="content-description">
                                 Continuous cardiac monitoring in progress. No arrhythmias detected. Monitor for changes and alert physician if irregularities occur.
                             </div>
+                        </div>
+                        <div class="procedure-actions">
+                            <button type="button" class="btn btn-outline-success btn-sm action-btn complete-existing-procedure-btn" 
+                                    data-procedure-id="major-2" data-section="existing-major" title="Mark as Complete">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm action-btn cancel-existing-procedure-btn" 
+                                    data-procedure-id="major-2" data-section="existing-major" title="Cancel Procedure">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                                    data-procedure-id="major-2" data-section="existing-major" title="Remove Procedure">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1095,6 +1618,656 @@ $(document).ready(function() {
         function() { $(this).addClass('shadow-sm'); },
         function() { $(this).removeClass('shadow-sm'); }
     );
+    
+    // Procedure definitions
+    const procedureDefinitions = {
+        // Minor procedures
+        'iv_insertion': {
+            name: 'IV Line Insertion',
+            icon: 'fas fa-syringe',
+            type: 'minor'
+        },
+        'iv_infusion_saline': {
+            name: 'IV Infusion - Normal Saline',
+            icon: 'fas fa-tint',
+            type: 'minor'
+        },
+        'iv_infusion_dextrose': {
+            name: 'IV Infusion - 5% Dextrose',
+            icon: 'fas fa-prescription-bottle',
+            type: 'minor'
+        },
+        'blood_sample': {
+            name: 'Blood Sample Collection',
+            icon: 'fas fa-vial',
+            type: 'minor'
+        },
+        'wound_dressing': {
+            name: 'Wound Dressing Change',
+            icon: 'fas fa-band-aid',
+            type: 'minor'
+        },
+        'vital_signs': {
+            name: 'Vital Signs Monitoring',
+            icon: 'fas fa-heartbeat',
+            type: 'minor'
+        },
+        'medication_admin': {
+            name: 'Medication Administration',
+            icon: 'fas fa-pills',
+            type: 'minor'
+        },
+        'catheter_care': {
+            name: 'Catheter Care',
+            icon: 'fas fa-stethoscope',
+            type: 'minor'
+        },
+        'oxygen_therapy': {
+            name: 'Oxygen Therapy',
+            icon: 'fas fa-lungs',
+            type: 'minor'
+        },
+        // Major procedures
+        'chest_xray': {
+            name: 'Chest X-Ray',
+            icon: 'fas fa-x-ray',
+            type: 'major'
+        },
+        'ecg_monitoring': {
+            name: 'ECG Monitoring',
+            icon: 'fas fa-heartbeat',
+            type: 'major'
+        },
+        'ct_scan': {
+            name: 'CT Scan',
+            icon: 'fas fa-search',
+            type: 'major'
+        },
+        'mri_scan': {
+            name: 'MRI Scan',
+            icon: 'fas fa-brain',
+            type: 'major'
+        },
+        'ultrasound': {
+            name: 'Ultrasound',
+            icon: 'fas fa-sound',
+            type: 'major'
+        },
+        'endoscopy': {
+            name: 'Endoscopy',
+            icon: 'fas fa-microscope',
+            type: 'major'
+        },
+        'bronchoscopy': {
+            name: 'Bronchoscopy',
+            icon: 'fas fa-lungs',
+            type: 'major'
+        },
+        'chest_tube': {
+            name: 'Chest Tube Insertion',
+            icon: 'fas fa-lungs',
+            type: 'major'
+        },
+        'surgery_prep': {
+            name: 'Surgery Preparation',
+            icon: 'fas fa-user-md',
+            type: 'major'
+        },
+        'dialysis': {
+            name: 'Dialysis',
+            icon: 'fas fa-filter',
+            type: 'major'
+        }
+    };
+    
+    // Selected procedures storage
+    let selectedMinorProcedures = [];
+    let selectedMajorProcedures = [];
+    
+    // Filter states
+    let currentMinorFilter = 'all';
+    let currentMajorFilter = 'all';
+    
+    // Nurse selection functionality
+    function updateSelectedNurseDisplay(selectElement, initialsId, nameId, detailsId, containerSelector) {
+        const selectedOption = selectElement.find('option:selected');
+        const container = $(containerSelector);
+        
+        if (selectedOption.val() && selectedOption.val() !== '') {
+            const name = selectedOption.data('name');
+            const position = selectedOption.data('position');
+            const initials = getInitials(name);
+            
+            $(initialsId).text(initials);
+            $(nameId).text(name);
+            $(detailsId).html(`<i class="fas fa-user-tag mr-1"></i>${position}`);
+            
+            container.removeClass('d-none');
+        } else {
+            container.addClass('d-none');
+        }
+        
+        checkFormCompletion();
+    }
+    
+    function getInitials(name) {
+        if (!name) return '';
+        const words = name.split(' ');
+        if (words.length >= 2) {
+            return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
+        }
+        return name.charAt(0).toUpperCase();
+    }
+    
+    function checkFormCompletion() {
+        const nurseOnDuty = $('#nurseOnDuty').val();
+        const nurseReceivePassover = $('#nurseReceivePassover').val();
+        
+        if (nurseOnDuty && nurseReceivePassover && nurseOnDuty !== '' && nurseReceivePassover !== '') {
+            $('#confirmPassoverBtn').prop('disabled', false);
+        } else {
+            $('#confirmPassoverBtn').prop('disabled', true);
+        }
+    }
+    
+    // Handle nurse on duty selection
+    $('#nurseOnDuty').on('change', function() {
+        updateSelectedNurseDisplay(
+            $(this), 
+            '#selectedOnDutyInitials', 
+            '#selectedOnDutyName', 
+            '#selectedOnDutyDetails', 
+            '#nurseOnDuty + .selected-nurse-info'
+        );
+    });
+    
+    // Handle nurse receive passover selection
+    $('#nurseReceivePassover').on('change', function() {
+        updateSelectedNurseDisplay(
+            $(this), 
+            '#selectedReceiveInitials', 
+            '#selectedReceiveName', 
+            '#selectedReceiveDetails', 
+            '#nurseReceivePassover + .selected-nurse-info'
+        );
+    });
+    
+    // Procedure management functions
+    function addProcedureToList(procedureKey, notes, type) {
+        const procedure = procedureDefinitions[procedureKey];
+        if (!procedure) return;
+        
+        const procedureItem = {
+            key: procedureKey,
+            name: procedure.name,
+            icon: procedure.icon,
+            notes: notes || '',
+            time: new Date().toLocaleTimeString(),
+            status: 'pending',
+            reason: '',
+            id: Date.now() + Math.random() // Simple unique ID
+        };
+        
+        if (type === 'minor') {
+            selectedMinorProcedures.push(procedureItem);
+            updateProcedureDisplay('minor');
+            updateFilterCounts('minor');
+        } else if (type === 'major') {
+            selectedMajorProcedures.push(procedureItem);
+            updateProcedureDisplay('major');
+            updateFilterCounts('major');
+        }
+    }
+    
+    function removeProcedureFromList(procedureId, type) {
+        // Find the procedure name for confirmation
+        const procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const procedure = procedures.find(p => p.id === procedureId);
+        
+        if (!procedure) return;
+        
+        // Show confirmation dialog
+        if (confirm(`Are you sure you want to remove "${procedure.name}"?\n\nThis action cannot be undone.`)) {
+            if (type === 'minor') {
+                selectedMinorProcedures = selectedMinorProcedures.filter(p => p.id !== procedureId);
+                updateProcedureDisplay('minor');
+                updateFilterCounts('minor');
+            } else if (type === 'major') {
+                selectedMajorProcedures = selectedMajorProcedures.filter(p => p.id !== procedureId);
+                updateProcedureDisplay('major');
+                updateFilterCounts('major');
+            }
+        }
+    }
+    
+    function updateProcedureStatus(procedureId, type, status, reason = '') {
+        let procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const procedure = procedures.find(p => p.id === procedureId);
+        
+        if (procedure) {
+            procedure.status = status;
+            procedure.reason = reason;
+            updateProcedureDisplay(type);
+            updateFilterCounts(type);
+        }
+    }
+    
+    function updateFilterCounts(type) {
+        const procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const prefix = type === 'minor' ? 'minor' : 'major';
+        
+        const counts = {
+            all: procedures.length,
+            pending: procedures.filter(p => p.status === 'pending').length,
+            completed: procedures.filter(p => p.status === 'completed').length,
+            cancelled: procedures.filter(p => p.status === 'cancelled').length
+        };
+        
+        $(`#${prefix}AllCount`).text(counts.all);
+        $(`#${prefix}PendingCount`).text(counts.pending);
+        $(`#${prefix}CompletedCount`).text(counts.completed);
+        $(`#${prefix}CancelledCount`).text(counts.cancelled);
+    }
+    
+    function applyFilter(type, filter) {
+        const procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const containerId = type === 'minor' ? '#selectedMinorProcedures' : '#selectedMajorProcedures';
+        
+        // Update filter state
+        if (type === 'minor') {
+            currentMinorFilter = filter;
+        } else {
+            currentMajorFilter = filter;
+        }
+        
+        // Update active button
+        $(`.procedure-filters button[data-type="${type}"]`).removeClass('active');
+        $(`.procedure-filters button[data-type="${type}"][data-filter="${filter}"]`).addClass('active');
+        
+        // Show/hide procedures based on filter
+        $(`${containerId} .procedure-item`).each(function() {
+            const procedureId = parseInt($(this).data('procedure-id'));
+            const procedure = procedures.find(p => p.id === procedureId);
+            
+            if (!procedure) return;
+            
+            if (filter === 'all' || procedure.status === filter) {
+                $(this).removeClass('hidden');
+            } else {
+                $(this).addClass('hidden');
+            }
+        });
+    }
+    
+    function updateProcedureDisplay(type) {
+        const procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const containerId = type === 'minor' ? '#selectedMinorProcedures' : '#selectedMajorProcedures';
+        const container = $(containerId);
+        const currentFilter = type === 'minor' ? currentMinorFilter : currentMajorFilter;
+        
+        container.empty();
+        
+        procedures.forEach(procedure => {
+            // Determine if procedure should be visible based on current filter
+            const isVisible = currentFilter === 'all' || procedure.status === currentFilter;
+            const hiddenClass = isVisible ? '' : 'hidden';
+            
+            // Build action buttons based on status
+            let actionButtons = '';
+            if (procedure.status === 'pending') {
+                actionButtons = `
+                    <button type="button" class="btn btn-outline-success btn-sm action-btn complete-procedure-btn" 
+                            data-procedure-id="${procedure.id}" data-type="${type}" title="Mark as Complete">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm action-btn cancel-procedure-btn" 
+                            data-procedure-id="${procedure.id}" data-type="${type}" title="Cancel Procedure">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                `;
+            }
+            
+            const procedureHtml = `
+                <div class="procedure-item ${procedure.status} ${hiddenClass}" data-procedure-id="${procedure.id}">
+                    <div class="procedure-icon">
+                        <i class="${procedure.icon}"></i>
+                    </div>
+                    <div class="procedure-details">
+                        <div class="procedure-name">
+                            ${procedure.name}
+                            <span class="procedure-status ${procedure.status}">${procedure.status.charAt(0).toUpperCase() + procedure.status.slice(1)}</span>
+                        </div>
+                        ${procedure.notes ? `<div class="procedure-description">${procedure.notes}</div>` : ''}
+                        ${procedure.reason ? `<div class="procedure-reason">Reason: ${procedure.reason}</div>` : ''}
+                    </div>
+                    <div class="procedure-time">${procedure.time}</div>
+                    <div class="procedure-actions">
+                        ${actionButtons}
+                        <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-procedure-btn" 
+                                data-procedure-id="${procedure.id}" data-type="${type}" title="Remove Procedure">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            container.append(procedureHtml);
+        });
+    }
+    
+    // Add minor procedure
+    $('#addMinorProcedureBtn').on('click', function() {
+        const procedureKey = $('#minorProcedureSelect').val();
+        const notes = $('#minorProcedureNotes').val().trim();
+        
+        if (procedureKey) {
+            addProcedureToList(procedureKey, notes, 'minor');
+            $('#minorProcedureSelect').val('');
+            $('#minorProcedureNotes').val('');
+        }
+    });
+    
+    // Add major procedure
+    $('#addMajorProcedureBtn').on('click', function() {
+        const procedureKey = $('#majorProcedureSelect').val();
+        const notes = $('#majorProcedureNotes').val().trim();
+        
+        if (procedureKey) {
+            addProcedureToList(procedureKey, notes, 'major');
+            $('#majorProcedureSelect').val('');
+            $('#majorProcedureNotes').val('');
+        }
+    });
+    
+    // Remove procedure (delegated event handler)
+    $(document).on('click', '.remove-procedure-btn', function() {
+        const procedureId = parseInt($(this).data('procedure-id'));
+        const type = $(this).data('type');
+        removeProcedureFromList(procedureId, type);
+    });
+    
+    // Complete procedure (delegated event handler)
+    $(document).on('click', '.complete-procedure-btn', function() {
+        const procedureId = parseInt($(this).data('procedure-id'));
+        const type = $(this).data('type');
+        const procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const procedure = procedures.find(p => p.id === procedureId);
+        
+        if (procedure) {
+            const reason = prompt(`Mark "${procedure.name}" as completed.\n\nPlease provide completion notes (optional):`);
+            if (reason !== null) { // User didn't cancel
+                updateProcedureStatus(procedureId, type, 'completed', reason);
+            }
+        }
+    });
+    
+    // Cancel procedure (delegated event handler)
+    $(document).on('click', '.cancel-procedure-btn', function() {
+        const procedureId = parseInt($(this).data('procedure-id'));
+        const type = $(this).data('type');
+        const procedures = type === 'minor' ? selectedMinorProcedures : selectedMajorProcedures;
+        const procedure = procedures.find(p => p.id === procedureId);
+        
+        if (procedure) {
+            const reason = prompt(`Cancel "${procedure.name}".\n\nPlease provide cancellation reason:`);
+            if (reason !== null && reason.trim() !== '') { // User provided a reason
+                updateProcedureStatus(procedureId, type, 'cancelled', reason.trim());
+            } else if (reason !== null) {
+                alert('Cancellation reason is required.');
+            }
+        }
+    });
+    
+    // Filter button handlers
+    $(document).on('click', '.procedure-filters button', function() {
+        const filter = $(this).data('filter');
+        const type = $(this).data('type');
+        const section = $(this).data('section');
+        
+        if (section) {
+            // Handle existing procedure filters
+            applyExistingProcedureFilter(section, filter);
+        } else {
+            // Handle new procedure filters
+            applyFilter(type, filter);
+        }
+    });
+    
+    // Existing procedure management functions
+    function applyExistingProcedureFilter(section, filter) {
+        // Update active button
+        $(`.procedure-filters button[data-section="${section}"]`).removeClass('active');
+        $(`.procedure-filters button[data-section="${section}"][data-filter="${filter}"]`).addClass('active');
+        
+        // Show/hide procedures based on filter
+        $('.existing-procedure').each(function() {
+            const procedureStatus = $(this).data('status');
+            const parentSection = $(this).closest('.passover-section');
+            
+            // Check if this procedure belongs to the current section
+            const isMinorSection = parentSection.find(`button[data-section="${section}"]`).length > 0;
+            if (!isMinorSection) return;
+            
+            if (filter === 'all' || procedureStatus === filter) {
+                $(this).removeClass('hidden');
+            } else {
+                $(this).addClass('hidden');
+            }
+        });
+    }
+    
+    function updateExistingProcedureStatus(procedureId, section, newStatus, reason = '') {
+        const procedure = $(`.existing-procedure[data-procedure-id="${procedureId}"]`);
+        if (!procedure.length) return;
+        
+        // Update data attribute
+        procedure.attr('data-status', newStatus);
+        
+        // Update status badge
+        const statusBadge = procedure.find('.status-badge');
+        statusBadge.removeClass('status-completed status-ongoing status-pending status-cancelled');
+        statusBadge.addClass(`status-${newStatus}`);
+        statusBadge.text(newStatus.charAt(0).toUpperCase() + newStatus.slice(1));
+        
+        // Update visual styling
+        procedure.removeClass('completed cancelled ongoing pending');
+        procedure.addClass(newStatus);
+        
+        // Handle completion/cancellation reason
+        const existingReason = procedure.find('.completion-reason, .cancellation-reason');
+        existingReason.remove();
+        
+        if (reason && (newStatus === 'completed' || newStatus === 'cancelled')) {
+            const reasonType = newStatus === 'completed' ? 'Completion Notes' : 'Cancellation Reason';
+            const reasonHtml = `
+                <div class="${newStatus === 'completed' ? 'completion' : 'cancellation'}-reason mt-2">
+                    <small class="text-muted"><strong>${reasonType}:</strong> ${reason}</small>
+                </div>
+            `;
+            procedure.find('.content-description').append(reasonHtml);
+        }
+        
+        // Update action buttons
+        updateExistingProcedureActions(procedureId, section, newStatus);
+        
+        // Update filter counts
+        updateExistingProcedureCounts(section);
+    }
+    
+    function updateExistingProcedureActions(procedureId, section, status) {
+        const procedure = $(`.existing-procedure[data-procedure-id="${procedureId}"]`);
+        const actionsContainer = procedure.find('.procedure-actions');
+        
+        let actionButtons = '';
+        if (status === 'pending' || status === 'ongoing') {
+            actionButtons = `
+                <button type="button" class="btn btn-outline-success btn-sm action-btn complete-existing-procedure-btn" 
+                        data-procedure-id="${procedureId}" data-section="${section}" title="Mark as Complete">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button type="button" class="btn btn-outline-warning btn-sm action-btn cancel-existing-procedure-btn" 
+                        data-procedure-id="${procedureId}" data-section="${section}" title="Cancel Procedure">
+                    <i class="fas fa-ban"></i>
+                </button>
+            `;
+        }
+        
+        actionButtons += `
+            <button type="button" class="btn btn-outline-danger btn-sm action-btn remove-existing-procedure-btn" 
+                    data-procedure-id="${procedureId}" data-section="${section}" title="Remove Procedure">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        actionsContainer.html(actionButtons);
+    }
+    
+    function updateExistingProcedureCounts(section) {
+        const prefix = section.replace('-', '');
+        let counts = {
+            all: 0,
+            pending: 0,
+            completed: 0,
+            ongoing: 0,
+            cancelled: 0
+        };
+        
+        // Count procedures in the specific section
+        const sectionElement = $(`.procedure-filters button[data-section="${section}"]`).closest('.passover-section');
+        sectionElement.find('.existing-procedure').each(function() {
+            const status = $(this).data('status');
+            counts.all++;
+            if (counts[status] !== undefined) {
+                counts[status]++;
+            }
+        });
+        
+        // Update count badges
+        Object.keys(counts).forEach(status => {
+            $(`#${prefix}${status.charAt(0).toUpperCase() + status.slice(1)}Count`).text(counts[status]);
+        });
+    }
+    
+    // Event handlers for existing procedures
+    $(document).on('click', '.complete-existing-procedure-btn', function() {
+        const procedureId = $(this).data('procedure-id');
+        const section = $(this).data('section');
+        const procedure = $(`.existing-procedure[data-procedure-id="${procedureId}"]`);
+        const procedureName = procedure.find('.content-title').text().replace(/\s+(Pending|Ongoing|Completed|Cancelled)/, '').trim();
+        
+        const reason = prompt(`Mark "${procedureName}" as completed.\n\nPlease provide completion notes (optional):`);
+        if (reason !== null) { // User didn't cancel
+            updateExistingProcedureStatus(procedureId, section, 'completed', reason);
+        }
+    });
+    
+    $(document).on('click', '.cancel-existing-procedure-btn', function() {
+        const procedureId = $(this).data('procedure-id');
+        const section = $(this).data('section');
+        const procedure = $(`.existing-procedure[data-procedure-id="${procedureId}"]`);
+        const procedureName = procedure.find('.content-title').text().replace(/\s+(Pending|Ongoing|Completed|Cancelled)/, '').trim();
+        
+        const reason = prompt(`Cancel "${procedureName}".\n\nPlease provide cancellation reason:`);
+        if (reason !== null && reason.trim() !== '') { // User provided a reason
+            updateExistingProcedureStatus(procedureId, section, 'cancelled', reason.trim());
+        } else if (reason !== null) {
+            alert('Cancellation reason is required.');
+        }
+    });
+    
+    $(document).on('click', '.remove-existing-procedure-btn', function() {
+        const procedureId = $(this).data('procedure-id');
+        const section = $(this).data('section');
+        const procedure = $(`.existing-procedure[data-procedure-id="${procedureId}"]`);
+        const procedureName = procedure.find('.content-title').text().replace(/\s+(Pending|Ongoing|Completed|Cancelled)/, '').trim();
+        
+        if (confirm(`Are you sure you want to remove "${procedureName}"?\n\nThis action cannot be undone.`)) {
+            procedure.fadeOut(300, function() {
+                $(this).remove();
+                updateExistingProcedureCounts(section);
+            });
+        }
+    });
+    
+    // Handle confirm button
+    $('#confirmPassoverBtn').on('click', function() {
+        const nurseOnDuty = $('#nurseOnDuty option:selected');
+        const nurseReceivePassover = $('#nurseReceivePassover option:selected');
+        
+        if (nurseOnDuty.val() && nurseReceivePassover.val()) {
+            // Show confirmation
+            const onDutyName = nurseOnDuty.data('name');
+            const receiveName = nurseReceivePassover.data('name');
+            
+            let confirmMessage = `Confirm Nurse Passover:\n\nFrom: ${onDutyName}\nTo: ${receiveName}`;
+            
+            if (selectedMinorProcedures.length > 0) {
+                confirmMessage += `\n\nMinor Procedures (${selectedMinorProcedures.length}):`;
+                selectedMinorProcedures.forEach(p => {
+                    confirmMessage += `\n- ${p.name}`;
+                });
+            }
+            
+            if (selectedMajorProcedures.length > 0) {
+                confirmMessage += `\n\nMajor Procedures (${selectedMajorProcedures.length}):`;
+                selectedMajorProcedures.forEach(p => {
+                    confirmMessage += `\n- ${p.name}`;
+                });
+            }
+            
+            confirmMessage += '\n\nProceed with this selection?';
+            
+            if (confirm(confirmMessage)) {
+                // Here you can add functionality to save the passover selection and procedures
+                // For now, we'll show a success message
+                alert(`Nurse passover confirmed!\n\nHandover from ${onDutyName} to ${receiveName} has been recorded with ${selectedMinorProcedures.length} minor and ${selectedMajorProcedures.length} major procedures.`);
+                
+                // Optionally scroll to the vital signs section to continue with passover details
+                $('html, body').animate({
+                    scrollTop: $('.passover-section:nth-child(2)').offset().top
+                }, 500);
+            }
+        }
+    });
+    
+    // Handle reset button
+    $('#resetFormBtn').on('click', function() {
+        if (confirm('Are you sure you want to reset the form? This will clear all selected nurses and procedures.')) {
+            $('#nursePassoverForm')[0].reset();
+            $('.selected-nurse-info').addClass('d-none');
+            $('#confirmPassoverBtn').prop('disabled', true);
+            
+            // Clear procedures
+            selectedMinorProcedures = [];
+            selectedMajorProcedures = [];
+            updateProcedureDisplay('minor');
+            updateProcedureDisplay('major');
+            updateFilterCounts('minor');
+            updateFilterCounts('major');
+            
+            // Reset filters
+            currentMinorFilter = 'all';
+            currentMajorFilter = 'all';
+            $('.procedure-filters button').removeClass('active');
+            $('.procedure-filters button[data-filter="all"]').addClass('active');
+        }
+    });
+    
+    // Initialize form state
+    checkFormCompletion();
+    
+    // Initialize filter counts
+    updateFilterCounts('minor');
+    updateFilterCounts('major');
+    updateExistingProcedureCounts('existing-minor');
+    updateExistingProcedureCounts('existing-major');
+    
+    // Check if there are pre-selected values and update displays
+    if ($('#nurseOnDuty').val()) {
+        $('#nurseOnDuty').trigger('change');
+    }
+    if ($('#nurseReceivePassover').val()) {
+        $('#nurseReceivePassover').trigger('change');
+    }
 });
 </script>
 @endsection 
